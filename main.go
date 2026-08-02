@@ -27,7 +27,7 @@ func (g Game) Draw(screen *ebiten.Image) {
 
 // Layout implements [ebiten.Game].
 func (g Game) Layout(outsideWidth int, outsideHeight int) (screenWidth int, screenHeight int) {
-	panic("unimplemented")
+	return outsideWidth / 2, outsideHeight / 2
 }
 
 // Update implements [ebiten.Game].
