@@ -1,13 +1,18 @@
 package main
 
 import (
+	"log"
+
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 func main() {
-	// Game が ebiten.Game を実装していることを保証するためだけのコード
-	var game ebiten.Game = Game{}
-	game = game
+	// ゲーム起動
+	game := Game{}
+	ebiten.SetFullscreen(true)
+	if err := ebiten.RunGame(game); err != nil {
+		log.Fatal(err)
+	}
 }
 
 type Game struct {
