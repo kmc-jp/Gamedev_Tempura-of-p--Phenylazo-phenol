@@ -11,7 +11,9 @@ import (
 
 func main() {
 	// ゲーム起動
-	game := Game{}
+	initScene := PlayScene{} // 起動時に表示されるシーン
+	initScene.Init()
+	game := Game{ActiveScene: initScene}
 	ebiten.SetFullscreen(true)
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
@@ -78,4 +80,29 @@ type Scene interface {
 	Init() error
 	Update(active bool) (nextScene Scene, asNewScene bool, err error)
 	Draw(screen *ebiten.Image)
+}
+
+// メインの遊べるシーン
+type PlayScene struct {
+}
+
+// Name implements [Scene].
+func (s PlayScene) Name() string {
+	return fmt.Sprintf("%T", s)
+}
+
+// Init implements [Scene].
+func (s PlayScene) Init() error {
+	// なにもしない
+	return nil
+}
+
+// Draw implements [Scene].
+func (s PlayScene) Draw(screen *ebiten.Image) {
+	panic("unimplemented")
+}
+
+// Update implements [Scene].
+func (s PlayScene) Update(active bool) (nextScene Scene, asNewScene bool, err error) {
+	panic("unimplemented")
 }
