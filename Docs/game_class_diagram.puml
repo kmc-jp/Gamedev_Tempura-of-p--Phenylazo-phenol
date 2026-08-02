@@ -23,6 +23,7 @@ note right of Game : シーンの管理が主な役割\nUpdate() は ActiveScene
 
 interface Scene {
     + Init() // 遷移時に一度だけ呼ばれる
+    + Name() string
     + Update(active bool) (nextScene Scene, asNewScene bool, err error)
     + Draw(screen *ebiten.Image)
 }
@@ -34,6 +35,7 @@ Game "1" --> "1..*" Scene
 
 class Hoge {
     + Init()
+    + Name() string
     + Update(active bool) (nextScene Scene, asNewScene bool, err error)
     + Draw(screen *ebiten.Image)
 }
