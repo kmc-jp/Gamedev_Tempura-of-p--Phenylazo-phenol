@@ -4,7 +4,7 @@ package ebiten {
     interface ebiten.Game {
         + Update() error
         + Draw(screen *ebiten.Image)
-        + Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int
+        + Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int)
     }
 }
 
@@ -13,7 +13,6 @@ class "エントリーポイント" {
 }
 
 class Game {
-    - readonly Scenes Scene[]
     - ActiveScene Scene
     - BackScene Stack[Scene]
     + Update() error, SceneShift
@@ -35,8 +34,8 @@ Game "1" --> "1..*" Scene
 
 class Hoge {
     + Init()
-    + Update()
-    + Draw()
+    + Update(active bool) (nextScene Scene, err error)
+    + Draw(screen *ebiten.Image)
 }
 note right of Hoge : 具体的なシーン
 
