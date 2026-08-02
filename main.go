@@ -62,10 +62,12 @@ func (g Game) Update() error {
 	if nextScene != nil {
 		if asNewScene {
 			g.BackScene.Clear()
-			g.ActiveScene = nextScene
 		} else {
 			g.BackScene.Push(g.ActiveScene)
-			g.ActiveScene = nextScene
+		}
+		g.ActiveScene = nextScene
+		if err := g.ActiveScene.Init(); err != nil {
+			return fmt.Errorf("Scene %s の初期化中にエラーが発生しました \n %w", g.ActiveScene.Name(), err)
 		}
 	}
 	return nil
@@ -73,7 +75,7 @@ func (g Game) Update() error {
 
 type Scene interface {
 	Name() string
-	Init()
+	Init() error
 	Update(active bool) (nextScene Scene, asNewScene bool, err error)
 	Draw(screen *ebiten.Image)
 }
