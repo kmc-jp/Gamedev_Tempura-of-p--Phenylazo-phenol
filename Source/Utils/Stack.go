@@ -52,6 +52,19 @@ func (s *Stack[T]) All() iter.Seq[T] {
 	}
 }
 
+// Rev: range 句で逆順に回すためのイテレータ関数 (LIFO 順)
+func (s *Stack[T]) Rev() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		// スタックの先頭（一番下）からたどる
+		for i := 0; i <= len(s.items)-1; i++ {
+			// yield が false を返したら range ループが break されたことを意味する
+			if !yield(s.items[i]) {
+				return
+			}
+		}
+	}
+}
+
 func (s *Stack[T]) Clear() {
 	s.items = nil
 }
