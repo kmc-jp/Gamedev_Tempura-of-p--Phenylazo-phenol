@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
@@ -34,7 +35,29 @@ func (g Game) Layout(outsideWidth int, outsideHeight int) (screenWidth int, scre
 
 // Update implements [ebiten.Game].
 func (g Game) Update() error {
-	panic("unimplemented")
+	nextScene, asNewScene, err := g.ActiveScene.Update(true)
+	if err != nil {
+		return fmt.Errorf("ActiveScene %s でエラーが発生しました \n %w", g.ActiveScene.Name(), err)
+	}
+	for scene := range g.BackScene.All() {
+		ns, _, err := scene.Update(false)
+		if err != nil {
+			return fmt.Errorf("BackScene %s でエラーが発生しました \n %w", scene.Name(), err)
+		}
+		if ns != nil {
+			return fmt.Errorf("BackScene %s がシーン切り替え要求を行いました。\n正常動作ならこのエラーを削除してください。", scene.Name())
+		}
+	}
+	if nextScene != nil {
+		if asNewScene {
+			g.BackScene.Clear()
+			g.ActiveScene = nextScene
+		} else {
+			g.BackScene.Push(g.ActiveScene)
+			g.ActiveScene = nextScene
+		}
+	}
+	return nil
 }
 
 type Scene interface {
