@@ -15,7 +15,7 @@ class "エントリーポイント" {
 class Game {
     - ActiveScene Scene
     - BackScene Stack[Scene]
-    + Update() error, SceneShift
+    + Update() error
     + Draw(screen *ebiten.Image)
     + Layout(outsideWidth, outsideHeight int)
 } 
