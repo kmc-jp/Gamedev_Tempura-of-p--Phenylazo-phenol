@@ -22,7 +22,7 @@ func main() {
 
 type Game struct {
 	ActiveScene Scene
-	BackScene   Utils.Stack[Scene]
+	BackScenes  Utils.Stack[Scene]
 	// 中継用の画像バッファ(毎フレーム生成すると重い)
 	bufferScreen *ebiten.Image
 }
@@ -32,7 +32,7 @@ func (g Game) Draw(screen *ebiten.Image) {
 	g.bufferScreen.Clear()
 
 	// 奥から手前に向けて描写する
-	for scene := range g.BackScene.Rev() {
+	for scene := range g.BackScenes.Rev() {
 		scene.Draw(g.bufferScreen)
 	}
 	g.ActiveScene.Draw(g.bufferScreen)
@@ -52,7 +52,7 @@ func (g Game) Update() error {
 	if err != nil {
 		return fmt.Errorf("ActiveScene %s でエラーが発生しました \n %w", g.ActiveScene.Name(), err)
 	}
-	for scene := range g.BackScene.All() {
+	for scene := range g.BackScenes.All() {
 		ns, _, err := scene.Update(false)
 		if err != nil {
 			return fmt.Errorf("BackScene %s でエラーが発生しました \n %w", scene.Name(), err)
@@ -63,9 +63,9 @@ func (g Game) Update() error {
 	}
 	if nextScene != nil {
 		if asNewScene {
-			g.BackScene.Clear()
+			g.BackScenes.Clear()
 		} else {
-			g.BackScene.Push(g.ActiveScene)
+			g.BackScenes.Push(g.ActiveScene)
 		}
 		g.ActiveScene = nextScene
 		if err := g.ActiveScene.Init(); err != nil {
