@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -17,7 +19,7 @@ func main() {
 
 type Game struct {
 	ActiveScene Scene
-	BackScene   []Scene
+	BackScene   Utils.Stack[Scene]
 }
 
 // Draw implements [ebiten.Game].
