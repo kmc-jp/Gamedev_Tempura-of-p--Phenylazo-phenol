@@ -1,5 +1,7 @@
 package Utils
 
+import "iter"
+
 type Stack[T any] struct {
 	items []T
 }
@@ -30,4 +32,22 @@ func (s *Stack[T]) Peek() (T, bool) {
 
 func (s *Stack[T]) IsEmpty() bool {
 	return len(s.items) == 0
+}
+
+// Len: 要素数を返す
+func (s *Stack[T]) Len() int {
+	return len(s.items)
+}
+
+// All: range 句で回すためのイテレータ関数 (LIFO 順)
+func (s *Stack[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		// スタックの末尾（一番上）から逆順にたどる
+		for i := len(s.items) - 1; i >= 0; i-- {
+			// yield が false を返したら range ループが break されたことを意味する
+			if !yield(s.items[i]) {
+				return
+			}
+		}
+	}
 }
