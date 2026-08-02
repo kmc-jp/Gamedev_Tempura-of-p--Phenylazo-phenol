@@ -21,11 +21,22 @@ func main() {
 type Game struct {
 	ActiveScene Scene
 	BackScene   Utils.Stack[Scene]
+	// 中継用の画像バッファ(毎フレーム生成すると重い)
+	bufferScreen *ebiten.Image
 }
 
 // Draw implements [ebiten.Game].
 func (g Game) Draw(screen *ebiten.Image) {
-	panic("unimplemented")
+	g.bufferScreen.Clear()
+
+	// 奥から手前に向けて描写する
+	for scene := range g.BackScene.Rev() {
+		scene.Draw(g.bufferScreen)
+	}
+	g.ActiveScene.Draw(g.bufferScreen)
+
+	// 中継画像バッファを画面に描画
+	screen.DrawImage(g.bufferScreen, nil)
 }
 
 // Layout implements [ebiten.Game].
