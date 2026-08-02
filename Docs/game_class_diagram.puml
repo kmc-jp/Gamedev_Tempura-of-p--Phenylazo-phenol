@@ -19,11 +19,11 @@ class Game {
     + Draw(screen *ebiten.Image)
     + Layout(outsideWidth, outsideHeight int)
 } 
-note right of Game : シーンの管理が主な役割 \n Update() は ActiveScene.Update(true) と BackScene.Update(false) を呼ぶ \n その他は BackScene -> ActiveScene の順で
+note right of Game : シーンの管理が主な役割\nUpdate() は ActiveScene.Update(true) と BackScene.Update(false) を呼ぶ\nその他は BackScene -> ActiveScene の順で\nStack は Utils パッケージ
 
 interface Scene {
     + Init() // 遷移時に一度だけ呼ばれる
-    + Update(active bool) (nextScene Scene, err error)
+    + Update(active bool) (nextScene Scene, asNewScene bool, err error)
     + Draw(screen *ebiten.Image)
 }
 
@@ -34,7 +34,7 @@ Game "1" --> "1..*" Scene
 
 class Hoge {
     + Init()
-    + Update(active bool) (nextScene Scene, err error)
+    + Update(active bool) (nextScene Scene, asNewScene bool, err error)
     + Draw(screen *ebiten.Image)
 }
 note right of Hoge : 具体的なシーン
