@@ -99,10 +99,11 @@ func (s PlayScene) Init() error {
 
 // Draw implements [Scene].
 func (s PlayScene) Draw(screen *ebiten.Image) {
-	panic("unimplemented")
+	// なにもしない
 }
 
 // Update implements [Scene].
 func (s PlayScene) Update(active bool) (nextScene Scene, asNewScene bool, err error) {
-	panic("unimplemented")
+	// なにもしない
+	return
 }
