@@ -51,3 +51,7 @@ func (s *Stack[T]) All() iter.Seq[T] {
 		}
 	}
 }
+
+func (s *Stack[T]) Clear() {
+	s.items = nil
+}
