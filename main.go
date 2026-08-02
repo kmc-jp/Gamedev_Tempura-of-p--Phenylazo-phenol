@@ -38,6 +38,7 @@ func (g Game) Update() error {
 }
 
 type Scene interface {
+	Name() string
 	Init()
 	Update(active bool) (nextScene Scene, err error)
 	Draw(screen *ebiten.Image)
