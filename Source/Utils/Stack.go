@@ -52,7 +52,7 @@ func (s *Stack[T]) All() iter.Seq[T] {
 	}
 }
 
-// Rev: range 句で逆順に回すためのイテレータ関数 (LIFO 順)
+// Rev: range 句で古い順（スタックの下→上）に回すためのイテレータ関数
 func (s *Stack[T]) Rev() iter.Seq[T] {
 	return func(yield func(T) bool) {
 		// スタックの先頭（一番下）からたどる
