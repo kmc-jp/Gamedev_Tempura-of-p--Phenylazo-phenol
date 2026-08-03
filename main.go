@@ -33,8 +33,7 @@ type Game struct {
 func (g Game) Draw(screen *ebiten.Image) {
 	// バッファ画像の初期化
 	w, h := screen.Bounds().Dx(), screen.Bounds().Dy()
-	bw, bh := g.bufferScreen.Bounds().Dx(), g.bufferScreen.Bounds().Dy()
-	if g.bufferScreen == nil || bw != w || bh != h {
+	if g.bufferScreen == nil || g.bufferScreen.Bounds().Dx() != w || g.bufferScreen.Bounds().Dy() != h {
 		g.bufferScreen = ebiten.NewImage(w, h)
 	}
 
