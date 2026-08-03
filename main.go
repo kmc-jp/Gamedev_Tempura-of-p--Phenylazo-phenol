@@ -13,7 +13,9 @@ func main() {
 	// ゲーム起動
 	initScene := PlayScene{} // 起動時に表示されるシーン
 	initScene.Init()
-	game := Game{ActiveScene: initScene}
+	game := Game{
+		ActiveScene: initScene,
+	}
 	ebiten.SetFullscreen(true)
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
@@ -29,6 +31,13 @@ type Game struct {
 
 // Draw implements [ebiten.Game].
 func (g Game) Draw(screen *ebiten.Image) {
+	// バッファ画像の初期化
+	w, h := screen.Bounds().Dx(), screen.Bounds().Dy()
+	bw, bh := g.bufferScreen.Bounds().Dx(), g.bufferScreen.Bounds().Dy()
+	if g.bufferScreen == nil || bw != w || bh != h {
+		g.bufferScreen = ebiten.NewImage(w, h)
+	}
+
 	g.bufferScreen.Clear()
 
 	// 奥から手前に向けて描写する
