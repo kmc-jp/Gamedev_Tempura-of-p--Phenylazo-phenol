@@ -56,7 +56,7 @@ func (s *Stack[T]) All() iter.Seq[T] {
 func (s *Stack[T]) Rev() iter.Seq[T] {
 	return func(yield func(T) bool) {
 		// スタックの先頭（一番下）からたどる
-		for i := 0; i <= len(s.items)-1; i++ {
+		for i := 0; i < len(s.items); i++ {
 			// yield が false を返したら range ループが break されたことを意味する
 			if !yield(s.items[i]) {
 				return
