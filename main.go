@@ -12,7 +12,9 @@ import (
 func main() {
 	// ゲーム起動
 	initScene := PlayScene{} // 起動時に表示されるシーン
-	initScene.Init()
+	if err := initScene.Init(); err != nil {
+		log.Fatalf("初期シーン %s の読み込みに失敗しました: %v", initScene.Name(), err)
+	}
 	game := Game{
 		ActiveScene: &initScene,
 	}
