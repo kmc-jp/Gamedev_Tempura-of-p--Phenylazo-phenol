@@ -52,8 +52,10 @@ https://ebitengine.org/en/documents/install.html?os=windows
 ├── Source
 │   ├── HogeScene
 │   │   └── hoge
+│   ├── Utils
 │   └── Src
 ├── go.mod
+├── go.sum
 ├── LISENCE
 ├── main.go
 └── README.md
