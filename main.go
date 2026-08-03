@@ -14,10 +14,10 @@ func main() {
 	initScene := PlayScene{} // 起動時に表示されるシーン
 	initScene.Init()
 	game := Game{
-		ActiveScene: initScene,
+		ActiveScene: &initScene,
 	}
 	ebiten.SetFullscreen(true)
-	if err := ebiten.RunGame(game); err != nil {
+	if err := ebiten.RunGame(&game); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -30,7 +30,7 @@ type Game struct {
 }
 
 // Draw implements [ebiten.Game].
-func (g Game) Draw(screen *ebiten.Image) {
+func (g *Game) Draw(screen *ebiten.Image) {
 	// バッファ画像の初期化
 	w, h := screen.Bounds().Dx(), screen.Bounds().Dy()
 	if g.bufferScreen == nil || g.bufferScreen.Bounds().Dx() != w || g.bufferScreen.Bounds().Dy() != h {
@@ -50,12 +50,12 @@ func (g Game) Draw(screen *ebiten.Image) {
 }
 
 // Layout implements [ebiten.Game].
-func (g Game) Layout(outsideWidth int, outsideHeight int) (screenWidth int, screenHeight int) {
+func (g *Game) Layout(outsideWidth int, outsideHeight int) (screenWidth int, screenHeight int) {
 	return outsideWidth / 2, outsideHeight / 2
 }
 
 // Update implements [ebiten.Game].
-func (g Game) Update() error {
+func (g *Game) Update() error {
 	nextScene, asNewScene, err := g.ActiveScene.Update(true)
 	if err != nil {
 		return fmt.Errorf("ActiveScene %s でエラーが発生しました \n %w", g.ActiveScene.Name(), err)
@@ -95,23 +95,23 @@ type PlayScene struct {
 }
 
 // Name implements [Scene].
-func (s PlayScene) Name() string {
+func (s *PlayScene) Name() string {
 	return fmt.Sprintf("%T", s)
 }
 
 // Init implements [Scene].
-func (s PlayScene) Init() error {
+func (s *PlayScene) Init() error {
 	// なにもしない
 	return nil
 }
 
 // Draw implements [Scene].
-func (s PlayScene) Draw(screen *ebiten.Image) {
+func (s *PlayScene) Draw(screen *ebiten.Image) {
 	// なにもしない
 }
 
 // Update implements [Scene].
-func (s PlayScene) Update(active bool) (nextScene Scene, asNewScene bool, err error) {
+func (s *PlayScene) Update(active bool) (nextScene Scene, asNewScene bool, err error) {
 	// なにもしない
 	return
 }
