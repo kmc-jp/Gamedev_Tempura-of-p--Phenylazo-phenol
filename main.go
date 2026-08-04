@@ -194,7 +194,18 @@ type HogeObject struct {
 }
 
 func NewHogeObject() (*HogeObject, error) {
-	h := HogeObject{}
+	t, err := NewTransform()
+	if err != nil {
+		return nil, fmt.Errorf("NewTransform() でエラーが発生しました。\n %w", err)
+	}
+	r, err := NewRender()
+	if err != nil {
+		return nil, fmt.Errorf("NewRender() でエラーが発生しました。\n %w", err)
+	}
+	h := HogeObject{
+		tf: *t,
+		rd: *r,
+	}
 	h.GameObjectUtils.gameObject = h
 	return &h, nil
 }
