@@ -9,7 +9,7 @@ interface Scene {
 
 class HogeScene {
     - objects []GameObject
-    + Init()
+    + NewHogeScene()
     + Name() string
     + Update(active bool) (nextScene Scene, asNewScene bool, err error)
     + Draw(screen *ebiten.Image)
@@ -26,12 +26,12 @@ interface GameObject {
     - components() []Component
     + Update(active bool) (err error)
     + Draw(screen *ebiten.Image)
-    + Init(active bool) (err error)
 }
 note left of GameObject : transform() 等はプライベートに要求
 
 class GameObjectUtils {
     - obj GameObject
+    + NewGameObjectUtils(obj GameObject) (err error)
     + getComponent[T | Component]() T, error
     + Update(active bool) (err error)
     + Draw(screen *ebiten.Image)
@@ -47,7 +47,7 @@ class HogeObject {
     - transform Transform
     - render Render
     - components []Component
-    + Init(active bool) (err error)
+    + NewHogeObject() (err error)
 }
 note right of HogeObject : ゲームオブジェクト\nUpdate() と Draw() は GameObjectUtils で実装
 
@@ -62,14 +62,22 @@ class Transform {
     + Position Position
     + Rotation Rotation
     + Scale Scale
+    + NewTransform()
 }
 
 class Render {
-    + Draw(obj GameObject, screen *ebiten.Image)
+    - obj GameObject
+    + NewRender(obj GameObject)
+    + Draw(screen *ebiten.Image)
 }
 
 interface Component {
-    + Init(obj GameObject) (err error)
     + Update(obj GameObject, active bool) (err error)
 }
+
+class FugaComponent {
+    + NewFugaComponent(obj GameObject) (err error)
+}
+
+FugaComponent -up-|> Component
 @enduml
