@@ -25,6 +25,7 @@ interface GameObject {
     - transform() Transform
     - render() Render
     - components() []Component
+    + Name() string
     + Update(active bool) (err error)
     + Draw(screen *ebiten.Image)
 }
@@ -48,6 +49,7 @@ class HogeObject {
     - transform Transform
     - render Render
     - components []Component
+    + Name() string
     + NewHogeObject() (err error)
 }
 note right of HogeObject : ゲームオブジェクト\nUpdate() と Draw() は GameObjectUtils で実装
