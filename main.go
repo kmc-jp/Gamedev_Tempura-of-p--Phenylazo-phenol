@@ -145,6 +145,21 @@ func (u GameObjectUtils) GetComponent(target reflect.Type) (component Component,
 	return nil, fmt.Errorf("%s に %s が存在しません。", (*u.obj).Name(), target.Name())
 }
 
+func (u GameObjectUtils) Update(active bool) (err error) {
+	obj := (*u.obj)
+	for _, c := range obj.components() {
+		if err := c.Update(obj, active); err != nil {
+			return fmt.Errorf("コンポーネント %s でエラーが発生しました。\n%w", reflect.TypeOf(c), err)
+		}
+	}
+	return nil
+}
+
+func (u GameObjectUtils) Draw(screen *ebiten.Image) {
+	obj := (*u.obj)
+	obj.render().Draw(obj, screen)
+}
+
 type Transform struct {
 }
 
