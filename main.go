@@ -156,5 +156,5 @@ func (r Render) Draw(obj GameObject, scene *ebiten.Image) {
 }
 
 type Component interface {
-	Updatea(obj GameObject, active bool) (err error)
+	Update(obj GameObject, active bool) (err error)
 }
