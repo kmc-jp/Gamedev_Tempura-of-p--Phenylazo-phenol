@@ -69,6 +69,7 @@ class Render {
 }
 
 interface Component {
+    + Init(obj GameObject) (err error)
     + Update(obj GameObject, active bool) (err error)
 }
 @enduml
