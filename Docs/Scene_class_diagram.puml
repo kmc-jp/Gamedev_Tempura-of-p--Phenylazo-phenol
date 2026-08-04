@@ -15,7 +15,7 @@ class HogeScene {
     + Update(active bool) (nextScene SceneFactory, asNewScene bool, err error)
     + Draw(screen *ebiten.Image)
 }
-note right of HogeScene : Update() は　objects.Update() を呼ぶ\nDraw() は　objects.Draw() を呼ぶ
+note right of HogeScene : Update() は　objects.Update() を呼ぶ\nDraw() は　objects.Draw() を呼ぶ\nNewHogeScene()の返り値は interface に突っ込むので非ポインタ型
 
 HogeScene -up-|> Scene
 
@@ -33,7 +33,7 @@ note left of GameObject : transform() 等はプライベートに要求
 
 class GameObjectUtils {
     - gameObject GameObject
-    + NewGameObjectUtils(obj GameObject) (err error)
+    + NewGameObjectUtils(obj GameObject) (*GameObjectUtils, error)
     + getComponent[T | Component]() T, error
     + Update(active bool) (err error)
     + Draw(screen *ebiten.Image)
@@ -50,7 +50,7 @@ class HogeObject {
     - render() Render
     - components() []Component
     + Name() string
-    + NewHogeObject() (err error)
+    + NewHogeObject() (*HogeObject, error)
 }
 note right of HogeObject : ゲームオブジェクト\nUpdate() と Draw() は GameObjectUtils で実装
 
@@ -65,12 +65,12 @@ class Transform {
     + Position Position
     + Rotation Rotation
     + Scale Scale
-    + NewTransform()
+    + NewTransform() (*Transform, error)
 }
 
 class Render {
     - obj GameObject
-    + NewRender(obj GameObject)
+    + NewRender(obj GameObject) (*Render, error)
     + Draw(screen *ebiten.Image)
 }
 
@@ -79,7 +79,7 @@ interface Component {
 }
 
 class FugaComponent {
-    + NewFugaComponent(obj GameObject) (err error)
+    + NewFugaComponent(obj GameObject) (*HogeComponent, error)
 }
 
 FugaComponent -up-|> Component
