@@ -131,6 +131,7 @@ type GameObject interface {
 }
 
 type GameObjectUtils struct {
+	// 埋め込み先の GameObject.Init() で初期化すること
 	gameObject GameObject
 }
 
