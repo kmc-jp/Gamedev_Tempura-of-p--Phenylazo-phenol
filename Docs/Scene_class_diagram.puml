@@ -16,9 +16,9 @@ class HogeScene {
 }
 note right of HogeScene : Update() は　objects.Update() を呼ぶ\nDraw() は　objects.Draw() を呼ぶ
 
-Hoge -up-|> Scene
+HogeScene -up-|> Scene
 
-Hoge "1" *-- "0..*" GameObject
+HogeScene "1" *-- "0..*" GameObject
 
 interface GameObject {
     - transform() Transform
