@@ -18,7 +18,7 @@ note right of Hoge : Update() は　objects.Update() を呼ぶ\nDraw() は　obj
 
 Hoge -up-|> Scene
 
-Hoge "1" o-- "0..*" GameObject
+Hoge "1" *-- "0..*" GameObject
 
 interface GameObject {
     + GameObjectUtils <埋め込みでよさそう？>
@@ -57,7 +57,7 @@ HogeObject -up-|> GameObject
 HogeObject *-- Transform
 HogeObject *-- Render
 
-HogeObject "1" o-- "0..*" Component
+HogeObject "1" *-- "0..*" Component
 
 class Transform {
     + Position Position
