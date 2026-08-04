@@ -9,9 +9,29 @@ type Rotation struct {
 // Rotate in radian
 func (rot Rotation) Rotate(rad float64) {
 	rot.Angle += rad
+	rot.normalize()
 }
 
 // Rotate using degrees
 func (rot Rotation) RotateDegree(deg float64) {
 	rot.Angle += deg * math.Pi / 180
+	rot.normalize()
+}
+
+func (rot Rotation) normalize() {
+	rad := rot.Angle
+	for rad > math.Pi {
+		rad -= 2 * math.Pi
+	}
+	for rad < -math.Pi {
+		rad += 2 * math.Pi
+	}
+	rot.Angle = rad
+}
+
+func (rot Rotation) Forward() Vec2 {
+	return Vec2{
+		X: math.Cos(rot.Angle),
+		Y: math.Sin(rot.Angle),
+	}
 }
