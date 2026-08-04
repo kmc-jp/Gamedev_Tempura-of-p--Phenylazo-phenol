@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"reflect"
 
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 
@@ -132,8 +133,16 @@ type GameObjectUtils struct {
 	obj *GameObject
 }
 
-func (u GameObjectUtils) GetComponent() (component Component, err error) {
-	panic("Not Implimented")
+func (u GameObjectUtils) GetComponent(target reflect.Type) (component Component, err error) {
+	if u.obj == nil {
+		return nil, fmt.Errorf("u.obj が未登録です")
+	}
+	for _, c := range (*u.obj).components() {
+		if target == reflect.TypeOf(c) {
+			return c, nil
+		}
+	}
+	return nil, fmt.Errorf("%s に %s が存在しません。", (*u.obj).Name(), target.Name())
 }
 
 type Transform struct {
