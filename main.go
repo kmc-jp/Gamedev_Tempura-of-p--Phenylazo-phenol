@@ -130,23 +130,23 @@ type GameObject interface {
 }
 
 type GameObjectUtils struct {
-	obj *GameObject
+	obj GameObject
 }
 
 func (u GameObjectUtils) GetComponent(target reflect.Type) (component Component, err error) {
 	if u.obj == nil {
 		return nil, fmt.Errorf("u.obj が未登録です")
 	}
-	for _, c := range (*u.obj).components() {
+	for _, c := range u.obj.components() {
 		if target == reflect.TypeOf(c) {
 			return c, nil
 		}
 	}
-	return nil, fmt.Errorf("%s に %s が存在しません。", (*u.obj).Name(), target.Name())
+	return nil, fmt.Errorf("%s に %s が存在しません。", u.obj.Name(), target.Name())
 }
 
 func (u GameObjectUtils) Update(active bool) (err error) {
-	obj := (*u.obj)
+	obj := u.obj
 	for _, c := range obj.components() {
 		if err := c.Update(obj, active); err != nil {
 			return fmt.Errorf("コンポーネント %s でエラーが発生しました。\n%w", reflect.TypeOf(c), err)
@@ -156,7 +156,7 @@ func (u GameObjectUtils) Update(active bool) (err error) {
 }
 
 func (u GameObjectUtils) Draw(screen *ebiten.Image) {
-	obj := (*u.obj)
+	obj := u.obj
 	obj.render().Draw(obj, screen)
 }
 
