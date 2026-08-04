@@ -21,7 +21,6 @@ Hoge -up-|> Scene
 Hoge "1" *-- "0..*" GameObject
 
 interface GameObject {
-    + GameObjectUtils <埋め込み>
     - transform() Transform
     - render() Render
     - components() []Component
@@ -44,10 +43,10 @@ GameObject "1" *- "1" GameObjectUtils
 
 
 class HogeObject {
+    GameObjectUtils <埋め込み>
     - transform Transform
     - render Render
     - components []Component
-    + GameObjectUtils GameObjectUtils
     + Init(active bool) (err error)
 }
 note right of HogeObject : ゲームオブジェクト\nUpdate() と Draw() は GameObjectUtils で実装
