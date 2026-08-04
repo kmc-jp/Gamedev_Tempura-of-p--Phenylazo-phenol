@@ -117,3 +117,34 @@ func (s *PlayScene) Update(active bool) (nextScene Scene, asNewScene bool, err e
 	// なにもしない
 	return
 }
+
+type GameObject interface {
+	transform() Transform
+	render() Render
+	components() []Component
+
+	Update(active bool) (err error)
+	Draw(screen *ebiten.Image)
+}
+
+type GameObjectUtils struct {
+	obj *GameObject
+}
+
+func (u GameObjectUtils) GetComponent() (component Component, err error) {
+	panic("Not Implimented")
+}
+
+type Transform struct {
+}
+
+type Render struct {
+}
+
+func (r Render) Draw(obj GameObject, scene *ebiten.Image) {
+
+}
+
+type Component interface {
+	Updatea(obj GameObject, active bool) (err error)
+}
