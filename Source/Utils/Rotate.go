@@ -29,6 +29,7 @@ func (rot Rotation) normalize() {
 	rot.Angle = rad
 }
 
+// Return unit direction vector
 func (rot Rotation) Forward() Vec2 {
 	return Vec2{
 		X: math.Cos(rot.Angle),
