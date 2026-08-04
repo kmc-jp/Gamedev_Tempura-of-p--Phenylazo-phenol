@@ -27,12 +27,15 @@ interface GameObject {
     - components() []Component
     + Update(active bool) (err error)
     + Draw(screen *ebiten.Image)
+    + Init(active bool) (err error)
 }
 note left of GameObject : transform() 等はプライベートに要求
 
 class GameObjectUtils {
     - obj GameObject
     + getComponent[T | Component]() T, error
+    + Update(active bool) (err error)
+    + Draw(screen *ebiten.Image)
     + その他もろもろ()
 }
 note bottom of GameObjectUtils : GameObject に欲しいメソッド等\nerror は bool でもいいかも
@@ -45,8 +48,7 @@ class HogeObject {
     - render Render
     - components []Component
     + GameObjectUtils GameObjectUtils
-    + Update(active bool) (err error)
-    + Draw(screen *ebiten.Image)
+    + Init(active bool) (err error)
 }
 note right of HogeObject : ゲームオブジェクト\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
 
