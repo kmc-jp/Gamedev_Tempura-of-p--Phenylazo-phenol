@@ -125,6 +125,7 @@ type GameObject interface {
 	components() []Component
 
 	Name() string
+	Init() (err error)
 	Update(active bool) (err error)
 	Draw(screen *ebiten.Image)
 }
@@ -186,3 +187,8 @@ func (h HogeObject) transform() Transform    { return h.tf }
 func (h HogeObject) render() Render          { return h.rd }
 func (h HogeObject) components() []Component { return h.cmps }
 func (h HogeObject) Name() string            { return "Hoge" }
+
+func (h HogeObject) Init() (err error) {
+	h.GameObjectUtils.obj = h
+	return nil
+}
