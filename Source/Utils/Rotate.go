@@ -36,3 +36,9 @@ func (rot Rotation) Forward() Vec2 {
 		Y: math.Sin(rot.Angle),
 	}
 }
+
+func (rot Rotation) LookAt(p, target Position) {
+	dx := target.X - p.X
+	dy := target.Y - p.Y
+	rot.Angle = math.Atan2(dy, dx)
+}
