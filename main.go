@@ -219,3 +219,15 @@ func (h HogeComponent) Update(obj GameObject, active bool) (err error) {
 func NewHogeComponent() (*HogeComponent, error) {
 	return &HogeComponent{}, nil
 }
+
+func test() {
+	var sceneTest Scene
+	sceneTest, _ = NewPlayScene()
+	sceneTest = sceneTest
+	var GOTest GameObject
+	GOTest, _ = NewHogeObject()
+	GOTest = GOTest
+	var componentTest Component
+	componentTest, _ = NewHogeComponent()
+	componentTest = componentTest
+}
