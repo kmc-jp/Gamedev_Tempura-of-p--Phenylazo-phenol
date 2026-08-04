@@ -131,23 +131,23 @@ type GameObject interface {
 }
 
 type GameObjectUtils struct {
-	obj GameObject
+	gameObject GameObject
 }
 
 func (u GameObjectUtils) GetComponent(target reflect.Type) (component Component, err error) {
-	if u.obj == nil {
+	if u.gameObject == nil {
 		return nil, fmt.Errorf("u.obj が未登録です")
 	}
-	for _, c := range u.obj.components() {
+	for _, c := range u.gameObject.components() {
 		if target == reflect.TypeOf(c) {
 			return c, nil
 		}
 	}
-	return nil, fmt.Errorf("%s に %s が存在しません。", u.obj.Name(), target.Name())
+	return nil, fmt.Errorf("%s に %s が存在しません。", u.gameObject.Name(), target.Name())
 }
 
 func (u GameObjectUtils) Update(active bool) (err error) {
-	obj := u.obj
+	obj := u.gameObject
 	for _, c := range obj.components() {
 		if err := c.Update(obj, active); err != nil {
 			return fmt.Errorf("コンポーネント %s でエラーが発生しました。\n%w", reflect.TypeOf(c), err)
@@ -157,7 +157,7 @@ func (u GameObjectUtils) Update(active bool) (err error) {
 }
 
 func (u GameObjectUtils) Draw(screen *ebiten.Image) {
-	obj := u.obj
+	obj := u.gameObject
 	obj.render().Draw(obj, screen)
 }
 
@@ -189,6 +189,6 @@ func (h HogeObject) components() []Component { return h.cmps }
 func (h HogeObject) Name() string            { return "Hoge" }
 
 func (h HogeObject) Init() (err error) {
-	h.GameObjectUtils.obj = h
+	h.GameObjectUtils.gameObject = h
 	return nil
 }
