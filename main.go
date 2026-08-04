@@ -105,17 +105,17 @@ func NewPlayScene() (PlayScene, error) {
 }
 
 // Name implements [Scene].
-func (s *PlayScene) Name() string {
+func (s PlayScene) Name() string {
 	return fmt.Sprintf("%T", s)
 }
 
 // Draw implements [Scene].
-func (s *PlayScene) Draw(screen *ebiten.Image) {
+func (s PlayScene) Draw(screen *ebiten.Image) {
 	// なにもしない
 }
 
 // Update implements [Scene].
-func (s *PlayScene) Update(active bool) (nextScene SceneFactory, asNewScene bool, err error) {
+func (s PlayScene) Update(active bool) (nextScene SceneFactory, asNewScene bool, err error) {
 	// なにもしない
 	return
 }
