@@ -21,7 +21,7 @@ Hoge -up-|> Scene
 Hoge "1" *-- "0..*" GameObject
 
 interface GameObject {
-    + GameObjectUtils <埋め込みでよさそう？>
+    + GameObjectUtils <埋め込み>
     - transform() Transform
     - render() Render
     - components() []Component
@@ -38,7 +38,7 @@ class GameObjectUtils {
     + Draw(screen *ebiten.Image)
     + その他もろもろ()
 }
-note bottom of GameObjectUtils : GameObject に欲しいメソッド等\nerror は bool でもいいかも
+note bottom of GameObjectUtils : GameObject に欲しいメソッド等\nerror は bool でもいいかも\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
 
 GameObject "1" *- "1" GameObjectUtils
 
@@ -50,7 +50,7 @@ class HogeObject {
     + GameObjectUtils GameObjectUtils
     + Init(active bool) (err error)
 }
-note right of HogeObject : ゲームオブジェクト\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
+note right of HogeObject : ゲームオブジェクト\nUpdate() と Draw() は GameObjectUtils で実装
 
 
 HogeObject -up-|> GameObject
