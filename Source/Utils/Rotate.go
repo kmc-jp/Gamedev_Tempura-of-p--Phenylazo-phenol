@@ -1,9 +1,17 @@
 package Utils
 
+import "math"
+
 type Rotation struct {
-	angle float64
+	Angle float64
 }
 
+// Rotate in radian
 func (rot Rotation) Rotate(theta float64) {
-	rot.angle += theta
+	rot.Angle += theta
+}
+
+// Rotate using degrees
+func (rot Rotation) RotateDegree(theta float64) {
+	rot.Angle += theta * math.Pi / 180
 }
