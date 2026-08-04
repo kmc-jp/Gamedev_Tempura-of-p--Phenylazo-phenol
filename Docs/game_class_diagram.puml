@@ -31,7 +31,7 @@ interface Scene {
 "エントリーポイント" ..> Game
 
 Game -up--|> ebiten.Game
-Game "1" --> "1..*" Scene
+Game "1" o-- "1..*" Scene
 
 class Hoge {
     + Init()
