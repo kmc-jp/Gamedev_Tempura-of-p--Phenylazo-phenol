@@ -7,14 +7,14 @@ interface Scene {
     + Draw(screen *ebiten.Image)
 }
 
-class Hoge {
+class HogeScene {
     - objects []GameObject
     + Init()
     + Name() string
     + Update(active bool) (nextScene Scene, asNewScene bool, err error)
     + Draw(screen *ebiten.Image)
 }
-note right of Hoge : Update() は　objects.Update() を呼ぶ\nDraw() は　objects.Draw() を呼ぶ
+note right of HogeScene : Update() は　objects.Update() を呼ぶ\nDraw() は　objects.Draw() を呼ぶ
 
 Hoge -up-|> Scene
 
