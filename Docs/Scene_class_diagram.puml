@@ -1,0 +1,73 @@
+@startuml Scene_class_diagram
+
+interface Scene {
+    + Init() // 遷移時に一度だけ呼ばれる
+    + Name() string
+    + Update(active bool) (nextScene Scene, asNewScene bool, err error)
+    + Draw(screen *ebiten.Image)
+}
+
+class Hoge {
+    - objects []GameObject
+    + Init()
+    + Name() string
+    + Update(active bool) (nextScene Scene, asNewScene bool, err error)
+    + Draw(screen *ebiten.Image)
+}
+note right of Hoge : Update() は　objects.Update() を呼ぶ\nDraw() は　objects.Draw() を呼ぶ
+
+Hoge -up-|> Scene
+
+Hoge "1" o-- "0..*" GameObject
+
+interface GameObject {
+    + GameObjectUtils <埋め込みでよさそう？>
+    - transform() Transform
+    - render() Render
+    - components() []Component
+    + Update(active bool) (err error)
+    + Draw(screen *ebiten.Image)
+}
+note left of GameObject : transform() 等はプライベートに要求
+
+class GameObjectUtils {
+    - obj GameObject
+    + getComponent[T | Component]() T, error
+    + その他もろもろ()
+}
+note bottom of GameObjectUtils : GameObject に欲しいメソッド等\nerror は bool でもいいかも
+
+GameObject "1" *- "1" GameObjectUtils
+
+
+class HogeObject {
+    - transform Transform
+    - render Render
+    - components []Component
+    + GameObjectUtils GameObjectUtils
+    + Update(active bool) (err error)
+    + Draw(screen *ebiten.Image)
+}
+note right of HogeObject : ゲームオブジェクト\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
+
+
+HogeObject -up-|> GameObject
+HogeObject *-- Transform
+HogeObject *-- Render
+
+HogeObject "1" o-- "0..*" Component
+
+class Transform {
+    + Position Position
+    + Rotation Rotation
+    + Scale Scale
+}
+
+class Render {
+    + Draw(obj GameObject, screen *ebiten.Image)
+}
+
+interface Component {
+    + Update(obj GameObject, active bool) (err error)
+}
+@enduml
