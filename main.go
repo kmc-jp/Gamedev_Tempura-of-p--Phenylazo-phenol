@@ -12,8 +12,8 @@ import (
 
 func main() {
 	// ゲーム起動
-	initScene := PlayScene{} // 起動時に表示されるシーン
-	if err := initScene.Init(); err != nil {
+	initScene, err := NewPlayScene() // 起動時に表示されるシーン
+	if err != nil {
 		log.Fatalf("初期シーン %s の読み込みに失敗しました: %v", initScene.Name(), err)
 	}
 	game := Game{
@@ -78,8 +78,8 @@ func (g *Game) Update() error {
 		} else {
 			g.BackScenes.Push(g.ActiveScene)
 		}
-		g.ActiveScene = nextScene
-		if err := g.ActiveScene.Init(); err != nil {
+		g.ActiveScene, err = nextScene()
+		if err != nil {
 			return fmt.Errorf("Scene %s の初期化中にエラーが発生しました \n %w", g.ActiveScene.Name(), err)
 		}
 	}
@@ -88,24 +88,25 @@ func (g *Game) Update() error {
 
 type Scene interface {
 	Name() string
-	Init() error
-	Update(active bool) (nextScene Scene, asNewScene bool, err error)
+	Update(active bool) (nextScene SceneFactory, asNewScene bool, err error)
 	Draw(screen *ebiten.Image)
 }
+
+type SceneFactory func() (Scene, error)
 
 // メインの遊べるシーン
 type PlayScene struct {
 }
 
+func NewPlayScene() (PlayScene, error) {
+	ps := PlayScene{}
+	// なにもしない
+	return ps, nil
+}
+
 // Name implements [Scene].
 func (s *PlayScene) Name() string {
 	return fmt.Sprintf("%T", s)
-}
-
-// Init implements [Scene].
-func (s *PlayScene) Init() error {
-	// なにもしない
-	return nil
 }
 
 // Draw implements [Scene].
@@ -114,7 +115,7 @@ func (s *PlayScene) Draw(screen *ebiten.Image) {
 }
 
 // Update implements [Scene].
-func (s *PlayScene) Update(active bool) (nextScene Scene, asNewScene bool, err error) {
+func (s *PlayScene) Update(active bool) (nextScene SceneFactory, asNewScene bool, err error) {
 	// なにもしない
 	return
 }
@@ -125,14 +126,19 @@ type GameObject interface {
 	components() []Component
 
 	Name() string
-	Init() (err error)
 	Update(active bool) (err error)
 	Draw(screen *ebiten.Image)
 }
 
 type GameObjectUtils struct {
-	// 埋め込み先の GameObject.Init() で初期化すること
 	gameObject GameObject
+}
+
+func NewGameObjectUtils(obj GameObject) (*GameObjectUtils, error) {
+	if obj == nil {
+		return nil, fmt.Errorf("obj が空です。 実装先の GameObject を代入してください。")
+	}
+	return &GameObjectUtils{gameObject: obj}, nil
 }
 
 func (u GameObjectUtils) GetComponent(target reflect.Type) (component Component, err error) {
@@ -165,16 +171,19 @@ func (u GameObjectUtils) Draw(screen *ebiten.Image) {
 type Transform struct {
 }
 
+func NewTransform() (*Transform, error) {
+	return &Transform{}, nil
+}
+
 type Render struct {
+}
+
+func NewRender() (*Render, error) {
+	return &Render{}, nil
 }
 
 func (r Render) Draw(obj GameObject, scene *ebiten.Image) {
 
-}
-
-type Component interface {
-	Init(obj GameObject) (err error)
-	Update(obj GameObject, active bool) (err error)
 }
 
 type HogeObject struct {
@@ -184,12 +193,29 @@ type HogeObject struct {
 	cmps []Component
 }
 
+func NewHogeObject() (*HogeObject, error) {
+	h := HogeObject{}
+	h.GameObjectUtils.gameObject = h
+	return &h, nil
+}
+
 func (h HogeObject) transform() Transform    { return h.tf }
 func (h HogeObject) render() Render          { return h.rd }
 func (h HogeObject) components() []Component { return h.cmps }
 func (h HogeObject) Name() string            { return "Hoge" }
 
-func (h HogeObject) Init() (err error) {
-	h.GameObjectUtils.gameObject = h
+type Component interface {
+	Update(obj GameObject, active bool) (err error)
+}
+
+type HogeComponent struct {
+}
+
+func (h HogeComponent) Update(obj GameObject, active bool) (err error) {
+	// なにもしない
 	return nil
+}
+
+func NewHogeComponent() (*HogeComponent, error) {
+	return &HogeComponent{}, nil
 }
