@@ -30,7 +30,7 @@ interface GameObject {
 note left of GameObject : transform() 等はプライベートに要求
 
 class GameObjectUtils {
-    - obj GameObject
+    - gameObject GameObject
     + NewGameObjectUtils(obj GameObject) (err error)
     + getComponent[T | Component]() T, error
     + Update(active bool) (err error)
