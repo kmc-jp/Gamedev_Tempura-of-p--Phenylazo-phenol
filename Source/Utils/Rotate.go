@@ -7,11 +7,11 @@ type Rotation struct {
 }
 
 // Rotate in radian
-func (rot Rotation) Rotate(theta float64) {
-	rot.Angle += theta
+func (rot Rotation) Rotate(rad float64) {
+	rot.Angle += rad
 }
 
 // Rotate using degrees
-func (rot Rotation) RotateDegree(theta float64) {
-	rot.Angle += theta * math.Pi / 180
+func (rot Rotation) RotateDegree(deg float64) {
+	rot.Angle += deg * math.Pi / 180
 }
