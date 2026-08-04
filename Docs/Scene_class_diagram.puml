@@ -46,9 +46,9 @@ GameObject "1" *- "1" GameObjectUtils
 
 class HogeObject {
     GameObjectUtils <埋め込み>
-    - transform Transform
-    - render Render
-    - components []Component
+    - transform() Transform
+    - render() Render
+    - components() []Component
     + Name() string
     + NewHogeObject() (err error)
 }
