@@ -174,3 +174,15 @@ type Component interface {
 	Init(obj GameObject) (err error)
 	Update(obj GameObject, active bool) (err error)
 }
+
+type HogeObject struct {
+	GameObjectUtils
+	tf   Transform
+	rd   Render
+	cmps []Component
+}
+
+func (h HogeObject) transform() Transform    { return h.tf }
+func (h HogeObject) render() Render          { return h.rd }
+func (h HogeObject) components() []Component { return h.cmps }
+func (h HogeObject) Name() string            { return "Hoge" }
