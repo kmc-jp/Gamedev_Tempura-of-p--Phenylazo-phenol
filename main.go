@@ -123,6 +123,7 @@ type GameObject interface {
 	render() Render
 	components() []Component
 
+	Name() string
 	Update(active bool) (err error)
 	Draw(screen *ebiten.Image)
 }
