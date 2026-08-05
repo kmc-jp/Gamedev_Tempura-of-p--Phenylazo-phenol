@@ -14,7 +14,7 @@ func (rc RectCollider) Collision(pos Position, targetrc RectCollider, targetpos 
 	return left && right && top && bottom
 }
 
-func Repulsion(rc RectCollider, pos Position, targetrc RectCollider, targetpos Position) {
+func (rc RectCollider) Repulsion(pos Position, targetrc RectCollider, targetpos Position) {
 	for rc.Collision(pos, targetrc, targetpos) {
 		center := pos.PtoV().Add(Vec2{rc.Width / 2, rc.Height / 2})
 		targetCenter := targetpos.PtoV().Add(Vec2{targetrc.Width / 2, targetrc.Height / 2})
