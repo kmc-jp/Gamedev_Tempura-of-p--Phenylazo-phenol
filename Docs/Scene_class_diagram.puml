@@ -1,12 +1,18 @@
 @startuml Scene_class_diagram
 
+class SceneFactory << (F,orchid) Function >> {
+    シーン生成用関数型
+    func() (Scene, error)
+}
+
 interface Scene {
-    + Init() // 遷移時に一度だけ呼ばれる
     + Name() string
     + Update(active bool) (nextScene SceneFactory, asNewScene bool, err error)
     + Draw(screen *ebiten.Image)
 }
 note right of Scene : SceneFactory は　func() (Scene, error)
+
+Scene --> SceneFactory
 
 class HogeScene {
     - objects []GameObject
@@ -18,6 +24,7 @@ class HogeScene {
 note right of HogeScene : Update() は　objects.Update() を呼ぶ\nDraw() は　objects.Draw() を呼ぶ\nNewHogeScene()の返り値は interface に突っ込むので非ポインタ型
 
 HogeScene -up-|> Scene
+HogeScene -left-> SceneFactory
 
 HogeScene "1" *-- "0..*" GameObject
 
