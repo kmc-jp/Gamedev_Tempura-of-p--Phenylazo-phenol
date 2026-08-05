@@ -6,7 +6,7 @@ type RectCollider struct {
 }
 
 // Detect the collision of two objects.
-func Collision(rc RectCollider, pos Position, targetrc RectCollider, targetpos Position) bool {
+func (rc RectCollider) Collision(pos Position, targetrc RectCollider, targetpos Position) bool {
 	left := targetpos.X <= pos.X+rc.Width
 	right := pos.X <= targetpos.X+targetrc.Width
 	top := targetpos.Y <= pos.Y+rc.Height
@@ -15,7 +15,7 @@ func Collision(rc RectCollider, pos Position, targetrc RectCollider, targetpos P
 }
 
 func Repulsion(rc RectCollider, pos Position, targetrc RectCollider, targetpos Position) {
-	for Collision(rc, pos, targetrc, targetpos) {
+	for rc.Collision(pos, targetrc, targetpos) {
 		center := pos.PtoV().Add(Vec2{rc.Width / 2, rc.Height / 2})
 		targetCenter := targetpos.PtoV().Add(Vec2{targetrc.Width / 2, targetrc.Height / 2})
 		direction := center.Sub(targetCenter)
