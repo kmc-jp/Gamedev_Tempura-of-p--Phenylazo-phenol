@@ -1,25 +1,43 @@
 package Utils
 
+import "math"
+
 type RectCollider struct {
 	Width  float64
 	Height float64
 }
 
-// Detect the collision of two objects.
 func (rc RectCollider) Collision(pos Position, targetrc RectCollider, targetpos Position) bool {
-	left := targetpos.X <= pos.X+rc.Width
-	right := pos.X <= targetpos.X+targetrc.Width
-	top := targetpos.Y <= pos.Y+rc.Height
-	bottom := pos.Y <= targetpos.Y+targetrc.Height
-	return left && right && top && bottom
+	return targetpos.X < pos.X+rc.Width &&
+		pos.X < targetpos.X+targetrc.Width &&
+		targetpos.Y < pos.Y+rc.Height &&
+		pos.Y < targetpos.Y+targetrc.Height
 }
 
-func (rc RectCollider) Repulsion(pos Position, targetrc RectCollider, targetpos Position) {
-	for rc.Collision(pos, targetrc, targetpos) {
-		center := pos.PtoV().Add(Vec2{rc.Width / 2, rc.Height / 2})
-		targetCenter := targetpos.PtoV().Add(Vec2{targetrc.Width / 2, targetrc.Height / 2})
-		direction := center.Sub(targetCenter)
-		direction, _ = direction.Normalize()
-		pos.Move(direction)
+func (rc RectCollider) Repulsion(pos *Position, targetrc RectCollider, targetpos Position) {
+	if !rc.Collision(*pos, targetrc, targetpos) {
+		return
+	}
+
+	overlapLeft := (pos.X + rc.Width) - targetpos.X
+	overlapRight := (targetpos.X + targetrc.Width) - pos.X
+	overlapTop := (pos.Y + rc.Height) - targetpos.Y
+	overlapBottom := (targetpos.Y + targetrc.Height) - pos.Y
+
+	minOverlapX := math.Min(overlapLeft, overlapRight)
+	minOverlapY := math.Min(overlapTop, overlapBottom)
+
+	if minOverlapX < minOverlapY {
+		if overlapLeft < overlapRight {
+			pos.X -= overlapLeft
+		} else {
+			pos.X += overlapRight
+		}
+	} else {
+		if overlapTop < overlapBottom {
+			pos.Y -= overlapTop
+		} else {
+			pos.Y += overlapBottom
+		}
 	}
 }
