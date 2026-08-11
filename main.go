@@ -5,6 +5,7 @@ import (
 	"log"
 	"reflect"
 
+	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -59,7 +60,7 @@ func (g *Game) Layout(outsideWidth int, outsideHeight int) (screenWidth int, scr
 
 // Update implements [ebiten.Game].
 func (g *Game) Update() error {
-	nextScene, asNewScene, err := g.ActiveScene.Update(true)
+	nextScene, transitionType, err := g.ActiveScene.Update(true)
 	if err != nil {
 		return fmt.Errorf("ActiveScene %s でエラーが発生しました \n %w", g.ActiveScene.Name(), err)
 	}
@@ -72,10 +73,20 @@ func (g *Game) Update() error {
 			return fmt.Errorf("BackScene %s がシーン切り替え要求を行いました。\n正常動作ならこのエラーを削除してください。", scene.Name())
 		}
 	}
-	if nextScene != nil {
-		if asNewScene {
+	if transitionType == transition.None() {
+		// 何もせず返す
+	} else if transitionType == transition.Pop() {
+		// 画面復帰
+		newactive, ok := g.BackScenes.Pop()
+		if !ok {
+			return fmt.Errorf("背景シーンがないので読み込めません。")
+		}
+		g.ActiveScene = newactive
+	} else {
+		// 新規生成
+		if transitionType == transition.NewScene() {
 			g.BackScenes.Clear()
-		} else {
+		} else if transitionType == transition.Push() {
 			g.BackScenes.Push(g.ActiveScene)
 		}
 		g.ActiveScene, err = nextScene()
@@ -88,7 +99,7 @@ func (g *Game) Update() error {
 
 type Scene interface {
 	Name() string
-	Update(active bool) (nextScene SceneFactory, asNewScene bool, err error)
+	Update(active bool) (nextScene SceneFactory, transitionType transition.Type, err error)
 	Draw(screen *ebiten.Image)
 }
 
@@ -115,7 +126,7 @@ func (s PlayScene) Draw(screen *ebiten.Image) {
 }
 
 // Update implements [Scene].
-func (s PlayScene) Update(active bool) (nextScene SceneFactory, asNewScene bool, err error) {
+func (s PlayScene) Update(active bool) (nextScene SceneFactory, transitionType transition.Type, err error) {
 	// なにもしない
 	return
 }
