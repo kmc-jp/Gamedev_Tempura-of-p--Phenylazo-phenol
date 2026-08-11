@@ -12,10 +12,10 @@ class "エントリーポイント" {
     - {static} main() <<entrypoint>>
 }
 
-"エントリーポイント" ..right..> Game.Game
-"エントリーポイント" ..right..> Scene.Hoge
+"エントリーポイント" ..right..> game.Game
+"エントリーポイント" ..right..> scene.Hoge
 
-package Game {
+package game {
     class Game {
         - ActiveScene Scene
         - BackScene Stack[Scene]
@@ -42,7 +42,7 @@ package Game {
     Game "1" o-- "1..*" Scene
 }
 
-package Scene {
+package scene {
     class Hoge {
         + Init()
         + Name() string
@@ -51,8 +51,8 @@ package Scene {
     }
     note right of Hoge : 具体的なシーン
 
-    Hoge -up-|> Game.Scene
-    Hoge ..up..> Game.SceneFactory
+    Hoge -up-|> game.Scene
+    Hoge ..up..> game.SceneFactory
 }
 
 @enduml

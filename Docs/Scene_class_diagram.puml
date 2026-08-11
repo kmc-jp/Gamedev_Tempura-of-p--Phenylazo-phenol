@@ -4,7 +4,7 @@ package transition {
     class Type{}
 }
 
-package Game {
+package game {
     interface Scene {
         + Name() string
         + Update(active bool) (nextScene SceneFactory, transitionType transition.Type, err error)
@@ -20,7 +20,7 @@ package Game {
     Scene .right.> transition.Type
 }
 
-package Scene {
+package scene {
     class HogeScene {
         - objects []GameObject
         + NewHogeScene() (HogeScene, error)
@@ -30,8 +30,8 @@ package Scene {
     }
     note right of HogeScene : Update() は　objects.Update() を呼ぶ\nDraw() は　objects.Draw() を呼ぶ\nNewHogeScene()の返り値は interface に突っ込むので非ポインタ型
 
-    HogeScene -up-|> Game.Scene
-    HogeScene ..left..> Game.SceneFactory
+    HogeScene -up-|> game.Scene
+    HogeScene ..left..> game.SceneFactory
     HogeScene .up.> transition.Type
 
 
@@ -61,7 +61,7 @@ package Scene {
 
 }
 
-package GameObject {
+package gameObject {
     class HogeObject {
         GameObjectUtils <埋め込み>
         - transform() Transform
@@ -73,7 +73,7 @@ package GameObject {
     note right of HogeObject : ゲームオブジェクト\nUpdate() と Draw() は GameObjectUtils で実装
 
 
-    HogeObject -up-|> Scene.GameObject
+    HogeObject -up-|> scene.GameObject
     HogeObject *-- Transform
     HogeObject *-- Render
 
@@ -102,6 +102,6 @@ package Component {
         + NewFugaComponent(obj GameObject) (*HogeComponent, error)
     }
 
-    FugaComponent -up-|> GameObject.Component
+    FugaComponent -up-|> gameObject.Component
 }
 @enduml
