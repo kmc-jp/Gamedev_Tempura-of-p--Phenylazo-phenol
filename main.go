@@ -6,14 +6,14 @@ import (
 	"reflect"
 
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
-	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
+	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 func main() {
 	// ゲーム起動
-	initScene, err := NewPlayScene() // 起動時に表示されるシーン
+	initScene, err := scene.NewPlayScene() // 起動時に表示されるシーン
 	if err != nil {
 		log.Fatalf("初期シーン %s の読み込みに失敗しました: %v", initScene.Name(), err)
 	}
@@ -26,47 +26,11 @@ func main() {
 	}
 }
 
-// メインの遊べるシーン
-type PlayScene struct {
-}
-
-func NewPlayScene() (PlayScene, error) {
-	ps := PlayScene{}
-	// なにもしない
-	return ps, nil
-}
-
-// Name implements [Scene].
-func (s PlayScene) Name() string {
-	return fmt.Sprintf("%T", s)
-}
-
-// Draw implements [Scene].
-func (s PlayScene) Draw(screen *ebiten.Image) {
-	// なにもしない
-}
-
-// Update implements [Scene].
-func (s PlayScene) Update(active bool) (nextScene game.SceneFactory, transitionType transition.Type, err error) {
-	// なにもしない
-	return
-}
-
-type GameObject interface {
-	transform() Transform
-	render() Render
-	components() []Component
-
-	Name() string
-	Update(active bool) (err error)
-	Draw(screen *ebiten.Image)
-}
-
 type GameObjectUtils struct {
-	gameObject GameObject
+	gameObject scene.GameObject
 }
 
-func NewGameObjectUtils(obj GameObject) (*GameObjectUtils, error) {
+func NewGameObjectUtils(obj scene.GameObject) (*GameObjectUtils, error) {
 	if obj == nil {
 		return nil, fmt.Errorf("obj が空です。 実装先の GameObject を代入してください。")
 	}
