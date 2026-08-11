@@ -35,9 +35,9 @@ package scene {
     HogeScene .up.> transition.Type
 
 
-    HogeScene "1" *-- "0..*" GameObject
+    HogeScene "1" *-- "0..*" Entity
 
-    interface GameObject {
+    interface Entity {
         + Name() string
         + Update(active bool) (err error)
         + Draw(screen *ebiten.Image)
@@ -56,7 +56,7 @@ package gameObject {
     }
     note right of GameObject : 標準的なゲームオブジェクト\n原則これのインスタンスを使う\n違うタイプのゲームオブジェクトが欲しければ手書き実装\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
 
-    GameObject -up-|> scene.GameObject
+    GameObject -up-|> scene.Entity
     GameObject *-- Transform
     GameObject *-- Render
 
