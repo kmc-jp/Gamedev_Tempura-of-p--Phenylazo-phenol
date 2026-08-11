@@ -27,7 +27,7 @@ package Game {
 
     interface Scene {
         + Name() string
-        + Update(active bool) (nextScene SceneFactory, asNewScene bool, err error)
+        + Update(active bool) (nextScene SceneFactory, transitionType transition.Type, err error)
         + Draw(screen *ebiten.Image)
     }
 
@@ -46,7 +46,7 @@ package Scene {
     class Hoge {
         + Init()
         + Name() string
-        + Update(active bool) (nextScene Scene, asNewScene bool, err error)
+        + Update(active bool) (nextScene SceneFactory, transitionType transition.Type, err error)
         + Draw(screen *ebiten.Image)
     }
     note right of Hoge : 具体的なシーン
