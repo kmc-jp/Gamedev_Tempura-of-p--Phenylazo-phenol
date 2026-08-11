@@ -45,36 +45,22 @@ package scene {
 }
 
 package gameObject {
-    class HogeObject {
-        GameObjectUtils <埋め込み>
+    class GameObject {
         - transform() Transform
         - render() Render
         - components() []Component
         + Name() string
         + NewHogeObject() (*HogeObject, error)
+        + AddComponent(c Component)
+        + GetComponent[T | Component]() T, error
     }
-    note right of HogeObject : ゲームオブジェクト\nUpdate() と Draw() は GameObjectUtils で実装
+    note right of GameObject : 標準的なゲームオブジェクト\n原則これのインスタンスを使う\n違うタイプのゲームオブジェクトが欲しければ手書き実装\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
 
-    class GameObjectUtils {
-        - gameObject GameObject
-        + NewGameObjectUtils(obj GameObject) (*GameObjectUtils, error)
-        + getComponent[T | Component]() T, error
-        + Update(active bool) (err error)
-        + Draw(screen *ebiten.Image)
-        + その他もろもろ()
-    }
-    note right of GameObjectUtils : GameObject に欲しいメソッド等\nerror は bool でもいいかも\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
+    GameObject -up-|> scene.GameObject
+    GameObject *-- Transform
+    GameObject *-- Render
 
-    GameObjectUtils -up-> scene.GameObject
-
-    HogeObject -up-|> scene.GameObject
-    HogeObject *-- Transform
-    HogeObject *-- Render
-
-    HogeObject "1" *-- "0..*" Component
-
-    GameObjectUtils <-- Transform
-    GameObjectUtils <-- Render
+    GameObject "1" *-- "0..*" Component
 
     class Transform {
         + Position Position
@@ -100,7 +86,5 @@ package Component {
     }
 
     FugaComponent -up-|> gameObject.Component
-    FugaComponent --> gameObject.GameObjectUtils
-
 }
 @enduml
