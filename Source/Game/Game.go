@@ -81,12 +81,3 @@ func (g *Game) Update() error {
 	}
 	return nil
 }
-
-// Scene interface 関連
-type Scene interface {
-	Name() string
-	Update(active bool) (nextScene SceneFactory, transitionType transition.Type, err error)
-	Draw(screen *ebiten.Image)
-}
-
-type SceneFactory func() (Scene, error)
