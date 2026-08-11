@@ -16,7 +16,7 @@ package game {
         func() (Scene, error)
     }
 
-    Scene --right--> SceneFactory
+    Scene --> SceneFactory
     Scene .right.> transition.Type
 }
 
@@ -53,7 +53,7 @@ package gameObject {
         + Name() string
         + NewHogeObject() (*HogeObject, error)
     }
-    note left of HogeObject : ゲームオブジェクト\nUpdate() と Draw() は GameObjectUtils で実装
+    note right of HogeObject : ゲームオブジェクト\nUpdate() と Draw() は GameObjectUtils で実装
 
     class GameObjectUtils {
         - gameObject GameObject
@@ -63,15 +63,18 @@ package gameObject {
         + Draw(screen *ebiten.Image)
         + その他もろもろ()
     }
-    note bottom of GameObjectUtils : GameObject に欲しいメソッド等\nerror は bool でもいいかも\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
+    note right of GameObjectUtils : GameObject に欲しいメソッド等\nerror は bool でもいいかも\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
 
-    HogeObject *- GameObjectUtils
+    GameObjectUtils -up-> scene.GameObject
 
     HogeObject -up-|> scene.GameObject
     HogeObject *-- Transform
     HogeObject *-- Render
 
     HogeObject "1" *-- "0..*" Component
+
+    GameObjectUtils <-- Transform
+    GameObjectUtils <-- Render
 
     class Transform {
         + Position Position
@@ -97,5 +100,7 @@ package Component {
     }
 
     FugaComponent -up-|> gameObject.Component
+    FugaComponent --> gameObject.GameObjectUtils
+
 }
 @enduml
