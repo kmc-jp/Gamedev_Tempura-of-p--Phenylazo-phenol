@@ -38,27 +38,10 @@ package scene {
     HogeScene "1" *-- "0..*" GameObject
 
     interface GameObject {
-        - transform() Transform
-        - render() Render
-        - components() []Component
         + Name() string
         + Update(active bool) (err error)
         + Draw(screen *ebiten.Image)
     }
-    note bottom of GameObject : transform() 等はプライベートに要求
-
-    class GameObjectUtils {
-        - gameObject GameObject
-        + NewGameObjectUtils(obj GameObject) (*GameObjectUtils, error)
-        + getComponent[T | Component]() T, error
-        + Update(active bool) (err error)
-        + Draw(screen *ebiten.Image)
-        + その他もろもろ()
-    }
-    note bottom of GameObjectUtils : GameObject に欲しいメソッド等\nerror は bool でもいいかも\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
-
-    GameObject "1" *- "1" GameObjectUtils
-
 }
 
 package gameObject {
@@ -70,8 +53,19 @@ package gameObject {
         + Name() string
         + NewHogeObject() (*HogeObject, error)
     }
-    note right of HogeObject : ゲームオブジェクト\nUpdate() と Draw() は GameObjectUtils で実装
+    note left of HogeObject : ゲームオブジェクト\nUpdate() と Draw() は GameObjectUtils で実装
 
+    class GameObjectUtils {
+        - gameObject GameObject
+        + NewGameObjectUtils(obj GameObject) (*GameObjectUtils, error)
+        + getComponent[T | Component]() T, error
+        + Update(active bool) (err error)
+        + Draw(screen *ebiten.Image)
+        + その他もろもろ()
+    }
+    note bottom of GameObjectUtils : GameObject に欲しいメソッド等\nerror は bool でもいいかも\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
+
+    HogeObject *- GameObjectUtils
 
     HogeObject -up-|> scene.GameObject
     HogeObject *-- Transform
