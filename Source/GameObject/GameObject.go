@@ -15,7 +15,7 @@ type GameObject struct {
 	cmps []Component
 }
 
-var _ scene.GameObject = GameObject{}
+var _ scene.Entity = GameObject{}
 
 func (g GameObject) GetComponent(target reflect.Type) (component Component, err error) {
 	for _, c := range g.components() {
