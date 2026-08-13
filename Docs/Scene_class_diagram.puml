@@ -46,6 +46,7 @@ package scene {
 
 package gameObject {
     class GameObject {
+        - name string
         - transform() Transform
         - render() Render
         - components() []Component
