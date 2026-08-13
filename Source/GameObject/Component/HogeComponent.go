@@ -1,11 +1,11 @@
 package component
 
-import scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
+import gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
 
 type HogeComponent struct {
 }
 
-func (h HogeComponent) Update(obj scene.GameObject, active bool) (err error) {
+func (h HogeComponent) Update(obj gameobject.GameObject, active bool) (err error) {
 	// なにもしない
 	return nil
 }
