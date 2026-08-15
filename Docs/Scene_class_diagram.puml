@@ -11,12 +11,6 @@ package game {
         + Draw(screen *ebiten.Image)
     }
 
-    class SceneFactory << (F,orchid) Function >> {
-        シーン生成用関数型
-        func() (Scene, error)
-    }
-
-    Scene --> SceneFactory
     Scene .right.> transition.Type
 }
 
@@ -25,13 +19,12 @@ package scene {
         - objects []GameObject
         + NewHogeScene() (HogeScene, error)
         + Name() string
-        + Update(active bool) (nextScene SceneFactory, transitionType transition.Type, err error)
+        + Update(active bool) (nextScene Utils.Factory[Scene], transitionType transition.Type, err error)
         + Draw(screen *ebiten.Image)
     }
     note right of HogeScene : Update() は　objects.Update() を呼ぶ\nDraw() は　objects.Draw() を呼ぶ\nNewHogeScene()の返り値は interface に突っ込むので非ポインタ型
 
     HogeScene -up-|> game.Scene
-    HogeScene ..left..> game.SceneFactory
     HogeScene .up.> transition.Type
 
 
@@ -51,17 +44,15 @@ package gameObject {
         - render() Render
         - components() []Component
         + Name() string
-        + NewHogeObject() (*HogeObject, error)
+        + NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) (*HogeObject, error)
         + AddComponent(c Component)
         + GetComponent[T | Component]() T, error
     }
-    note left of GameObject : 標準的なゲームオブジェクト\n原則これのインスタンスを使う\n違うタイプのゲームオブジェクトが欲しければ手書き実装\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
+    note right of GameObject : 標準的なゲームオブジェクト\n原則これのインスタンスを使う\n違うタイプのゲームオブジェクトが欲しければ手書き実装\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
 
     GameObject -up-|> scene.Entity
     GameObject *-- Transform
-    GameObject --> TransformFactory
     GameObject *-- Render
-    GameObject --> RenderFactory
 
     GameObject "1" *-- "0..*" Component
 
@@ -69,19 +60,8 @@ package gameObject {
         + Position Position
     }
 
-    class TransformFactory << (F,orchid) Function >> {
-        Transform生成用関数型
-        func() (*Transform, error)
-    }
-
-
     interface Render {
         + Draw(screen *ebiten.Image)
-    }
-
-    class RenderFactory << (F,orchid) Function >> {
-        Render生成用関数型
-        func() (*Render, error)
     }
 
     interface Component {
@@ -102,7 +82,6 @@ package Component {
     }
 
     StdTransform -up-|> gameObject.Transform
-    StdTransform ..> gameObject.TransformFactory
 
     class StdRender {
         - obj GameObject
@@ -111,6 +90,5 @@ package Component {
     }
 
     StdRender -up-|> gameObject.Render
-    StdRender ..> gameObject.RenderFactory
 }
 @enduml

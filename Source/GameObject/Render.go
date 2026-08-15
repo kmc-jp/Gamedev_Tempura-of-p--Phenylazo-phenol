@@ -7,5 +7,3 @@ import (
 type Render interface {
 	Draw(obj GameObject, scene *ebiten.Image)
 }
-
-type RenderFactory func() (*Render, error)

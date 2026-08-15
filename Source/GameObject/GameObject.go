@@ -2,6 +2,7 @@ package gameobject
 
 import (
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
+	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 	"reflect"
 
@@ -39,7 +40,7 @@ func (g GameObject) Draw(screen *ebiten.Image) {
 	g.render().Draw(g, screen)
 }
 
-func NewHogeObject(NewTransform TransformFactory, NewRender RenderFactory) (*GameObject, error) {
+func NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) (*GameObject, error) {
 	t, err := NewTransform()
 	if err != nil {
 		return nil, fmt.Errorf("NewTransform() でエラーが発生しました。\n %w", err)
@@ -49,8 +50,8 @@ func NewHogeObject(NewTransform TransformFactory, NewRender RenderFactory) (*Gam
 		return nil, fmt.Errorf("NewRender() でエラーが発生しました。\n %w", err)
 	}
 	h := GameObject{
-		tf: *t,
-		rd: *r,
+		tf: t,
+		rd: r,
 	}
 	return &h, nil
 }
