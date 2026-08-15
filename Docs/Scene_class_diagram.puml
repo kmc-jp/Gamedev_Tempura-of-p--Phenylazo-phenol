@@ -63,16 +63,11 @@ package gameObject {
 
     GameObject "1" *-- "0..*" Component
 
-    class Transform {
+    interface Transform {
         + Position Position
-        + Rotation Rotation
-        + Scale Scale
-        + NewTransform() (*Transform, error)
     }
 
-    class Render {
-        - obj GameObject
-        + NewRender(obj GameObject) (*Render, error)
+    interface Render {
         + Draw(screen *ebiten.Image)
     }
 
@@ -87,5 +82,20 @@ package Component {
     }
 
     FugaComponent -up-|> gameObject.Component
+
+    class StdTransform {
+        + Position Position
+        + NewTransform() (*Transform, error)
+    }
+
+    StdTransform -up-|> gameObject.Transform
+
+    class StdRender {
+        - obj GameObject
+        + NewRender(obj GameObject) (*Render, error)
+        + Draw(screen *ebiten.Image)
+    }
+
+    StdRender -up-|> gameObject.Render
 }
 @enduml
