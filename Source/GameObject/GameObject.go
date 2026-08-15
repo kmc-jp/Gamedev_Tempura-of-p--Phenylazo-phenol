@@ -39,7 +39,7 @@ func (g GameObject) Draw(screen *ebiten.Image) {
 	g.render().Draw(g, screen)
 }
 
-func NewHogeObject() (*GameObject, error) {
+func NewHogeObject(NewTransform TransformFactory, NewRender RenderFactory) (*GameObject, error) {
 	t, err := NewTransform()
 	if err != nil {
 		return nil, fmt.Errorf("NewTransform() でエラーが発生しました。\n %w", err)

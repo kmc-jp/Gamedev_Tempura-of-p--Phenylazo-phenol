@@ -1,8 +1,6 @@
 package gameobject
 
-type Transform struct {
+type Transform interface {
 }
 
-func NewTransform() (*Transform, error) {
-	return &Transform{}, nil
-}
+type TransformFactory func() (*Transform, error)

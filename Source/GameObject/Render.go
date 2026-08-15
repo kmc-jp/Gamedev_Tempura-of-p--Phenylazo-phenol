@@ -4,13 +4,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-type Render struct {
+type Render interface {
+	Draw(obj GameObject, scene *ebiten.Image)
 }
 
-func NewRender() (*Render, error) {
-	return &Render{}, nil
-}
-
-func (r Render) Draw(obj GameObject, scene *ebiten.Image) {
-
-}
+type RenderFactory func() (*Render, error)
