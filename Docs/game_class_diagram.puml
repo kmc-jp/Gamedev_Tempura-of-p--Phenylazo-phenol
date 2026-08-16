@@ -31,13 +31,6 @@ package game {
         + Draw(screen *ebiten.Image)
     }
 
-    class SceneFactory << (F,orchid) Function >> {
-        シーン生成用関数型
-        func() (Scene, error)
-    }
-
-    Scene --right--> SceneFactory
-
     Game -up--|> ebiten.Game
     Game "1" o-- "1..*" Scene
 }
@@ -46,13 +39,12 @@ package scene {
     class Hoge {
         + Init()
         + Name() string
-        + Update(active bool) (nextScene SceneFactory, transitionType transition.Type, err error)
+        + Update(active bool) (nextScene Utils.Factory[Scene], transitionType transition.Type, err error)
         + Draw(screen *ebiten.Image)
     }
     note right of Hoge : 具体的なシーン
 
     Hoge -up-|> game.Scene
-    Hoge ..up..> game.SceneFactory
 }
 
 @enduml
