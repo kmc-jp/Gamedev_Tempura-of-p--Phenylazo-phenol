@@ -27,7 +27,7 @@ package game {
 
     interface Scene {
         + Name() string
-        + Update(active bool) (nextScene SceneFactory, transitionType transition.Type, err error)
+        + Update(active bool) (nextScene Utils.Factory[Scene], transitionType transition.Type, err error)
         + Draw(screen *ebiten.Image)
     }
 
