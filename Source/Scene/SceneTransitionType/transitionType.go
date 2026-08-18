@@ -17,7 +17,7 @@ type Type struct {
 }
 
 func newTransitionType(v int) (*Type, error) {
-	if v <= 0 || sentinel <= v {
+	if v < 0 || sentinel <= v {
 		return nil, fmt.Errorf("newTransitionType に不適切な引数 %d が渡されました", v)
 	}
 	return &Type{val: v}, nil
