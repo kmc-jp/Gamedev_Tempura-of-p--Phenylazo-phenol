@@ -1,7 +1,7 @@
 @startuml game_class_diagram
 
 package ebiten {
-    interface ebiten.Game {
+    interface Game {
         + Update() error
         + Draw(screen *ebiten.Image)
         + Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int)
@@ -12,36 +12,39 @@ class "エントリーポイント" {
     - {static} main() <<entrypoint>>
 }
 
-class Game {
-    - ActiveScene Scene
-    - BackScene Stack[Scene]
-    + Update() error
-    + Draw(screen *ebiten.Image)
-    + Layout(outsideWidth, outsideHeight int)
-} 
-note right of Game : シーンの管理が主な役割\nUpdate() は ActiveScene.Update(true) と BackScene.Update(false) を呼ぶ\nその他は BackScene -> ActiveScene の順で\nStack は Utils パッケージ
+"エントリーポイント" ..right..> game.Game
+"エントリーポイント" ..right..> scene.Hoge
 
-interface Scene {
-    + Init() // 遷移時に一度だけ呼ばれる
-    + Name() string
-    + Update(active bool) (nextScene Scene, asNewScene bool, err error)
-    + Draw(screen *ebiten.Image)
+package game {
+    class Game {
+        - ActiveScene Scene
+        - BackScene Stack[Scene]
+        + Update() error
+        + Draw(screen *ebiten.Image)
+        + Layout(outsideWidth, outsideHeight int)
+    } 
+    note right of Game : シーンの管理が主な役割\nUpdate() は ActiveScene.Update(true) と BackScene.Update(false) を呼ぶ\nその他は BackScene -> ActiveScene の順で\nStack は Utils パッケージ
+
+    interface Scene {
+        + Name() string
+        + Update(active bool) (nextScene Utils.Factory[Scene], transitionType transition.Type, err error)
+        + Draw(screen *ebiten.Image)
+    }
+
+    Game -up--|> ebiten.Game
+    Game "1" o-- "1..*" Scene
 }
 
-"エントリーポイント" ..> Game
+package scene {
+    class Hoge {
+        + Init()
+        + Name() string
+        + Update(active bool) (nextScene Utils.Factory[Scene], transitionType transition.Type, err error)
+        + Draw(screen *ebiten.Image)
+    }
+    note right of Hoge : 具体的なシーン
 
-Game -up--|> ebiten.Game
-Game "1" o-- "1..*" Scene
-
-class Hoge {
-    + Init()
-    + Name() string
-    + Update(active bool) (nextScene Scene, asNewScene bool, err error)
-    + Draw(screen *ebiten.Image)
+    Hoge -up-|> game.Scene
 }
-note right of Hoge : 具体的なシーン
-
-Hoge -up-|> Scene
-
 
 @enduml

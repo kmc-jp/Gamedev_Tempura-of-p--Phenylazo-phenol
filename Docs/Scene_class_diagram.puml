@@ -1,93 +1,94 @@
 @startuml Scene_class_diagram
 
-class SceneFactory << (F,orchid) Function >> {
-    シーン生成用関数型
-    func() (Scene, error)
+package transition {
+    class Type{}
 }
 
-interface Scene {
-    + Name() string
-    + Update(active bool) (nextScene SceneFactory, asNewScene bool, err error)
-    + Draw(screen *ebiten.Image)
-}
-note right of Scene : SceneFactory は　func() (Scene, error)
+package game {
+    interface Scene {
+        + Name() string
+        + Update(active bool) (nextScene SceneFactory, transitionType transition.Type, err error)
+        + Draw(screen *ebiten.Image)
+    }
 
-Scene --> SceneFactory
-
-class HogeScene {
-    - objects []GameObject
-    + NewHogeScene() (HogeScene, error)
-    + Name() string
-    + Update(active bool) (nextScene SceneFactory, asNewScene bool, err error)
-    + Draw(screen *ebiten.Image)
-}
-note right of HogeScene : Update() は　objects.Update() を呼ぶ\nDraw() は　objects.Draw() を呼ぶ\nNewHogeScene()の返り値は interface に突っ込むので非ポインタ型
-
-HogeScene -up-|> Scene
-HogeScene -left-> SceneFactory
-
-HogeScene "1" *-- "0..*" GameObject
-
-interface GameObject {
-    - transform() Transform
-    - render() Render
-    - components() []Component
-    + Name() string
-    + Update(active bool) (err error)
-    + Draw(screen *ebiten.Image)
-}
-note left of GameObject : transform() 等はプライベートに要求
-
-class GameObjectUtils {
-    - gameObject GameObject
-    + NewGameObjectUtils(obj GameObject) (*GameObjectUtils, error)
-    + getComponent[T | Component]() T, error
-    + Update(active bool) (err error)
-    + Draw(screen *ebiten.Image)
-    + その他もろもろ()
-}
-note bottom of GameObjectUtils : GameObject に欲しいメソッド等\nerror は bool でもいいかも\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
-
-GameObject "1" *- "1" GameObjectUtils
-
-
-class HogeObject {
-    GameObjectUtils <埋め込み>
-    - transform() Transform
-    - render() Render
-    - components() []Component
-    + Name() string
-    + NewHogeObject() (*HogeObject, error)
-}
-note right of HogeObject : ゲームオブジェクト\nUpdate() と Draw() は GameObjectUtils で実装
-
-
-HogeObject -up-|> GameObject
-HogeObject *-- Transform
-HogeObject *-- Render
-
-HogeObject "1" *-- "0..*" Component
-
-class Transform {
-    + Position Position
-    + Rotation Rotation
-    + Scale Scale
-    + NewTransform() (*Transform, error)
+    Scene .right.> transition.Type
 }
 
-class Render {
-    - obj GameObject
-    + NewRender(obj GameObject) (*Render, error)
-    + Draw(screen *ebiten.Image)
+package scene {
+    class HogeScene {
+        - objects []GameObject
+        + NewHogeScene() (HogeScene, error)
+        + Name() string
+        + Update(active bool) (nextScene Utils.Factory[Scene], transitionType transition.Type, err error)
+        + Draw(screen *ebiten.Image)
+    }
+    note right of HogeScene : Update() は　objects.Update() を呼ぶ\nDraw() は　objects.Draw() を呼ぶ\nNewHogeScene()の返り値は interface に突っ込むので非ポインタ型
+
+    HogeScene -up-|> game.Scene
+    HogeScene .up.> transition.Type
+
+
+    HogeScene "1" *-- "0..*" Entity
+
+    interface Entity {
+        + Name() string
+        + Update(active bool) (err error)
+        + Draw(screen *ebiten.Image)
+    }
 }
 
-interface Component {
-    + Update(obj GameObject, active bool) (err error)
+package gameObject {
+    class GameObject {
+        - name string
+        - transform() Transform
+        - render() Render
+        - components() []Component
+        + Name() string
+        + NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) (*HogeObject, error)
+        + AddComponent(c Component)
+        + GetComponent[T | Component]() T, error
+    }
+    note right of GameObject : 標準的なゲームオブジェクト\n原則これのインスタンスを使う\n違うタイプのゲームオブジェクトが欲しければ手書き実装\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
+
+    GameObject -up-|> scene.Entity
+    GameObject *-- Transform
+    GameObject *-- Render
+
+    GameObject "1" *-- "0..*" Component
+
+    interface Transform {
+        + Position Position
+    }
+
+    interface Render {
+        + Draw(screen *ebiten.Image)
+    }
+
+    interface Component {
+        + Update(obj GameObject, active bool) (err error)
+    }
 }
 
-class FugaComponent {
-    + NewFugaComponent(obj GameObject) (*HogeComponent, error)
-}
+package Component {
+    class FugaComponent {
+        + NewFugaComponent(obj GameObject) (*HogeComponent, error)
+    }
 
-FugaComponent -up-|> Component
+    FugaComponent -up-|> gameObject.Component
+
+    class StdTransform {
+        + Position Position
+        + NewTransform() (*Transform, error)
+    }
+
+    StdTransform -up-|> gameObject.Transform
+
+    class StdRender {
+        - obj GameObject
+        + NewRender(obj GameObject) (*Render, error)
+        + Draw(screen *ebiten.Image)
+    }
+
+    StdRender -up-|> gameObject.Render
+}
 @enduml
