@@ -17,24 +17,39 @@ package game {
 package scene {
     class PlayScene {
         - objects []Entity
+        - drawer Drawer
         + NewPlayScene() Utils.Factory[PlayScene]
         + Name() string
         + Update(active bool) (nextScene Utils.Factory[Scene], transitionType transition.Type, err error)
         + Draw(screen *ebiten.Image)
     }
-    note right of PlayScene : Update() は　objects.Update() を呼ぶ\nDraw() は　objects.Draw() を呼ぶ\nNewHogeScene() の型は関数型をいい感じに命名したもの
+    note right of PlayScene : Update() は　objects.Update() を呼ぶ\nDraw() は drawer.Draw() を呼ぶ\nNewHogeScene() の型は関数型をいい感じに命名したもの
 
     PlayScene -up-|> game.Scene
     PlayScene .up.> transition.Type
 
 
     PlayScene "1" *-- "0..*" Entity
+    PlayScene "1" *-left- "1" Drawer
 
     interface Entity {
         + Name() string
         + Update(active bool) (err error)
         + Draw(screen *ebiten.Image)
     }
+
+    interface Drawer {
+        + Draw(screen *ebiten.Image, objects []Entity, center Position)
+    }
+
+    class MockCamera {
+        + Draw(screen *ebiten.Image, objects []Entity, center Position)
+        + NewMockCamera() (*MockCamera, error)
+    }
+    note left of MockCamera : Transformが表す座標をそのまま画面座標として表示\nあとでもっと高機能のものを実装予定
+
+    MockCamera -up-|> Drawer
+    MockCamera .> Entity
 }
 
 package gameObject {
