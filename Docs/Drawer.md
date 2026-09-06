@@ -19,8 +19,8 @@ Render.Draw() を呼ぶ
 受け取った objects の中身のすべてについて、そのワールド座標をそのまま描画する
 カメラ位置の調整周りは後から考える
 
-### Entity.Render.Draw() (screen *ebiten.Image) に期待すること
+### Entity.Render.Draw() (image *ebiten.Image) に期待すること
 適切なサイズの画像を描いて返してくること
 
-## GameObject.Draw() (screen *ebiten.Image)
+## GameObject.Draw() (image *ebiten.Image)
 自分の画像を返す

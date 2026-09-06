@@ -35,7 +35,7 @@ package scene {
     interface Entity {
         + Name() string
         + Update(active bool) (err error)
-        + Draw(screen *ebiten.Image)
+        + Draw() (image *ebiten.Image)
     }
 
     interface Drawer {
@@ -59,6 +59,8 @@ package gameObject {
         - render() Render
         - components() []Component
         + Name() string
+        + Update(active bool) (err error)
+        + Draw() (image *ebiten.Image)
         + NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) (*HogeObject, error)
         + AddComponent(c Component)
         + GetComponent[T | Component]() T, error
@@ -76,7 +78,7 @@ package gameObject {
     }
 
     interface Render {
-        + Draw(screen *ebiten.Image)
+        + Draw(image *ebiten.Image)
     }
 
     interface Component {
@@ -99,9 +101,9 @@ package Component {
     StdTransform -up-|> gameObject.Transform
 
     class StdRender {
-        - obj GameObject
+        - image 型未定
         + NewRender(obj GameObject) (*Render, error)
-        + Draw(screen *ebiten.Image)
+        + Draw(image *ebiten.Image)
     }
 
     StdRender -up-|> gameObject.Render
