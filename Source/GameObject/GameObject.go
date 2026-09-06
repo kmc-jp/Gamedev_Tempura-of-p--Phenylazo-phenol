@@ -36,8 +36,8 @@ func (g GameObject) Update(active bool) (err error) {
 	return nil
 }
 
-func (g GameObject) Draw(screen *ebiten.Image) {
-	g.render().Draw(g, screen)
+func (g GameObject) Draw() (image *ebiten.Image) {
+	return g.render().Draw()
 }
 
 func NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) (*GameObject, error) {
