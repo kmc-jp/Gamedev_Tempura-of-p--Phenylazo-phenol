@@ -7,5 +7,5 @@ import (
 )
 
 type Drawer interface {
-	Draw() (screen *ebiten.Image, objects []Entity, center Utils.Position)
+	Draw(screen *ebiten.Image, objects []Entity, center Utils.Position)
 }
