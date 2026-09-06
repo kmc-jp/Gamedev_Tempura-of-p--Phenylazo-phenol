@@ -11,6 +11,8 @@ import (
 
 // メインの遊べるシーン
 type PlayScene struct {
+	objects []Entity
+	drawer  Drawer
 }
 
 func NewPlayScene() (PlayScene, error) {
@@ -26,7 +28,7 @@ func (s PlayScene) Name() string {
 
 // Draw implements [Scene].
 func (s PlayScene) Draw(screen *ebiten.Image) {
-	// なにもしない
+	s.drawer.Draw(screen, s.objects, Utils.Position{})
 }
 
 // Update implements [Scene].
