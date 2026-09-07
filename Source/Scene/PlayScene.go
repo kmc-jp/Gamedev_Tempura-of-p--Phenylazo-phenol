@@ -16,7 +16,10 @@ type PlayScene struct {
 }
 
 func NewPlayScene() (PlayScene, error) {
-	ps := PlayScene{}
+	ps := PlayScene{
+		objects: []Entity{},
+		drawer:  NewMockCamera(),
+	}
 	// なにもしない
 	return ps, nil
 }

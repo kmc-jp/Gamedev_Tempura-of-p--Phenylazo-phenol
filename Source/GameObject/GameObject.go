@@ -54,8 +54,9 @@ func NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factor
 		return nil, fmt.Errorf("NewRender() でエラーが発生しました。\n %w", err)
 	}
 	h := GameObject{
-		tf: t,
-		rd: r,
+		tf:   t,
+		rd:   r,
+		cmps: []Component{},
 	}
 	return &h, nil
 }
