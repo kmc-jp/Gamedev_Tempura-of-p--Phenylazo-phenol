@@ -40,6 +40,10 @@ func (g GameObject) Draw() (image *ebiten.Image) {
 	return g.render().Draw()
 }
 
+func (g GameObject) Position() Utils.Position {
+	return g.tf.Position()
+}
+
 func NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) (*GameObject, error) {
 	t, err := NewTransform()
 	if err != nil {
