@@ -6,7 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// メインの遊べるシーン
+// 仮作成のカメラ(本実装は後から作る)
 type MockCamera struct {
 }
 
