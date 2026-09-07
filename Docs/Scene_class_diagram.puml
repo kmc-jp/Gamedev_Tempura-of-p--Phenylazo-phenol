@@ -36,6 +36,7 @@ package scene {
         + Name() string
         + Update(active bool) (err error)
         + Draw() (image *ebiten.Image)
+        + Position() Utils.Position
     }
 
     interface Drawer {
@@ -61,6 +62,7 @@ package gameObject {
         + Name() string
         + Update(active bool) (err error)
         + Draw() (image *ebiten.Image)
+        + Position() Utils.Position
         + NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) (*HogeObject, error)
         + AddComponent(c Component)
         + GetComponent[T | Component]() T, error
@@ -74,7 +76,7 @@ package gameObject {
     GameObject "1" *-- "0..*" Component
 
     interface Transform {
-        + Position Position
+        + Position() Position
     }
 
     interface Render {
@@ -94,7 +96,7 @@ package Component {
     FugaComponent -up-|> gameObject.Component
 
     class StdTransform {
-        + Position Position
+        + Position() Position
         + NewTransform() (*Transform, error)
     }
 
