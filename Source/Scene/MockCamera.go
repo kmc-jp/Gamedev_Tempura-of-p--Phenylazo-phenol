@@ -30,3 +30,7 @@ func (m MockCamera) Draw(screen *ebiten.Image, objects []Entity, center Utils.Po
 func test() {
 	var _ Drawer = MockCamera{}
 }
+
+func NewMockCamera() MockCamera {
+	return MockCamera{}
+}
