@@ -91,6 +91,7 @@ package gameObject {
 package Component {
     class FugaComponent {
         + NewFugaComponent(obj GameObject) (*HogeComponent, error)
+        + Update(obj GameObject, active bool) (err error)
     }
 
     FugaComponent -up-|> gameObject.Component
