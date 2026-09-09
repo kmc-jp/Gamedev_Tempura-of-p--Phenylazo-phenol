@@ -80,7 +80,7 @@ package gameObject {
     }
 
     interface Render {
-        + Draw(image *ebiten.Image)
+        + Draw() (image *ebiten.Image)
     }
 
     interface Component {
@@ -105,7 +105,7 @@ package Component {
     class StdRender {
         - image 型未定
         + NewRender(obj GameObject) (*Render, error)
-        + Draw(image *ebiten.Image)
+        + Draw() (image *ebiten.Image)
     }
 
     StdRender -up-|> gameObject.Render
