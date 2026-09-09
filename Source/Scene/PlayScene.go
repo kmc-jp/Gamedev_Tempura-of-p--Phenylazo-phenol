@@ -7,6 +7,8 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 // メインの遊べるシーン
@@ -26,11 +28,15 @@ func (s PlayScene) Name() string {
 
 // Draw implements [Scene].
 func (s PlayScene) Draw(screen *ebiten.Image) {
-	// なにもしない
+	ebitenutil.DebugPrint(screen, "PlayScene\nP to pause")
 }
 
 // Update implements [Scene].
 func (s PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
-	// なにもしない
-	return
+	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+		return func() (game.Scene, error) {
+			return PauseScene{}, nil
+		}, transition.Push(), nil
+	}
+	return nil, transition.None(), nil
 }
