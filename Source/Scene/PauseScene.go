@@ -24,5 +24,6 @@ func (s PauseScene) Name() string {
 }
 
 func (s PauseScene) Draw(screen *ebiten.Image) {
+	screen.Clear()
 	ebitenutil.DebugPrint(screen, "pause\nEsc to return")
 }

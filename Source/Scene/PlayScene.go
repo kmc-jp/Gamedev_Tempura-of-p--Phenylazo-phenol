@@ -33,6 +33,9 @@ func (s PlayScene) Draw(screen *ebiten.Image) {
 
 // Update implements [Scene].
 func (s PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
+	if !active {
+		return nil, transition.None(), nil
+	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
 		return func() (game.Scene, error) {
 			return PauseScene{}, nil
