@@ -1,9 +1,14 @@
 package scene
 
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 type Entity interface {
 	Name() string
 	Update(active bool) (err error)
-	Draw(screen *ebiten.Image)
+	Draw() (image *ebiten.Image)
+	Position() Utils.Position
 }

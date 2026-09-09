@@ -5,5 +5,5 @@ import (
 )
 
 type Render interface {
-	Draw(obj GameObject, scene *ebiten.Image)
+	Draw() (image *ebiten.Image)
 }

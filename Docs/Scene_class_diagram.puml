@@ -17,24 +17,40 @@ package game {
 package scene {
     class PlayScene {
         - objects []Entity
+        - drawer Drawer
         + NewPlayScene() Utils.Factory[PlayScene]
         + Name() string
         + Update(active bool) (nextScene Utils.Factory[Scene], transitionType transition.Type, err error)
         + Draw(screen *ebiten.Image)
     }
-    note right of PlayScene : Update() は　objects.Update() を呼ぶ\nDraw() は　objects.Draw() を呼ぶ\nNewHogeScene() の型は関数型をいい感じに命名したもの
+    note right of PlayScene : Update() は　objects.Update() を呼ぶ\nDraw() は drawer.Draw() を呼ぶ\nNewHogeScene() の型は関数型をいい感じに命名したもの
 
     PlayScene -up-|> game.Scene
     PlayScene .up.> transition.Type
 
 
     PlayScene "1" *-- "0..*" Entity
+    PlayScene "1" *-left- "1" Drawer
 
     interface Entity {
         + Name() string
         + Update(active bool) (err error)
-        + Draw(screen *ebiten.Image)
+        + Draw() (image *ebiten.Image)
+        + Position() Utils.Position
     }
+
+    interface Drawer {
+        + Draw(screen *ebiten.Image, objects []Entity, center Position)
+    }
+
+    class MockCamera {
+        + Draw(screen *ebiten.Image, objects []Entity, center Position)
+        + NewMockCamera() (*MockCamera, error)
+    }
+    note left of MockCamera : Transformが表す座標をそのまま画面座標として表示\nあとでもっと高機能のものを実装予定
+
+    MockCamera -up-|> Drawer
+    MockCamera .> Entity
 }
 
 package gameObject {
@@ -44,6 +60,9 @@ package gameObject {
         - render() Render
         - components() []Component
         + Name() string
+        + Update(active bool) (err error)
+        + Draw() (image *ebiten.Image)
+        + Position() Utils.Position
         + NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) (*HogeObject, error)
         + AddComponent(c Component)
         + GetComponent[T | Component]() T, error
@@ -57,11 +76,11 @@ package gameObject {
     GameObject "1" *-- "0..*" Component
 
     interface Transform {
-        + Position Position
+        + Position() Position
     }
 
     interface Render {
-        + Draw(screen *ebiten.Image)
+        + Draw() (image *ebiten.Image)
     }
 
     interface Component {
@@ -72,21 +91,22 @@ package gameObject {
 package Component {
     class FugaComponent {
         + NewFugaComponent(obj GameObject) (*HogeComponent, error)
+        + Update(obj GameObject, active bool) (err error)
     }
 
     FugaComponent -up-|> gameObject.Component
 
     class StdTransform {
-        + Position Position
+        + Position() Position
         + NewTransform() (*Transform, error)
     }
 
     StdTransform -up-|> gameObject.Transform
 
     class StdRender {
-        - obj GameObject
+        - image 型未定
         + NewRender(obj GameObject) (*Render, error)
-        + Draw(screen *ebiten.Image)
+        + Draw() (image *ebiten.Image)
     }
 
     StdRender -up-|> gameObject.Render

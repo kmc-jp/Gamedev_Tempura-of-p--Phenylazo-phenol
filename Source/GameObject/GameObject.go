@@ -36,8 +36,12 @@ func (g GameObject) Update(active bool) (err error) {
 	return nil
 }
 
-func (g GameObject) Draw(screen *ebiten.Image) {
-	g.render().Draw(g, screen)
+func (g GameObject) Draw() (image *ebiten.Image) {
+	return g.render().Draw()
+}
+
+func (g GameObject) Position() Utils.Position {
+	return g.tf.Position()
 }
 
 func NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) (*GameObject, error) {
@@ -50,8 +54,9 @@ func NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factor
 		return nil, fmt.Errorf("NewRender() でエラーが発生しました。\n %w", err)
 	}
 	h := GameObject{
-		tf: t,
-		rd: r,
+		tf:   t,
+		rd:   r,
+		cmps: []Component{},
 	}
 	return &h, nil
 }
