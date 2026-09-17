@@ -56,6 +56,7 @@ package scene {
 package gameObject {
     class GameObject {
         - name string
+        + Scene *scene.PlayScene
         - transform() Transform
         - render() Render
         - components() []Component
@@ -70,6 +71,7 @@ package gameObject {
     note right of GameObject : 標準的なゲームオブジェクト\n原則これのインスタンスを使う\n違うタイプのゲームオブジェクトが欲しければ手書き実装\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
 
     GameObject -up-|> scene.Entity
+    GameObject ...> scene.PlayScene
     GameObject *-- Transform
     GameObject *-- Render
 
@@ -90,11 +92,13 @@ package gameObject {
 
 package Component {
     class FugaComponent {
+        + GameObject *gameObject.GameObject
         + NewFugaComponent(obj GameObject) (*HogeComponent, error)
         + Update(obj GameObject, active bool) (err error)
     }
 
     FugaComponent -up-|> gameObject.Component
+    FugaComponent ...> gameObject.GameObject
 
     class StdTransform {
         + Position() Position
