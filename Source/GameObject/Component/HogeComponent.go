@@ -6,6 +6,7 @@ import (
 )
 
 type HogeComponent struct {
+	GameObject *gameobject.GameObject
 }
 
 func (h HogeComponent) Update(obj gameobject.GameObject, active bool) (err error) {
@@ -13,9 +14,14 @@ func (h HogeComponent) Update(obj gameobject.GameObject, active bool) (err error
 	return nil
 }
 
-func NewHogeComponent() (*HogeComponent, error) {
-	return &HogeComponent{}, nil
+func NewHogeComponent(gameobject *gameobject.GameObject) Utils.Factory[HogeComponent] {
+	return func() (*HogeComponent, error) {
+		c := HogeComponent{
+			GameObject: gameobject,
+		}
+		return &c, nil
+	}
 }
 
 // test
-var _ Utils.Factory[HogeComponent] = NewHogeComponent
+var _ Utils.Factory[HogeComponent] = NewHogeComponent(nil)

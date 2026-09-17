@@ -10,10 +10,11 @@ import (
 )
 
 type GameObject struct {
-	name string
-	tf   Transform
-	rd   Render
-	cmps []Component
+	name  string
+	tf    Transform
+	rd    Render
+	cmps  []Component
+	Scene *scene.PlayScene
 }
 
 var _ scene.Entity = GameObject{}
@@ -44,7 +45,12 @@ func (g GameObject) Position() Utils.Position {
 	return g.tf.Position()
 }
 
-func NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[GameObject] {
+func (g GameObject) transform() Transform    { return g.tf }
+func (g GameObject) render() Render          { return g.rd }
+func (g GameObject) components() []Component { return g.cmps }
+func (g GameObject) Name() string            { return g.name }
+
+func NewHogeObject(scene *scene.PlayScene, NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[GameObject] {
 	return func() (*GameObject, error) {
 		t, err := NewTransform()
 		if err != nil {
@@ -55,18 +61,14 @@ func NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factor
 			return nil, fmt.Errorf("NewRender() でエラーが発生しました。\n %w", err)
 		}
 		h := GameObject{
-			tf:   *t,
-			rd:   *r,
-			cmps: []Component{},
+			Scene: scene,
+			tf:    *t,
+			rd:    *r,
+			cmps:  []Component{},
 		}
 		return &h, nil
 	}
 }
 
 // test
-var _ Utils.Factory[GameObject] = NewHogeObject(nil, nil)
-
-func (g GameObject) transform() Transform    { return g.tf }
-func (g GameObject) render() Render          { return g.rd }
-func (g GameObject) components() []Component { return g.cmps }
-func (g GameObject) Name() string            { return g.name }
+var _ Utils.Factory[GameObject] = NewHogeObject(nil, nil, nil)
