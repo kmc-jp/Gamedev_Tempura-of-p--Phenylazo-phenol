@@ -1,8 +1,12 @@
 package component
 
-import gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
+import (
+	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
+	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+)
 
 type HogeComponent struct {
+	GameObject *gameobject.GameObject
 }
 
 func (h HogeComponent) Update(obj gameobject.GameObject, active bool) (err error) {
@@ -10,6 +14,14 @@ func (h HogeComponent) Update(obj gameobject.GameObject, active bool) (err error
 	return nil
 }
 
-func NewHogeComponent() (*HogeComponent, error) {
-	return &HogeComponent{}, nil
+func NewHogeComponent(gameobject *gameobject.GameObject) Utils.Factory[HogeComponent] {
+	return func() (*HogeComponent, error) {
+		c := HogeComponent{
+			GameObject: gameobject,
+		}
+		return &c, nil
+	}
 }
+
+// test
+var _ Utils.Factory[HogeComponent] = NewHogeComponent(nil)

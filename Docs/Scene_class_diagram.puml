@@ -45,7 +45,7 @@ package scene {
 
     class MockCamera {
         + Draw(screen *ebiten.Image, objects []Entity, center Position)
-        + NewMockCamera() (*MockCamera, error)
+        + NewMockCamera() Utils.Factory[MockCamera]
     }
     note left of MockCamera : Transformが表す座標をそのまま画面座標として表示\nあとでもっと高機能のものを実装予定
 
@@ -56,6 +56,7 @@ package scene {
 package gameObject {
     class GameObject {
         - name string
+        + Scene *scene.PlayScene
         - transform() Transform
         - render() Render
         - components() []Component
@@ -63,13 +64,14 @@ package gameObject {
         + Update(active bool) (err error)
         + Draw() (image *ebiten.Image)
         + Position() Utils.Position
-        + NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) (*HogeObject, error)
+        + NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[HogeObject]
         + AddComponent(c Component)
         + GetComponent[T | Component]() T, error
     }
     note right of GameObject : 標準的なゲームオブジェクト\n原則これのインスタンスを使う\n違うタイプのゲームオブジェクトが欲しければ手書き実装\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
 
     GameObject -up-|> scene.Entity
+    GameObject ...> scene.PlayScene
     GameObject *-- Transform
     GameObject *-- Render
 
@@ -90,22 +92,24 @@ package gameObject {
 
 package Component {
     class FugaComponent {
-        + NewFugaComponent(obj GameObject) (*HogeComponent, error)
+        + GameObject *gameObject.GameObject
+        + NewFugaComponent(obj GameObject) Utils.Factory[FugaComponent]
         + Update(obj GameObject, active bool) (err error)
     }
 
     FugaComponent -up-|> gameObject.Component
+    FugaComponent ...> gameObject.GameObject
 
     class StdTransform {
         + Position() Position
-        + NewTransform() (*Transform, error)
+        + NewStdTransform() Utils.Factory[StdTransform]
     }
 
     StdTransform -up-|> gameObject.Transform
 
     class StdRender {
         - image 型未定
-        + NewRender(obj GameObject) (*Render, error)
+        + NewStdRender(obj GameObject) Utils.Factory[StdRender]
         + Draw() (image *ebiten.Image)
     }
 

@@ -1,3 +1,3 @@
 package Utils
 
-type Factory[T any] func() (T, error)
+type Factory[T any] func() (*T, error)

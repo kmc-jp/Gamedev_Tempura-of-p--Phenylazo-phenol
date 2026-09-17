@@ -17,6 +17,9 @@ func NewTransform() (*StdTransform, error) {
 	return &StdTransform{}, nil
 }
 
+// test
+var _ Utils.Factory[StdTransform] = NewTransform
+
 func test() {
 	var _ gameobject.Transform = StdTransform{}
 }

@@ -10,10 +10,11 @@ import (
 )
 
 type GameObject struct {
-	name string
-	tf   Transform
-	rd   Render
-	cmps []Component
+	name  string
+	tf    Transform
+	rd    Render
+	cmps  []Component
+	Scene *scene.PlayScene
 }
 
 var _ scene.Entity = GameObject{}
@@ -44,24 +45,30 @@ func (g GameObject) Position() Utils.Position {
 	return g.tf.Position()
 }
 
-func NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) (*GameObject, error) {
-	t, err := NewTransform()
-	if err != nil {
-		return nil, fmt.Errorf("NewTransform() でエラーが発生しました。\n %w", err)
-	}
-	r, err := NewRender()
-	if err != nil {
-		return nil, fmt.Errorf("NewRender() でエラーが発生しました。\n %w", err)
-	}
-	h := GameObject{
-		tf:   t,
-		rd:   r,
-		cmps: []Component{},
-	}
-	return &h, nil
-}
-
 func (g GameObject) transform() Transform    { return g.tf }
 func (g GameObject) render() Render          { return g.rd }
 func (g GameObject) components() []Component { return g.cmps }
 func (g GameObject) Name() string            { return g.name }
+
+func NewHogeObject(scene *scene.PlayScene, NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[GameObject] {
+	return func() (*GameObject, error) {
+		t, err := NewTransform()
+		if err != nil {
+			return nil, fmt.Errorf("NewTransform() でエラーが発生しました。\n %w", err)
+		}
+		r, err := NewRender()
+		if err != nil {
+			return nil, fmt.Errorf("NewRender() でエラーが発生しました。\n %w", err)
+		}
+		h := GameObject{
+			Scene: scene,
+			tf:    *t,
+			rd:    *r,
+			cmps:  []Component{},
+		}
+		return &h, nil
+	}
+}
+
+// test
+var _ Utils.Factory[GameObject] = NewHogeObject(nil, nil, nil)

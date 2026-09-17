@@ -13,10 +13,10 @@ func main() {
 	// ゲーム起動
 	initScene, err := scene.NewPlayScene() // 起動時に表示されるシーン
 	if err != nil {
-		log.Fatalf("初期シーン %s の読み込みに失敗しました: %v", initScene.Name(), err)
+		log.Fatalf("初期シーン %s の読み込みに失敗しました: %v", (*initScene).Name(), err)
 	}
 	game := game.Game{
-		ActiveScene: &initScene,
+		ActiveScene: initScene,
 	}
 	ebiten.SetFullscreen(true)
 	if err := ebiten.RunGame(&game); err != nil {

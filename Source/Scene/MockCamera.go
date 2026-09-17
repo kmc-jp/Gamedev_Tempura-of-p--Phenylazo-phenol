@@ -31,6 +31,9 @@ func test() {
 	var _ Drawer = MockCamera{}
 }
 
-func NewMockCamera() MockCamera {
-	return MockCamera{}
+func NewMockCamera() (*MockCamera, error) {
+	return &MockCamera{}, nil
 }
+
+// test
+var _ Utils.Factory[MockCamera] = NewMockCamera
