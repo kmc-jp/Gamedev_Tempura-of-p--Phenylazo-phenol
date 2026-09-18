@@ -86,7 +86,7 @@ package gameObject {
     }
 
     interface Component {
-        + Update(obj GameObject, active bool) (err error)
+        + Update(active bool) (err error)
     }
 }
 
@@ -94,7 +94,7 @@ package Component {
     class FugaComponent {
         + GameObject *gameObject.GameObject
         + NewFugaComponent(obj GameObject) Utils.Factory[FugaComponent]
-        + Update(obj GameObject, active bool) (err error)
+        + Update(active bool) (err error)
     }
 
     FugaComponent -up-|> gameObject.Component
