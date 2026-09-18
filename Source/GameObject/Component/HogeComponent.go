@@ -9,7 +9,9 @@ type HogeComponent struct {
 	GameObject *gameobject.GameObject
 }
 
-func (h HogeComponent) Update(obj gameobject.GameObject, active bool) (err error) {
+var _ gameobject.Component = HogeComponent{}
+
+func (h HogeComponent) Update(active bool) (err error) {
 	// なにもしない
 	return nil
 }

@@ -30,7 +30,7 @@ func (g GameObject) GetComponent(target reflect.Type) (component Component, err 
 
 func (g GameObject) Update(active bool) (err error) {
 	for _, c := range g.components() {
-		if err := c.Update(g, active); err != nil {
+		if err := c.Update(active); err != nil {
 			return fmt.Errorf("コンポーネント %s でエラーが発生しました。\n%w", reflect.TypeOf(c), err)
 		}
 	}
