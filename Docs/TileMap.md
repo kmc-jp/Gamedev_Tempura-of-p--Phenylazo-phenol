@@ -1,6 +1,6 @@
 # タイルマップ
 
-## tilemap.TileData
+## tilemap.TileMapData
 
 タイルの初期配置情報
 要はどこに何のタイルがあるか
