@@ -13,6 +13,10 @@
     y int
 }
 
+## tilemap.TileData
+
+タイルの種類に関する情報を保持
+
 ## Component.TileMap
 
 タイルの配置位置に関する情報
