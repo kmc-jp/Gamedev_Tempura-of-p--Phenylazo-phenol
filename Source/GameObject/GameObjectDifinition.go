@@ -8,7 +8,7 @@ import (
 
 // 個々の GameObject の定義を書く
 
-func NewHogeObject(scene *scene.PlayScene, NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[GameObject] {
+func newStdObject(scene *scene.PlayScene, NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[GameObject] {
 	return func() (*GameObject, error) {
 		t, err := NewTransform()
 		if err != nil {
@@ -29,4 +29,4 @@ func NewHogeObject(scene *scene.PlayScene, NewTransform Utils.Factory[Transform]
 }
 
 // test
-var _ Utils.Factory[GameObject] = NewHogeObject(nil, nil, nil)
+var _ Utils.Factory[GameObject] = newStdObject(nil, nil, nil)
