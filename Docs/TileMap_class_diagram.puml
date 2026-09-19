@@ -1,0 +1,117 @@
+@startuml TileMap_class_diagram
+package scene {
+    class PlayScene {
+        - objects []Entity
+        - drawer Drawer
+        + NewPlayScene() Utils.Factory[PlayScene]
+        + Name() string
+        + Update(active bool) (nextScene Utils.Factory[Scene], transitionType transition.Type, err error)
+        + Draw(screen *ebiten.Image)
+    }
+
+    PlayScene "1" *-- "0..*" Entity
+
+    interface Entity {
+        + Name() string
+        + Update(active bool) (err error)
+        + Draw() (image *ebiten.Image)
+        + Position() Utils.Position
+    }
+}
+
+package gameObject {
+    class HogeTile {
+        + Update(active bool) (err error)
+    }
+
+    HogeTile -up-|> scene.Entity
+    
+    HogeTile *-- Transform
+    HogeTile *-- Render
+    HogeTile "1" *-- "0..*" Component1
+
+    class TileMapManager {
+        + Update(active bool) (err error)
+    }
+
+    TileMapManager -up-|> scene.Entity
+    
+    TileMapManager *-- Transform
+    TileMapManager *-- Render
+    TileMapManager "1" *-- "0..*" Component2
+
+    class TileMapWalkPlayer {
+        + Update(active bool) (err error)
+    }
+
+    TileMapWalkPlayer -up-|> scene.Entity
+    
+    TileMapWalkPlayer *-- Transform
+    TileMapWalkPlayer *-- Render
+    TileMapWalkPlayer "1" *-- "0..*" Component3
+
+
+    interface Transform {
+    }
+
+    interface Render {
+    }
+
+    interface "Component" as Component1 {
+        + Update(obj GameObject, active bool) (err error)
+    }
+
+    interface "Component" as Component2 {
+        + Update(obj GameObject, active bool) (err error)
+    }
+
+    interface "Component" as Component3 {
+        + Update(obj GameObject, active bool) (err error)
+    }
+}
+
+package Component {
+    class Tile {
+        - Position TileTransform // タイルの位置
+        + GameObject *gameObject.GameObject
+        + NewTileComponent(obj GameObject) Utils.Factory[Tile]
+        + Update(obj GameObject, active bool) (err error)
+    }
+    note bottom of Tile : タイル一つの情報を保持
+
+
+    Tile -up-|> gameObject.Component1
+
+    class TileMap {
+        - Tiles []*Tile // タイルの一覧を保持
+        - TileSize Vector // タイルの大きさを保持
+        - InitialPosition Position // 端のタイルの座標を保持
+        + GameObject *gameObject.GameObject
+        + NewTileComponent(obj GameObject) Utils.Factory[Tile]
+        + Update(obj GameObject, active bool) (err error)
+    }
+    note bottom of TileMap : タイルマップ全体の設定を保持
+
+    TileMap -up-|> gameObject.Component2
+
+    class TileMapWalker {
+        + GameObject *gameObject.GameObject
+        + NewTileComponent(obj GameObject) Utils.Factory[Tile]
+        + Update(obj GameObject, active bool) (err error)
+    }
+    note bottom of TileMapWalker : タイルマップ上を動くエンティティの情報を保持
+
+    TileMapWalker -up-|> gameObject.Component3
+
+    class StdTransform {
+    }
+
+    StdTransform -up-|> gameObject.Transform
+
+    class StdRender {
+    }
+
+    StdRender -up-|> gameObject.Render
+}
+
+@enduml
