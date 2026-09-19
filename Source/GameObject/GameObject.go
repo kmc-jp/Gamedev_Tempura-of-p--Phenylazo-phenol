@@ -49,3 +49,29 @@ func (g GameObject) transform() Transform    { return g.tf }
 func (g GameObject) render() Render          { return g.rd }
 func (g GameObject) components() []Component { return g.cmps }
 func (g GameObject) Name() string            { return g.name }
+
+// 標準 GameObject 生成
+// ここにコンポーネントを足す
+func newStdObject(name string, scene *scene.PlayScene, NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[GameObject] {
+	return func() (*GameObject, error) {
+		t, err := NewTransform()
+		if err != nil {
+			return &GameObject{name: name}, fmt.Errorf("NewTransform() でエラーが発生しました。\n%w", err)
+		}
+		r, err := NewRender()
+		if err != nil {
+			return &GameObject{name: name}, fmt.Errorf("NewRender() でエラーが発生しました。\n%w", err)
+		}
+		h := GameObject{
+			name:  name,
+			Scene: scene,
+			tf:    *t,
+			rd:    *r,
+			cmps:  []Component{},
+		}
+		return &h, nil
+	}
+}
+
+// test
+var _ Utils.Factory[GameObject] = newStdObject("", nil, nil, nil)
