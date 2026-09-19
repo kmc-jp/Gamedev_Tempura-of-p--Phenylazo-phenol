@@ -85,7 +85,6 @@ package Component {
     class TileMap {
         - Tiles []*Tile // タイルの一覧を保持
         - TileSize Vector // タイルの大きさを保持
-        - InitialPosition Position // 端のタイルの座標を保持
         + GameObject *gameObject.GameObject
         + NewTileComponent(obj GameObject) Utils.Factory[Tile]
         + Update(obj GameObject, active bool) (err error)
