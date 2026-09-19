@@ -8,7 +8,9 @@ import (
 
 // 個々の GameObject の定義を書く
 
-func newStdObject(scene *scene.PlayScene, NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[GameObject] {
+// 標準 GameObject 生成
+// ここにコンポーネントを足す
+func newStdObject(name string, scene *scene.PlayScene, NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[GameObject] {
 	return func() (*GameObject, error) {
 		t, err := NewTransform()
 		if err != nil {
@@ -19,6 +21,7 @@ func newStdObject(scene *scene.PlayScene, NewTransform Utils.Factory[Transform],
 			return nil, fmt.Errorf("NewRender() でエラーが発生しました。\n %w", err)
 		}
 		h := GameObject{
+			name:  name,
 			Scene: scene,
 			tf:    *t,
 			rd:    *r,
@@ -29,4 +32,4 @@ func newStdObject(scene *scene.PlayScene, NewTransform Utils.Factory[Transform],
 }
 
 // test
-var _ Utils.Factory[GameObject] = newStdObject(nil, nil, nil)
+var _ Utils.Factory[GameObject] = newStdObject("", nil, nil, nil)
