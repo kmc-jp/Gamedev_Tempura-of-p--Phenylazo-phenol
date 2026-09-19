@@ -14,11 +14,11 @@ func newStdObject(name string, scene *scene.PlayScene, NewTransform Utils.Factor
 	return func() (*GameObject, error) {
 		t, err := NewTransform()
 		if err != nil {
-			return nil, fmt.Errorf("NewTransform() でエラーが発生しました。\n %w", err)
+			return &GameObject{name: name}, fmt.Errorf("NewTransform() でエラーが発生しました。\n%w", err)
 		}
 		r, err := NewRender()
 		if err != nil {
-			return nil, fmt.Errorf("NewRender() でエラーが発生しました。\n %w", err)
+			return &GameObject{name: name}, fmt.Errorf("NewRender() でエラーが発生しました。\n%w", err)
 		}
 		h := GameObject{
 			name:  name,
