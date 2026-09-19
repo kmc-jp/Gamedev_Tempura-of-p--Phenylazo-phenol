@@ -52,7 +52,7 @@ func (g GameObject) Name() string            { return g.name }
 
 // 標準 GameObject 生成
 // ここにコンポーネントを足す
-func newStdObject(name string, scene *scene.PlayScene, NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[GameObject] {
+func NewGameObject(name string, scene *scene.PlayScene, NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[GameObject] {
 	return func() (*GameObject, error) {
 		t, err := NewTransform()
 		if err != nil {
@@ -74,4 +74,4 @@ func newStdObject(name string, scene *scene.PlayScene, NewTransform Utils.Factor
 }
 
 // test
-var _ Utils.Factory[GameObject] = newStdObject("", nil, nil, nil)
+var _ Utils.Factory[GameObject] = NewGameObject("", nil, nil, nil)
