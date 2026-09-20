@@ -3,22 +3,19 @@ package imageassets
 import (
 	"fmt"
 	"io/fs"
-	"mime"
 
-	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/solarlune/goaseprite"
 )
 
 type AsepriteLoader struct {
-	cache map[string]*ebiten.Image
+	cache map[string]*goaseprite.File
 }
 
 func NewAsepriteLoader() (*AsepriteLoader, error) {
-	// mime のシステムに .aseprite を追加
-	mime.AddExtensionType(".aseprite", "image/aseprite")
 	return &AsepriteLoader{}, nil
 }
 
-func (al AsepriteLoader) Load(data ImageData, fs fs.FS) (*ebiten.Image, error) {
+func (al AsepriteLoader) Load(data ImageData, fs fs.FS) (*goaseprite.File, error) {
 	image, ok := al.cache[data.Name]
 	if !ok {
 		image, err := al.fetch(data, fs)
@@ -30,19 +27,11 @@ func (al AsepriteLoader) Load(data ImageData, fs fs.FS) (*ebiten.Image, error) {
 	return image, nil
 }
 
-func (al AsepriteLoader) fetch(data ImageData, fs fs.FS) (*ebiten.Image, error) {
-	png, err := fs.Open(data.PngPath)
+func (al AsepriteLoader) fetch(data ImageData, fs fs.FS) (*goaseprite.File, error) {
+	aspFile, err := goaseprite.Open(data.JsonPath, fs)
 	if err != nil {
-		return nil, fmt.Errorf("AsepriteLoader.fetch(data.PngPath) でエラーが発生しました。\n%w", err)
+		return nil, fmt.Errorf("goaseprite.Open(data.JsonPath) でエラーが発生しました。\n%w", err)
 	}
-	json, err := fs.Open(data.JsonPath)
-	if err != nil {
-		return nil, fmt.Errorf("AsepriteLoader.fetch(data.JsonPath) でエラーが発生しました。\n%w", err)
-	}
-
-	// pngとjsonをasepriteとしてうまいことやる
-	_ = png
-	_ = json
-	// al.cache[data.Name] = image
-	panic("Not Implimented!")
+	al.cache[data.Name] = aspFile
+	return aspFile, nil
 }
