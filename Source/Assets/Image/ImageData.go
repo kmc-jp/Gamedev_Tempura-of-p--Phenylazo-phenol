@@ -22,14 +22,16 @@ func NewImageData(name string, pngpath string, jsonpath string, ImageDirectory f
 		return nil, fmt.Errorf("jsonpath が空です。")
 	}
 
-	pngcleaned := filepath.Clean(filepath.Join("/", pngpath))
+	pngcleaned := filepath.Clean(pngpath)
 	if pngcleaned == "." {
 		return nil, fmt.Errorf("pngpath が不正です。")
 	}
-	jsoncleaned := filepath.Clean(filepath.Join("/", jsonpath))
+	jsoncleaned := filepath.Clean(jsonpath)
 	if jsoncleaned == "." {
 		return nil, fmt.Errorf("jsonpath が不正です。")
 	}
+	pngcleaned = strings.TrimPrefix(pngcleaned, "/")
+	jsoncleaned = strings.TrimPrefix(jsoncleaned, "/")
 
 	pnginfo, pngerr := fs.Stat(ImageDirectory, pngcleaned)
 	if pngerr != nil {
