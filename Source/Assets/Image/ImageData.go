@@ -3,7 +3,6 @@ package imageassets
 import (
 	"fmt"
 	"io/fs"
-	"mime"
 	"path/filepath"
 	"strings"
 )
@@ -11,36 +10,46 @@ import (
 type ImageData struct {
 	Name string
 	// /Assets/Image からの相対パス
-	Path string
-	// 拡張子タイプ
-	mimeType string
+	PngPath  string
+	JsonPath string
 }
 
-func NewImageData(name string, path string, ImageDirectory fs.FS) (*ImageData, error) {
-	if len(strings.TrimSpace(path)) == 0 {
-		return nil, fmt.Errorf("path が空です。")
+func NewImageData(name string, pngpath string, jsonpath string, ImageDirectory fs.FS) (*ImageData, error) {
+	if len(strings.TrimSpace(pngpath)) == 0 {
+		return nil, fmt.Errorf("pngpath が空です。")
+	}
+	if len(strings.TrimSpace(jsonpath)) == 0 {
+		return nil, fmt.Errorf("jsonpath が空です。")
 	}
 
-	cleaned := filepath.Clean(filepath.Join("/", path))
-
-	if cleaned == "." {
-		return nil, fmt.Errorf("path が不正です。")
+	pngcleaned := filepath.Clean(filepath.Join("/", pngpath))
+	if pngcleaned == "." {
+		return nil, fmt.Errorf("pngpath が不正です。")
+	}
+	jsoncleaned := filepath.Clean(filepath.Join("/", jsonpath))
+	if jsoncleaned == "." {
+		return nil, fmt.Errorf("jsonpath が不正です。")
 	}
 
-	info, err := fs.Stat(ImageDirectory, cleaned)
-	if err != nil {
-		return nil, fmt.Errorf("path が使用できません。")
+	pnginfo, pngerr := fs.Stat(ImageDirectory, pngcleaned)
+	if pngerr != nil {
+		return nil, fmt.Errorf("pngpath が使用できません。")
 	}
-	if info.IsDir() {
-		return nil, fmt.Errorf("path はディレクトリです。")
+	if pnginfo.IsDir() {
+		return nil, fmt.Errorf("pngpath はディレクトリです。")
+	}
+	jsoninfo, jsonerr := fs.Stat(ImageDirectory, jsoncleaned)
+	if jsonerr != nil {
+		return nil, fmt.Errorf("jsonpath が使用できません。")
+	}
+	if jsoninfo.IsDir() {
+		return nil, fmt.Errorf("jsonpath はディレクトリです。")
 	}
 
-	ext := filepath.Ext(cleaned)
-	mimeType := mime.TypeByExtension(ext)
 	id := ImageData{
 		Name:     name,
-		Path:     cleaned,
-		mimeType: mimeType,
+		PngPath:  pngcleaned,
+		JsonPath: jsoncleaned,
 	}
 	return &id, nil
 }
