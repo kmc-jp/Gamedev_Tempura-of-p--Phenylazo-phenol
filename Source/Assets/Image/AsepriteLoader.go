@@ -37,7 +37,7 @@ func (al AsepriteLoader) fetch(data ImageData, fs fs.FS) (*goaseprite.File, *ebi
 	if err != nil {
 		return nil, nil, fmt.Errorf("goaseprite.Open(data.JsonPath) でエラーが発生しました。\n%w", err)
 	}
-	img, _, err := ebitenutil.NewImageFromFile(aspFile.ImagePath)
+	img, _, err := ebitenutil.NewImageFromFileSystem(fs, aspFile.ImagePath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("ebitenutil.NewImageFromFile(aspFile.ImagePath) でエラーが発生しました。\n%w", err)
 	}
