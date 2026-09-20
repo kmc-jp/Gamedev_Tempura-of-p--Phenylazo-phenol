@@ -4,6 +4,7 @@ import (
 	imageassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Image"
 	"embed"
 	"fmt"
+	"io/fs"
 )
 
 type AssetsManager struct {
@@ -12,9 +13,13 @@ type AssetsManager struct {
 }
 
 func NewAssetsManager(assetsFS *embed.FS) (*AssetsManager, error) {
-	im, err := imageassets.NewImageManager()
+	imageFS, err := fs.Sub(assetsFS, "Assets/Images")
 	if err != nil {
-		return &AssetsManager{}, fmt.Errorf("ImageManager() でエラーが発生しました。\n%w", err)
+		return nil, fmt.Errorf("ディレクトリの切り出しに失敗しました。\n%w", err)
+	}
+	im, err := imageassets.NewImageManager(imageFS)
+	if err != nil {
+		return nil, fmt.Errorf("ImageManager() でエラーが発生しました。\n%w", err)
 	}
 	return &AssetsManager{
 		Image:    im,
