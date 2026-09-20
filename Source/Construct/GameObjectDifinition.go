@@ -25,7 +25,12 @@ func NewTileObject(name string, data tilemap.TileData, scene *scene.PlayScene, N
 			return o, fmt.Errorf("NewTile() でエラーが発生しました。\n%w", err)
 		}
 	}
-	o.AddComponent(t)
+	err = o.AddComponent(t)
+	if err != nil {
+		return func() (*gameobject.GameObject, error) {
+			return o, fmt.Errorf("GameObject.AddComponent() でエラーが発生しました。\n%w", err)
+		}
+	}
 	return func() (*gameobject.GameObject, error) {
 		return o, nil
 	}
