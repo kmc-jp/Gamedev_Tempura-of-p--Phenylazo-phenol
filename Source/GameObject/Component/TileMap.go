@@ -42,7 +42,7 @@ func NewTileMap(mapdata tilemap.TileMapData) Utils.Factory[TileMap] {
 	}
 }
 
-func (tm TileMap) SetGameObject(scene *scene.PlayScene, NewTileObj func(string, tilemap.TileData, Utils.Position) Utils.Factory[gameobject.GameObject]) error {
+func (tm TileMap) SetGameObject(scene *scene.PlayScene, NewTileObj func(name string, data tilemap.TileData, scene *scene.PlayScene, transformFactry Utils.Factory[gameobject.Transform]) Utils.Factory[gameobject.GameObject], NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform]) error {
 	tilecount := map[tilemap.TileData]int{}
 
 	for pos, t := range tm.Tiles {
@@ -54,8 +54,9 @@ func (tm TileMap) SetGameObject(scene *scene.PlayScene, NewTileObj func(string, 
 
 		// 位置
 		position := pos.ToPosition().PtoV().HadamardProd(tm.TileSize).VtoP()
+		transformFactry := NewTransform(position)
 		// GameObject を作成
-		obj, err := NewTileObj(name, data, position)()
+		obj, err := NewTileObj(name, data, scene, transformFactry)()
 		if err != nil {
 			return fmt.Errorf("NewTileObj() でエラーが発生しました。\n%w", err)
 		}
