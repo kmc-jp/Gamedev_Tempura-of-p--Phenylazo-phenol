@@ -1,11 +1,20 @@
 package assets
 
-import imageassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Image"
+import (
+	imageassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Image"
+	"fmt"
+)
 
 type AssetsManager struct {
-	ImageManager imageassets.ImageManager
+	ImageManager *imageassets.ImageManager
 }
 
 func NewAssetsManager() (*AssetsManager, error) {
-	return &AssetsManager{}, nil
+	im, err := imageassets.NewImageManager()
+	if err != nil {
+		return &AssetsManager{}, fmt.Errorf("ImageManager() でエラーが発生しました。\n%w", err)
+	}
+	return &AssetsManager{
+		ImageManager: im,
+	}, nil
 }
