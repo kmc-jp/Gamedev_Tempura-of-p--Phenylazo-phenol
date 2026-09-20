@@ -81,5 +81,13 @@ func NewGameObject(name string, scene *scene.PlayScene, NewTransform Utils.Facto
 	}
 }
 
+// エラー時等にとりあえず名前だけ付けて返したいとき用
+// エラーは起きない...はず
+func NewMockGameObject(name string) Utils.Factory[GameObject] {
+	return func() (*GameObject, error) {
+		return &GameObject{name: name}, nil
+	}
+}
+
 // test
 var _ Utils.Factory[GameObject] = NewGameObject("", nil, nil, nil)
