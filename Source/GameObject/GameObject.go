@@ -28,6 +28,14 @@ func (g GameObject) GetComponent(target reflect.Type) (component Component, err 
 	return nil, fmt.Errorf("%s に %s が存在しません。", g.Name(), target.Name())
 }
 
+func (g GameObject) AddComponent(component Component) error {
+	if component == nil {
+		return fmt.Errorf("component が nil です。")
+	}
+	g.cmps = append(g.cmps, component)
+	return nil
+}
+
 func (g GameObject) Update(active bool) (err error) {
 	for _, c := range g.components() {
 		if err := c.Update(active); err != nil {
