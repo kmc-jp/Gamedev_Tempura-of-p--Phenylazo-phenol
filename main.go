@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"log"
 
 	construct "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Construct"
@@ -8,6 +9,11 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
+
+// 「Assets」フォルダ配下のすべてのファイルを埋め込む
+//
+//go:embed Assets/*
+var assetsFS embed.FS
 
 func main() {
 	// ゲーム起動
