@@ -26,7 +26,7 @@ func NewStdRender(asp *goaseprite.File, img *ebiten.Image) Utils.Factory[*StdRen
 
 func NewEmptyRender() (*StdRender, error) {
 	r := StdRender{
-		img: ebiten.NewImage(0, 0),
+		img: ebiten.NewImage(1, 1),
 	}
 	return &r, nil
 }
