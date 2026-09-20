@@ -36,7 +36,10 @@ func NewTileMap(mapdata tilemap.TileMapData) Utils.Factory[*TileMap] {
 		// tilelist に登録
 		tilelist[pos] = t
 	}
-	t := TileMap{}
+	t := TileMap{
+		Tiles:    tilelist,
+		TileSize: mapdata.TileSize,
+	}
 	return func() (*TileMap, error) {
 		return &t, nil
 	}
@@ -52,7 +55,10 @@ func (tm TileMap) SetGameObject(
 	) Utils.Factory[*gameobject.GameObject],
 	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
 ) error {
+	println("TileMap.SetGameObject()")
+
 	tilecount := map[tilemap.TileData]int{}
+	fmt.Printf("tilecount : %d\n", len(tm.Tiles))
 
 	for pos, t := range tm.Tiles {
 		data := t.Data
@@ -71,6 +77,8 @@ func (tm TileMap) SetGameObject(
 		}
 
 		scene.AddEntity(obj)
+
+		fmt.Printf("Tile %s が追加されました。\n", obj.Name())
 	}
 	return nil
 }
