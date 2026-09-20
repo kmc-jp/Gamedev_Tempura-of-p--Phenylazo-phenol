@@ -42,7 +42,16 @@ func NewTileMap(mapdata tilemap.TileMapData) Utils.Factory[TileMap] {
 	}
 }
 
-func (tm TileMap) SetGameObject(scene *scene.PlayScene, NewTileObj func(name string, data tilemap.TileData, scene *scene.PlayScene, transformFactry Utils.Factory[gameobject.Transform]) Utils.Factory[gameobject.GameObject], NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform]) error {
+func (tm TileMap) SetGameObject(
+	scene *scene.PlayScene,
+	NewTileObj func(
+		name string,
+		data tilemap.TileData,
+		scene *scene.PlayScene,
+		transformFactry Utils.Factory[gameobject.Transform],
+	) Utils.Factory[gameobject.GameObject],
+	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
+) error {
 	tilecount := map[tilemap.TileData]int{}
 
 	for pos, t := range tm.Tiles {
