@@ -15,7 +15,11 @@ type AsepriteLoader struct {
 }
 
 func NewAsepriteLoader() (*AsepriteLoader, error) {
-	return &AsepriteLoader{}, nil
+	al := AsepriteLoader{
+		cacheAseprite: map[string]*goaseprite.File{},
+		cacheImage:    map[string]*ebiten.Image{},
+	}
+	return &al, nil
 }
 
 func (al AsepriteLoader) Load(data ImageData, fs fs.FS) (*goaseprite.File, *ebiten.Image, error) {
