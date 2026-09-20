@@ -14,7 +14,7 @@ func NewStdRender() (*StdRender, error) {
 }
 
 // test
-var _ Utils.Factory[StdRender] = NewStdRender
+var _ Utils.Factory[*StdRender] = NewStdRender
 
 func (r StdRender) Draw() (scene *ebiten.Image) {
 	panic("Not implemented!")
