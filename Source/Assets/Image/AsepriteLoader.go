@@ -21,7 +21,7 @@ func NewAsepriteLoader() (*AsepriteLoader, error) {
 func (al AsepriteLoader) Load(data ImageData, fs fs.FS) (*ebiten.Image, error) {
 	image, ok := al.cache[data.Name]
 	if !ok {
-		image, err := al.fetch(data.Path, fs)
+		image, err := al.fetch(data, fs)
 		if err != nil {
 			return nil, fmt.Errorf("AsepriteLoader.fetch() でエラーが発生しました。\n%w", err)
 		}
@@ -30,6 +30,19 @@ func (al AsepriteLoader) Load(data ImageData, fs fs.FS) (*ebiten.Image, error) {
 	return image, nil
 }
 
-func (al AsepriteLoader) fetch(path string, fs fs.FS) (*ebiten.Image, error) {
+func (al AsepriteLoader) fetch(data ImageData, fs fs.FS) (*ebiten.Image, error) {
+	png, err := fs.Open(data.PngPath)
+	if err != nil {
+		return nil, fmt.Errorf("AsepriteLoader.fetch(data.PngPath) でエラーが発生しました。\n%w", err)
+	}
+	json, err := fs.Open(data.JsonPath)
+	if err != nil {
+		return nil, fmt.Errorf("AsepriteLoader.fetch(data.JsonPath) でエラーが発生しました。\n%w", err)
+	}
+
+	// pngとjsonをasepriteとしてうまいことやる
+	_ = png
+	_ = json
+	// al.cache[data.Name] = image
 	panic("Not Implimented!")
 }
