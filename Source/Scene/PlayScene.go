@@ -11,8 +11,8 @@ import (
 
 // メインの遊べるシーン
 type PlayScene struct {
-	objects []Entity
-	drawer  Drawer
+	entities []Entity
+	drawer   Drawer
 }
 
 func NewPlayScene() (*PlayScene, error) {
@@ -22,15 +22,15 @@ func NewPlayScene() (*PlayScene, error) {
 		return &PlayScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 	}
 	ps := PlayScene{
-		objects: []Entity{},
-		drawer:  camera,
+		entities: []Entity{},
+		drawer:   camera,
 	}
 	// なにもしない
 	return &ps, nil
 }
 
 // test
-var _ Utils.Factory[PlayScene] = NewPlayScene
+var _ Utils.Factory[*PlayScene] = NewPlayScene
 
 // Name implements [Scene].
 func (s PlayScene) Name() string {
@@ -39,11 +39,15 @@ func (s PlayScene) Name() string {
 
 // Draw implements [Scene].
 func (s PlayScene) Draw(screen *ebiten.Image) {
-	s.drawer.Draw(screen, s.objects, Utils.Position{})
+	s.drawer.Draw(screen, s.entities, Utils.Position{})
 }
 
 // Update implements [Scene].
 func (s PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
 	// なにもしない
 	return
+}
+
+func (s PlayScene) AddEntity(e Entity) {
+	s.entities = append(s.entities, e)
 }

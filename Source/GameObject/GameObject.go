@@ -28,6 +28,14 @@ func (g GameObject) GetComponent(target reflect.Type) (component Component, err 
 	return nil, fmt.Errorf("%s に %s が存在しません。", g.Name(), target.Name())
 }
 
+func (g GameObject) AddComponent(component Component) error {
+	if component == nil {
+		return fmt.Errorf("component が nil です。")
+	}
+	g.cmps = append(g.cmps, component)
+	return nil
+}
+
 func (g GameObject) Update(active bool) (err error) {
 	for _, c := range g.components() {
 		if err := c.Update(active); err != nil {
@@ -50,25 +58,36 @@ func (g GameObject) render() Render          { return g.rd }
 func (g GameObject) components() []Component { return g.cmps }
 func (g GameObject) Name() string            { return g.name }
 
-func NewHogeObject(scene *scene.PlayScene, NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[GameObject] {
+// 標準 GameObject 生成
+// ここにコンポーネントを足す
+func NewGameObject(name string, scene *scene.PlayScene, NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[*GameObject] {
 	return func() (*GameObject, error) {
 		t, err := NewTransform()
 		if err != nil {
-			return nil, fmt.Errorf("NewTransform() でエラーが発生しました。\n %w", err)
+			return &GameObject{name: name}, fmt.Errorf("NewTransform() でエラーが発生しました。\n%w", err)
 		}
 		r, err := NewRender()
 		if err != nil {
-			return nil, fmt.Errorf("NewRender() でエラーが発生しました。\n %w", err)
+			return &GameObject{name: name}, fmt.Errorf("NewRender() でエラーが発生しました。\n%w", err)
 		}
 		h := GameObject{
+			name:  name,
 			Scene: scene,
-			tf:    *t,
-			rd:    *r,
+			tf:    t,
+			rd:    r,
 			cmps:  []Component{},
 		}
 		return &h, nil
 	}
 }
 
+// エラー時等にとりあえず名前だけ付けて返したいとき用
+// エラーは起きない...はず
+func NewMockGameObject(name string) Utils.Factory[*GameObject] {
+	return func() (*GameObject, error) {
+		return &GameObject{name: name}, nil
+	}
+}
+
 // test
-var _ Utils.Factory[GameObject] = NewHogeObject(nil, nil, nil)
+var _ Utils.Factory[*GameObject] = NewGameObject("", nil, nil, nil)

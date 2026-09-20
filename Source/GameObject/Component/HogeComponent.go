@@ -16,7 +16,7 @@ func (h HogeComponent) Update(active bool) (err error) {
 	return nil
 }
 
-func NewHogeComponent(gameobject *gameobject.GameObject) Utils.Factory[HogeComponent] {
+func NewHogeComponent(gameobject *gameobject.GameObject) Utils.Factory[*HogeComponent] {
 	return func() (*HogeComponent, error) {
 		c := HogeComponent{
 			GameObject: gameobject,
@@ -26,4 +26,4 @@ func NewHogeComponent(gameobject *gameobject.GameObject) Utils.Factory[HogeCompo
 }
 
 // test
-var _ Utils.Factory[HogeComponent] = NewHogeComponent(nil)
+var _ Utils.Factory[*HogeComponent] = NewHogeComponent(nil)

@@ -36,4 +36,4 @@ func NewMockCamera() (*MockCamera, error) {
 }
 
 // test
-var _ Utils.Factory[MockCamera] = NewMockCamera
+var _ Utils.Factory[*MockCamera] = NewMockCamera

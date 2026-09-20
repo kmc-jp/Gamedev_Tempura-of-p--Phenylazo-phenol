@@ -9,12 +9,12 @@ import (
 type StdRender struct {
 }
 
-func NewRender() (*StdRender, error) {
+func NewStdRender() (*StdRender, error) {
 	return &StdRender{}, nil
 }
 
 // test
-var _ Utils.Factory[StdRender] = NewRender
+var _ Utils.Factory[*StdRender] = NewStdRender
 
 func (r StdRender) Draw() (scene *ebiten.Image) {
 	panic("Not implemented!")
