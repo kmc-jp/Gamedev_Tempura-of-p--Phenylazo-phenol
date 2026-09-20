@@ -81,6 +81,3 @@ func NewTileMapObject(name string, mapdata tilemap.TileMapData, PlScene *scene.P
 		return o, nil
 	}
 }
-
-// test
-var _ Utils.Factory[*gameobject.GameObject] = NewTileObject("", tilemap.TileData{}, nil, nil, nil)
