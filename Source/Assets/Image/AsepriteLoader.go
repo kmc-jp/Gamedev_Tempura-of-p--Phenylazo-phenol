@@ -33,6 +33,8 @@ func (al AsepriteLoader) Load(data ImageData, fs fs.FS) (*goaseprite.File, *ebit
 		al.cacheAseprite[data.Name] = asp
 		al.cacheImage[data.Name] = img
 	}
+	asp, _ = al.cacheAseprite[data.Name]
+	img, _ = al.cacheImage[data.Name]
 	return asp, img, nil
 }
 
