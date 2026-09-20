@@ -1,16 +1,20 @@
 package construct
 
 import (
+	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
 	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
 	component "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject/Component"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	tilemap "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/TileMap"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/solarlune/goaseprite"
 )
 
 // とりあえず PlayScene を組み立てる
-func PlaySceneConstruct() Utils.Factory[*scene.PlayScene] {
+func PlaySceneConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*scene.PlayScene] {
 	playscene, err := scene.NewPlayScene()
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
@@ -30,11 +34,11 @@ func PlaySceneConstruct() Utils.Factory[*scene.PlayScene] {
 			return tf, err
 		}
 	}
-	NewRenderer := func() (gameobject.Render, error) {
-		rnd, err := component.NewStdRender()
-		return rnd, err
+	NewRenderer := func(asp *goaseprite.File, img *ebiten.Image) Utils.Factory[gameobject.Render] {
+		rnd, err := component.NewStdRender(asp, img)()
+		return func() (gameobject.Render, error) { return rnd, err }
 	}
-	tilemapobj, err := NewTileMapObject("TileMapObj", mapdata, playscene, NewTransform, NewRenderer)()
+	tilemapobj, err := NewTileMapObject("TileMapObj", mapdata, playscene, NewTransform, NewRenderer, assetsManager)()
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
 			return playscene, fmt.Errorf("NewTileMapObject() でエラーが発生しました。\n%w", err)
