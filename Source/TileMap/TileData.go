@@ -8,3 +8,7 @@ type TileData struct {
 	Name      string
 	ImageData imageassets.ImageData
 }
+
+func NewTileData(name string, imgData imageassets.ImageData) (*TileData, error) {
+	return &TileData{Name: name, ImageData: imgData}, nil
+}
