@@ -46,14 +46,27 @@ https://ebitengine.org/en/documents/install.html?os=windows
 /
 ├── Assets
 │   ├── Images
-│   │   └── img
 │   └── Sounds
-│       └── snd
+├── Docs
 ├── Source
+│   ├── Construct
+│   │   └── 諸々の初期構築周りをやる
+│   ├── Game
+│   │   └── ebiten.Game とシーン管理
+│   ├── GameObject
+│   │   ├── PlayScene の GameObject 周り
+│   │   └── Component
+│   │   　   └── 各種コンポーネント
 │   ├── HogeScene
-│   │   └── hoge
-│   ├── Utils
-│   └── Src
+│   │   └── いらない
+│   ├── Scene
+│   │   ├── シーン内の管理諸々
+│   │   └── SceneTransitionType
+│   │   　   └── シーン遷移パターンを定義
+│   ├── TileMap
+│   │   └── PlayScene の TileMap 周りの定義
+│   └── Utils
+│   　   └── ユーティリティ
 ├── go.mod
 ├── go.sum
 ├── LISENCE
