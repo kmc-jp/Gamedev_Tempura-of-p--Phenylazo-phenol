@@ -6,7 +6,7 @@ import (
 )
 
 type AssetsManager struct {
-	ImageManager *imageassets.ImageManager
+	Image *imageassets.ImageManager
 }
 
 func NewAssetsManager() (*AssetsManager, error) {
@@ -15,6 +15,6 @@ func NewAssetsManager() (*AssetsManager, error) {
 		return &AssetsManager{}, fmt.Errorf("ImageManager() でエラーが発生しました。\n%w", err)
 	}
 	return &AssetsManager{
-		ImageManager: im,
+		Image: im,
 	}, nil
 }
