@@ -33,14 +33,14 @@ func NewImageData(name string, pngpath string, jsonpath string, ImageDirectory f
 
 	pnginfo, pngerr := fs.Stat(ImageDirectory, pngcleaned)
 	if pngerr != nil {
-		return nil, fmt.Errorf("pngpath が使用できません。")
+		return nil, fmt.Errorf("pngpath が使用できません。\n%w", pngerr)
 	}
 	if pnginfo.IsDir() {
 		return nil, fmt.Errorf("pngpath はディレクトリです。")
 	}
 	jsoninfo, jsonerr := fs.Stat(ImageDirectory, jsoncleaned)
 	if jsonerr != nil {
-		return nil, fmt.Errorf("jsonpath が使用できません。")
+		return nil, fmt.Errorf("jsonpath が使用できません。\n%w", jsonerr)
 	}
 	if jsoninfo.IsDir() {
 		return nil, fmt.Errorf("jsonpath はディレクトリです。")
