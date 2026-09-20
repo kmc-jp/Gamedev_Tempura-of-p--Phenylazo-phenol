@@ -7,6 +7,7 @@ import (
 )
 
 type Tile struct {
+	Data tilemap.TileData
 }
 
 // test
