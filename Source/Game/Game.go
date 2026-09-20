@@ -76,9 +76,9 @@ func (g *Game) Update() error {
 		}
 		newScene, err := nextScene()
 		if err != nil {
-			return fmt.Errorf("Scene %s の初期化中にエラーが発生しました \n %w", (*newScene).Name(), err)
+			return fmt.Errorf("Scene %s の初期化中にエラーが発生しました \n %w", (newScene).Name(), err)
 		}
-		g.ActiveScene = *newScene
+		g.ActiveScene = newScene
 	}
 	return nil
 }

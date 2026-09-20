@@ -21,7 +21,7 @@ func (h TileMap) Update(active bool) (err error) {
 	return nil
 }
 
-func NewTileMap(mapdata tilemap.TileMapData) Utils.Factory[TileMap] {
+func NewTileMap(mapdata tilemap.TileMapData) Utils.Factory[*TileMap] {
 	c := len(mapdata.MapData)
 	tilelist := make(map[tilemap.TilePosition]*Tile, c)
 
@@ -49,7 +49,7 @@ func (tm TileMap) SetGameObject(
 		data tilemap.TileData,
 		scene *scene.PlayScene,
 		transformFactry Utils.Factory[gameobject.Transform],
-	) Utils.Factory[gameobject.GameObject],
+	) Utils.Factory[*gameobject.GameObject],
 	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
 ) error {
 	tilecount := map[tilemap.TileData]int{}
@@ -74,6 +74,3 @@ func (tm TileMap) SetGameObject(
 	}
 	return nil
 }
-
-// test
-var _ Utils.Factory[HogeComponent] = NewHogeComponent(nil)

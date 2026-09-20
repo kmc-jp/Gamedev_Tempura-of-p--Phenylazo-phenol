@@ -14,14 +14,14 @@ func (s StdTransform) Position() Utils.Position {
 	return s.position
 }
 
-func NewStdTransform(position Utils.Position) Utils.Factory[StdTransform] {
+func NewStdTransform(position Utils.Position) Utils.Factory[*StdTransform] {
 	return func() (*StdTransform, error) {
 		return &StdTransform{position: position}, nil
 	}
 }
 
 // test
-var _ Utils.Factory[StdTransform] = NewStdTransform(Utils.Position{})
+var _ Utils.Factory[*StdTransform] = NewStdTransform(Utils.Position{})
 
 func test() {
 	var _ gameobject.Transform = StdTransform{}

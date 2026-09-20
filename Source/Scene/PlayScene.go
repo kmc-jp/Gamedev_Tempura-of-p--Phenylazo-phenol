@@ -30,7 +30,7 @@ func NewPlayScene() (*PlayScene, error) {
 }
 
 // test
-var _ Utils.Factory[PlayScene] = NewPlayScene
+var _ Utils.Factory[*PlayScene] = NewPlayScene
 
 // Name implements [Scene].
 func (s PlayScene) Name() string {

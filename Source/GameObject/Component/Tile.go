@@ -18,12 +18,9 @@ func (h Tile) Update(active bool) (err error) {
 	return nil
 }
 
-func NewTile(tile tilemap.TileData) Utils.Factory[Tile] {
+func NewTile(tile tilemap.TileData) Utils.Factory[*Tile] {
 	return func() (*Tile, error) {
 		t := Tile{}
 		return &t, nil
 	}
 }
-
-// test
-var _ Utils.Factory[HogeComponent] = NewHogeComponent(nil)

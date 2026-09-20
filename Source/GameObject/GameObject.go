@@ -60,7 +60,7 @@ func (g GameObject) Name() string            { return g.name }
 
 // 標準 GameObject 生成
 // ここにコンポーネントを足す
-func NewGameObject(name string, scene *scene.PlayScene, NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[GameObject] {
+func NewGameObject(name string, scene *scene.PlayScene, NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[*GameObject] {
 	return func() (*GameObject, error) {
 		t, err := NewTransform()
 		if err != nil {
@@ -73,8 +73,8 @@ func NewGameObject(name string, scene *scene.PlayScene, NewTransform Utils.Facto
 		h := GameObject{
 			name:  name,
 			Scene: scene,
-			tf:    *t,
-			rd:    *r,
+			tf:    t,
+			rd:    r,
 			cmps:  []Component{},
 		}
 		return &h, nil
@@ -83,11 +83,11 @@ func NewGameObject(name string, scene *scene.PlayScene, NewTransform Utils.Facto
 
 // エラー時等にとりあえず名前だけ付けて返したいとき用
 // エラーは起きない...はず
-func NewMockGameObject(name string) Utils.Factory[GameObject] {
+func NewMockGameObject(name string) Utils.Factory[*GameObject] {
 	return func() (*GameObject, error) {
 		return &GameObject{name: name}, nil
 	}
 }
 
 // test
-var _ Utils.Factory[GameObject] = NewGameObject("", nil, nil, nil)
+var _ Utils.Factory[*GameObject] = NewGameObject("", nil, nil, nil)

@@ -12,7 +12,7 @@ import (
 // 個々の GameObject の定義を書く
 
 // タイルマップ関連
-func NewTileObject(name string, data tilemap.TileData, scene *scene.PlayScene, NewTransform Utils.Factory[gameobject.Transform], NewRender Utils.Factory[gameobject.Render]) Utils.Factory[gameobject.GameObject] {
+func NewTileObject(name string, data tilemap.TileData, scene *scene.PlayScene, NewTransform Utils.Factory[gameobject.Transform], NewRender Utils.Factory[gameobject.Render]) Utils.Factory[*gameobject.GameObject] {
 	o, err := gameobject.NewGameObject(name, scene, NewTransform, NewRender)()
 	if err != nil {
 		return func() (*gameobject.GameObject, error) {
@@ -36,7 +36,7 @@ func NewTileObject(name string, data tilemap.TileData, scene *scene.PlayScene, N
 	}
 }
 
-func NewTileMapObject(name string, mapdata tilemap.TileMapData, PlScene *scene.PlayScene, NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform], NewRender Utils.Factory[gameobject.Render]) Utils.Factory[gameobject.GameObject] {
+func NewTileMapObject(name string, mapdata tilemap.TileMapData, PlScene *scene.PlayScene, NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform], NewRender Utils.Factory[gameobject.Render]) Utils.Factory[*gameobject.GameObject] {
 	o, err := gameobject.NewGameObject(name, PlScene, NewTransform(Utils.NewZeroVec2().VtoP()), NewRender)()
 	if err != nil {
 		return func() (*gameobject.GameObject, error) {
@@ -63,7 +63,7 @@ func NewTileMapObject(name string, mapdata tilemap.TileMapData, PlScene *scene.P
 		data tilemap.TileData,
 		Scene *scene.PlayScene,
 		transformFactry Utils.Factory[gameobject.Transform],
-	) Utils.Factory[gameobject.GameObject] {
+	) Utils.Factory[*gameobject.GameObject] {
 		return func() (*gameobject.GameObject, error) {
 			toFactory := NewTileObject(name, data, Scene, transformFactry, NewRender)
 			return toFactory()
@@ -83,4 +83,4 @@ func NewTileMapObject(name string, mapdata tilemap.TileMapData, PlScene *scene.P
 }
 
 // test
-var _ Utils.Factory[gameobject.GameObject] = NewTileObject("", tilemap.TileData{}, nil, nil, nil)
+var _ Utils.Factory[*gameobject.GameObject] = NewTileObject("", tilemap.TileData{}, nil, nil, nil)
