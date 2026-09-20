@@ -2,12 +2,14 @@ package component
 
 import (
 	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
+	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	tilemap "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/TileMap"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+	"fmt"
 )
 
 type TileMap struct {
-	Tiles    []*Tile
+	Tiles    map[tilemap.TilePosition]*Tile
 	TileSize Utils.Vec2
 }
 
@@ -38,6 +40,29 @@ func NewTileMap(mapdata tilemap.TileMapData) Utils.Factory[TileMap] {
 	return func() (*TileMap, error) {
 		return &t, nil
 	}
+}
+
+func (tm TileMap) SetGameObject(scene *scene.PlayScene, NewTileObj func(string, tilemap.TileData, Utils.Position) Utils.Factory[gameobject.GameObject]) error {
+	tilecount := map[tilemap.TileData]int{}
+
+	for pos, t := range tm.Tiles {
+		data := t.Data
+		// 名前
+		i, _ := tilecount[data]
+		tilecount[data] = i + 1 // キーが存在しなければ i = 0 なので問題なし
+		name := fmt.Sprintf("%s%d", data.Name, i+1)
+
+		// 位置
+		position := pos.ToPosition().PtoV().HadamardProd(tm.TileSize).VtoP()
+		// GameObject を作成
+		obj, err := NewTileObj(name, data, position)()
+		if err != nil {
+			return fmt.Errorf("NewTileObj() でエラーが発生しました。\n&w", err)
+		}
+
+		scene.AddEntity(obj)
+	}
+	return nil
 }
 
 // test
