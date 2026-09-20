@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/solarlune/goaseprite"
 )
 
@@ -20,10 +21,10 @@ func NewImageManager(imageFS fs.FS) (*ImageManager, error) {
 	return &ImageManager{asepriteLoader: al, imageFS: imageFS}, nil
 }
 
-func (im ImageManager) Load(data ImageData) (*goaseprite.File, error) {
-	i, err := im.asepriteLoader.Load(data, im.imageFS)
+func (im ImageManager) Load(data ImageData) (*goaseprite.File, *ebiten.Image, error) {
+	asp, img, err := im.asepriteLoader.Load(data, im.imageFS)
 	if err != nil {
-		return nil, fmt.Errorf("asepriteLoader.Load() でエラーが発生しました。\n%w", err)
+		return nil, img, fmt.Errorf("asepriteLoader.Load() でエラーが発生しました。\n%w", err)
 	}
-	return i, nil
+	return asp, img, nil
 }
