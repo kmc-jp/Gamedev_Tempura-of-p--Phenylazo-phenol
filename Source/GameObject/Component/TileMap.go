@@ -57,7 +57,7 @@ func (tm TileMap) SetGameObject(scene *scene.PlayScene, NewTileObj func(string, 
 		// GameObject を作成
 		obj, err := NewTileObj(name, data, position)()
 		if err != nil {
-			return fmt.Errorf("NewTileObj() でエラーが発生しました。\n&w", err)
+			return fmt.Errorf("NewTileObj() でエラーが発生しました。\n%w", err)
 		}
 
 		scene.AddEntity(obj)
