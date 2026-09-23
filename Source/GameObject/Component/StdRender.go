@@ -9,19 +9,30 @@ import (
 	"github.com/solarlune/goaseprite"
 )
 
+// 静止画像を映すRender
 type StdRender struct {
 	asp *goaseprite.File
 	img *ebiten.Image
 }
 
 func NewStdRender(asp *goaseprite.File, img *ebiten.Image) Utils.Factory[*StdRender] {
-	println("NewStdRender()")
-	sub := img.SubImage(image.Rect(asp.CreatePlayer().CurrentFrameCoords()))
+	player := asp.CreatePlayer()
+
+	startTag := asp.Tags[0]
+
+	err := player.Play(startTag.Name)
+	if err != nil {
+		return func() (*StdRender, error) {
+			return nil, fmt.Errorf("goaseprite.File.CreatePlayer().Play(\"\") でエラーが発生しました。\n%w", err)
+		}
+	}
+
+	sub := img.SubImage(image.Rect(player.CurrentFrameCoords())).(*ebiten.Image)
+
 	rndr := StdRender{
 		asp: asp,
-		img: sub.(*ebiten.Image),
+		img: sub,
 	}
-	fmt.Printf("image : %s\n", img.Bounds().Max)
 	return func() (*StdRender, error) {
 		return &rndr, nil
 	}
