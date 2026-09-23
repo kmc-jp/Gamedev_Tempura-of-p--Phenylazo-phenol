@@ -19,7 +19,7 @@ func (m MockCamera) Draw(screen *ebiten.Image, objects []Entity, center Utils.Po
 
 		posx, posy := pos.X, pos.Y
 		sizex, sizey := image.Bounds().Dx(), image.Bounds().Dy()
-		iposx, iposy := math.Floor(posx-float64(sizex)/2), math.Floor(posy-float64(sizey))
+		iposx, iposy := math.Floor(posx-float64(sizex)/2), math.Floor(posy-float64(sizey)/2)
 
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(iposx, iposy)

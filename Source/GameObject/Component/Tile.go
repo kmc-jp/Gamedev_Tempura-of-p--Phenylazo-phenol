@@ -20,7 +20,9 @@ func (h Tile) Update(active bool) (err error) {
 
 func NewTile(tile tilemap.TileData) Utils.Factory[*Tile] {
 	return func() (*Tile, error) {
-		t := Tile{}
+		t := Tile{
+			Data: tile,
+		}
 		return &t, nil
 	}
 }
