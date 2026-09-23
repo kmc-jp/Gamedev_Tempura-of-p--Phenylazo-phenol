@@ -23,7 +23,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*scen
 		}
 	}
 
-	ShelfImgData, err := imageassets.NewImageData("Shelf", "みんげー_棚.png", "みんげー_棚.json", assetsManager.Image.ImageFS)
+	ShelfImgData, err := imageassets.NewImageData("Shelf", "みんげー_棚.png", "みんげー_棚.json", assetsManager.Image)
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
 			return playscene, fmt.Errorf("imageassets.NewImageData(\"Shelf\", \"みんげー_棚.png\", \"みんげー_棚.json\", assetsManager.Image.ImageFS) でエラーが発生しました。\n%w", err)
