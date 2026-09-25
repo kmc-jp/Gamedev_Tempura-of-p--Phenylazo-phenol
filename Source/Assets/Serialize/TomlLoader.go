@@ -6,17 +6,17 @@ import (
 )
 
 type TomlLoader struct {
-	cacheToml map[string]any
+	cacheToml map[string]Serializable
 }
 
 func NewTomlLoader() (*TomlLoader, error) {
 	tl := TomlLoader{
-		cacheToml: map[string]any{},
+		cacheToml: map[string]Serializable{},
 	}
 	return &tl, nil
 }
 
-func (tl TomlLoader) Load(data SerializeData, fs fs.FS) (any, error) {
+func (tl TomlLoader) Load(data SerializeData, fs fs.FS) (Serializable, error) {
 	_, ok := tl.cacheToml[data.Name]
 	if !ok {
 		item, err := tl.fetch(data, fs)
@@ -29,6 +29,6 @@ func (tl TomlLoader) Load(data SerializeData, fs fs.FS) (any, error) {
 	return item, nil
 }
 
-func (tl TomlLoader) fetch(data SerializeData, fs fs.FS) (any, error) {
+func (tl TomlLoader) fetch(data SerializeData, fs fs.FS) (Serializable, error) {
 	return nil, fmt.Errorf("TomlLoader.fetch() は未実装です。")
 }

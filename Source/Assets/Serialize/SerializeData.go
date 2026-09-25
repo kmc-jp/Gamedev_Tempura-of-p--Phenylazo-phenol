@@ -22,5 +22,10 @@ func NewSerializeData(name string, Type reflect.Type, path string, serializeMana
 		Name: name,
 		Path: cleanedPath,
 	}
+
+	if !Type.Implements(reflect.TypeFor[Serializable]()) {
+		return nil, fmt.Errorf("Type %s は Serializable interface を実装していません。", Type.Name())
+	}
+
 	return &id, nil
 }
