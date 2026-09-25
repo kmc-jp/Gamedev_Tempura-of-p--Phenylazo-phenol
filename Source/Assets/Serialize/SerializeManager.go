@@ -23,7 +23,7 @@ func NewSerializeManager(serializeFS fs.FS) (*SerializeManager, error) {
 func (im SerializeManager) Load(data SerializeData) (any, error) {
 	item, err := im.tomlLoader.Load(data, im.SerializeFS)
 	if err != nil {
-		return nil, fmt.Errorf("asepriteLoader.Load() でエラーが発生しました。\n%w", err)
+		return nil, fmt.Errorf("tomlLoader.Load() でエラーが発生しました。\n%w", err)
 	}
 	return item, nil
 }
