@@ -31,6 +31,6 @@ func main() {
 	}
 	ebiten.SetFullscreen(true)
 	if err := ebiten.RunGame(&game); err != nil {
-		log.Fatal(err)
+		log.Fatal("ゲームがクラッシュしました。\n%w", err)
 	}
 }
