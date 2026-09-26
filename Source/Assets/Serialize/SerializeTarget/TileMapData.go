@@ -17,7 +17,7 @@ type TileMapData struct {
 	// デコードされない : ファイルパスを入れておく
 	filePath string
 	// デコードされない
-	imageManager imageassets.ImageManager
+	imageManager *imageassets.ImageManager
 	// デコードされない : 初期化した？
 	isInitialized bool
 }
@@ -28,7 +28,7 @@ type TileData struct {
 	PngPath  string
 }
 
-func (tmd *TileMapData) Init(filePath string, imageManager imageassets.ImageManager) {
+func (tmd *TileMapData) Init(filePath string, imageManager *imageassets.ImageManager) {
 	tmd.filePath = filePath
 	tmd.imageManager = imageManager
 	tmd.isInitialized = true
@@ -42,7 +42,7 @@ func (tmd TileMapData) Construct() (any, error) {
 
 	Tiles := map[string]*tilemap.TileData{}
 	for tilekey, tiledata := range tmd.TileData {
-		imagedata, err := imageassets.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath, &tmd.imageManager)
+		imagedata, err := imageassets.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath, tmd.imageManager)
 		if err != nil {
 			return nil, fmt.Errorf("imageassets.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath, &tmd.imageManager) でエラーが発生しました。\nfilePath: %s, tiledata.Name: %s, tiledata.PngPath: %s, tiledata.JsonPath: %s\n%w", tmd.filePath, tiledata.Name, tiledata.PngPath, tiledata.JsonPath, err)
 		}
