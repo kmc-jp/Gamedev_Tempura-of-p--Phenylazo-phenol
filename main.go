@@ -19,7 +19,7 @@ var assetsFS embed.FS
 func main() {
 	AssetsManager, err := assets.NewAssetsManager(&assetsFS)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("assets.NewAssetsManager(&assetsFS) でエラーが発生しました。\n%w", err)
 	}
 	// ゲーム起動
 	initScene, err := construct.PlaySceneConstruct(AssetsManager)() // 起動時に表示されるシーン
