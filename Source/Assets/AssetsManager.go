@@ -24,7 +24,7 @@ func NewAssetsManager(assetsFS *embed.FS) (*AssetsManager, error) {
 		return nil, fmt.Errorf("NewImageManager() でエラーが発生しました。\n%w", err)
 	}
 
-	serializeFS, err := fs.Sub(assetsFS, "Assers/Serialize")
+	serializeFS, err := fs.Sub(assetsFS, "Assets/Serialize")
 	if err != nil {
 		return nil, fmt.Errorf("ディレクトリの切り出しに失敗しました。\n%w", err)
 	}
