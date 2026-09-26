@@ -53,7 +53,7 @@ func (tmd TileMapData) Construct() (any, error) {
 	mapdata := map[tilemap.TilePosition]*tilemap.TileData{}
 	for posstr, tilekey := range tmd.MapData {
 		pos := tilemap.TilePosition{}
-		_, err := fmt.Scanf(posstr, "%d,%d", &pos.X, &pos.Y)
+		_, err := fmt.Sscanf(posstr, "%d,%d", &pos.X, &pos.Y)
 		if err != nil {
 			return nil, fmt.Errorf("MapData のキーが不正です。 \"x,y\" の形式で入力してください。\nfilePath: %s, key: %s\n%w", tmd.filePath, posstr, err)
 		}
