@@ -18,13 +18,14 @@ func NewSerializeData(name string, Type reflect.Type, path string, serializeMana
 		return nil, fmt.Errorf("path が不正です。\n%w", err)
 	}
 
+	if !Type.Implements(reflect.TypeFor[Serializable]()) {
+		return nil, fmt.Errorf("Type %s は Serializable interface を実装していません。", Type.Name())
+	}
+
 	id := SerializeData{
 		Name: name,
 		Path: cleanedPath,
-	}
-
-	if !Type.Implements(reflect.TypeFor[Serializable]()) {
-		return nil, fmt.Errorf("Type %s は Serializable interface を実装していません。", Type.Name())
+		Type: Type,
 	}
 
 	return &id, nil
