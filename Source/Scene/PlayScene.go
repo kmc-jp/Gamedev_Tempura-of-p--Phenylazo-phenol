@@ -39,7 +39,7 @@ func (s PlayScene) Name() string {
 
 // Draw implements [Scene].
 func (s PlayScene) Draw(screen *ebiten.Image) {
-	s.drawer.Draw(screen, s.entities, Utils.Position{})
+	s.drawer.Draw(screen, s.entities)
 }
 
 // Update implements [Scene].

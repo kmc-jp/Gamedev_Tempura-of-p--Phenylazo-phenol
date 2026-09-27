@@ -10,14 +10,15 @@ import (
 // カメラの本実装
 // 場所を指定したらその場所を中心として映す
 type Camera struct {
+	center Utils.Position
 }
 
 // Draw implements [Drawer].
-func (m Camera) Draw(screen *ebiten.Image, objects []Entity, center Utils.Position) {
+func (c Camera) Draw(screen *ebiten.Image, objects []Entity) {
 	scSize := screen.Bounds().Size()
 	for _, obj := range objects {
 		image := obj.Draw()
-		pos := obj.Position().Offset(center)
+		pos := obj.Position().Offset(c.center)
 
 		posx, posy := pos.X+float64(scSize.X)/2, pos.Y+float64(scSize.Y)/2
 		sizex, sizey := image.Bounds().Dx(), image.Bounds().Dy()
