@@ -48,6 +48,6 @@ func (s PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tra
 	return
 }
 
-func (s PlayScene) AddEntity(e Entity) {
+func (s *PlayScene) AddEntity(e Entity) {
 	s.entities = append(s.entities, e)
 }

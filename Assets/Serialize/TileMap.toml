@@ -1,0 +1,26 @@
+TileSize = {X = 54, Y = 54}
+
+[TileData]
+shelf = {Name = "shelf", JsonPath = "みんげー_棚.json", PngPath = "みんげー_棚.png"}
+
+[MapData]
+"1,1" = "shelf"
+"2,1" = "shelf"
+"3,1" = "shelf"
+"4,1" = "shelf"
+"5,1" = "shelf"
+"6,1" = "shelf"
+"7,1" = "shelf"
+"8,1" = "shelf"
+"9,1" = "shelf"
+"10,1" = "shelf"
+"1,2" = "shelf"
+"2,2" = "shelf"
+"3,2" = "shelf"
+"4,2" = "shelf"
+"5,2" = "shelf"
+"6,2" = "shelf"
+"7,2" = "shelf"
+"8,2" = "shelf"
+"9,2" = "shelf"
+"10,2" = "shelf"

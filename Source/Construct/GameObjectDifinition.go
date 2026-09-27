@@ -1,12 +1,16 @@
 package construct
 
 import (
+	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
 	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
 	component "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject/Component"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	tilemap "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/TileMap"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/solarlune/goaseprite"
 )
 
 // 個々の GameObject の定義を書く
@@ -36,8 +40,24 @@ func NewTileObject(name string, data tilemap.TileData, scene *scene.PlayScene, N
 	}
 }
 
-func NewTileMapObject(name string, mapdata tilemap.TileMapData, PlScene *scene.PlayScene, NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform], NewRender Utils.Factory[gameobject.Render]) Utils.Factory[*gameobject.GameObject] {
-	o, err := gameobject.NewGameObject(name, PlScene, NewTransform(Utils.NewZeroVec2().VtoP()), NewRender)()
+func NewTileMapObject(
+	name string,
+	mapdata tilemap.TileMapData,
+	PlScene *scene.PlayScene,
+	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
+	NewRender func(asp *goaseprite.File, img *ebiten.Image) Utils.Factory[gameobject.Render],
+	assetsManager *assets.AssetsManager,
+) Utils.Factory[*gameobject.GameObject] {
+	newEmptyRender := func() (gameobject.Render, error) {
+		r, e := component.NewEmptyRender()
+		return r, e
+	}
+	o, err := gameobject.NewGameObject(
+		name,
+		PlScene,
+		NewTransform(Utils.NewZeroVec2().VtoP()),
+		newEmptyRender,
+	)()
 	if err != nil {
 		return func() (*gameobject.GameObject, error) {
 			return o, fmt.Errorf("newStdObject() でエラーが発生しました。\n%w", err)
@@ -65,7 +85,12 @@ func NewTileMapObject(name string, mapdata tilemap.TileMapData, PlScene *scene.P
 		transformFactry Utils.Factory[gameobject.Transform],
 	) Utils.Factory[*gameobject.GameObject] {
 		return func() (*gameobject.GameObject, error) {
-			toFactory := NewTileObject(name, data, Scene, transformFactry, NewRender)
+			asp, img, err := assetsManager.Image.Load(data.ImageData)
+			if err != nil {
+				mock, _ := gameobject.NewMockGameObject(name)()
+				return mock, fmt.Errorf("assetsManager.Image.Load(data.ImageData) でエラーが発生しました。\n%w", err)
+			}
+			toFactory := NewTileObject(name, data, Scene, transformFactry, NewRender(asp, img))
 			return toFactory()
 		}
 	}
