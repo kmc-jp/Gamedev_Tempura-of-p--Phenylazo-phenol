@@ -27,6 +27,10 @@ func (m MockCamera) Draw(screen *ebiten.Image, objects []Entity) {
 	}
 }
 
+func (m MockCamera) SetCenter(Utils.Position) {
+	// 何もしない
+}
+
 func test() {
 	var _ Drawer = MockCamera{}
 }
