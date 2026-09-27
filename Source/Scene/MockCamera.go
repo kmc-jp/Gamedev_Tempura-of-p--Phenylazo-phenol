@@ -7,12 +7,13 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// 仮作成のカメラ(本実装は後から作る)
+// 仮作成のカメラ(本実装作成済み)
+// (0,0) が左上で、ワールド座標 = 描画座標
 type MockCamera struct {
 }
 
 // Draw implements [Drawer].
-func (m MockCamera) Draw(screen *ebiten.Image, objects []Entity, center Utils.Position) {
+func (m MockCamera) Draw(screen *ebiten.Image, objects []Entity) {
 	for _, obj := range objects {
 		image := obj.Draw()
 		pos := obj.Position()
@@ -25,6 +26,10 @@ func (m MockCamera) Draw(screen *ebiten.Image, objects []Entity, center Utils.Po
 		op.GeoM.Translate(iposx, iposy)
 		screen.DrawImage(image, op)
 	}
+}
+
+func (m MockCamera) SetCenter(Utils.Position) {
+	// 何もしない
 }
 
 func test() {

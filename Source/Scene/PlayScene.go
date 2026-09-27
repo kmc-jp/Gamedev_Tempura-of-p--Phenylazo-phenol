@@ -16,7 +16,7 @@ type PlayScene struct {
 }
 
 func NewPlayScene() (*PlayScene, error) {
-	camera, err := NewMockCamera()
+	camera, err := NewCamera()
 	if err != nil {
 
 		return &PlayScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
@@ -39,7 +39,7 @@ func (s PlayScene) Name() string {
 
 // Draw implements [Scene].
 func (s PlayScene) Draw(screen *ebiten.Image) {
-	s.drawer.Draw(screen, s.entities, Utils.Position{})
+	s.drawer.Draw(screen, s.entities)
 }
 
 // Update implements [Scene].
@@ -50,4 +50,8 @@ func (s PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tra
 
 func (s *PlayScene) AddEntity(e Entity) {
 	s.entities = append(s.entities, e)
+}
+
+func (s PlayScene) SetCameraCenter(center Utils.Position) {
+	s.drawer.SetCenter(center)
 }
