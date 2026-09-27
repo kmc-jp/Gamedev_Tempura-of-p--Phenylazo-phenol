@@ -57,8 +57,6 @@ https://ebitengine.org/en/documents/install.html?os=windows
 │   │   ├── PlayScene の GameObject 周り
 │   │   └── Component
 │   │   　   └── 各種コンポーネント
-│   ├── HogeScene
-│   │   └── いらない
 │   ├── Scene
 │   │   ├── シーン内の管理諸々
 │   │   └── SceneTransitionType
