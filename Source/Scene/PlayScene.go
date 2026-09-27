@@ -16,7 +16,7 @@ type PlayScene struct {
 }
 
 func NewPlayScene() (*PlayScene, error) {
-	camera, err := NewMockCamera()
+	camera, err := NewCamera()
 	if err != nil {
 
 		return &PlayScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
