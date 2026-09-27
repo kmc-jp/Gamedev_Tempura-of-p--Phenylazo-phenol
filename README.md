@@ -46,14 +46,33 @@ https://ebitengine.org/en/documents/install.html?os=windows
 /
 ├── Assets
 │   ├── Images
-│   │   └── img
+│   ├── Serialize
 │   └── Sounds
-│       └── snd
+├── Docs
 ├── Source
-│   ├── HogeScene
-│   │   └── hoge
-│   ├── Utils
-│   └── Src
+│   ├── Assets
+│   │   ├── アセット読み込み周り
+│   │   ├── Image
+│   │   |    └── 画像読み込み
+│   │   └── Serialize
+│   │   　   ├── シリアライズ系読み込み
+│   │   　   └── SerializeTarget : シリアライズ対象 struct が書いてある
+│   ├── Construct
+│   │   └── 諸々の初期構築周りをやる
+│   ├── Game
+│   │   └── ebiten.Game とシーン管理
+│   ├── GameObject
+│   │   ├── PlayScene の GameObject 周り
+│   │   └── Component
+│   │   　   └── 各種コンポーネント
+│   ├── Scene
+│   │   ├── シーン内の管理諸々
+│   │   └── SceneTransitionType
+│   │   　   └── シーン遷移パターンを定義
+│   ├── TileMap
+│   │   └── PlayScene の TileMap 周りの定義
+│   └── Utils
+│   　   └── ユーティリティ
 ├── go.mod
 ├── go.sum
 ├── LISENCE
