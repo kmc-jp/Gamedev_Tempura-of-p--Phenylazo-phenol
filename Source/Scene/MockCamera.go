@@ -7,7 +7,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// 仮作成のカメラ(本実装は後から作る)
+// 仮作成のカメラ(本実装作成済み)
+// (0,0) が左上で、ワールド座標 = 描画座標
 type MockCamera struct {
 }
 
