@@ -51,3 +51,7 @@ func (s PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tra
 func (s *PlayScene) AddEntity(e Entity) {
 	s.entities = append(s.entities, e)
 }
+
+func (s PlayScene) SetCameraCenter(center Utils.Position) {
+	s.drawer.SetCenter(center)
+}
