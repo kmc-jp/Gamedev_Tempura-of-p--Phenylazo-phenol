@@ -33,7 +33,9 @@ func (c Camera) Draw(screen *ebiten.Image, objects []Entity) {
 var _ Drawer = Camera{}
 
 func NewCamera() (*Camera, error) {
-	return &Camera{}, nil
+	return &Camera{
+		center: Utils.Position{},
+	}, nil
 }
 
 // test
