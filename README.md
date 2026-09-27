@@ -46,9 +46,17 @@ https://ebitengine.org/en/documents/install.html?os=windows
 /
 ├── Assets
 │   ├── Images
+│   ├── Serialize
 │   └── Sounds
 ├── Docs
 ├── Source
+│   ├── Assets
+│   │   ├── アセット読み込み周り
+│   │   ├── Image
+│   │   |    └── 画像読み込み
+│   │   └── Serialize
+│   │   　   ├── シリアライズ系読み込み
+│   │   　   └── SerializeTarget : シリアライズ対象 struct が書いてある
 │   ├── Construct
 │   │   └── 諸々の初期構築周りをやる
 │   ├── Game
