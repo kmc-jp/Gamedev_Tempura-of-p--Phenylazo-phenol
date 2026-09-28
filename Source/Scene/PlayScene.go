@@ -15,22 +15,22 @@ type PlayScene struct {
 	drawer   Drawer
 }
 
-func NewPlayScene() (*PlayScene, error) {
-	camera, err := NewCamera()
+func NewPlayScene(NewDrawer Utils.Factory[Drawer]) Utils.Factory[*PlayScene] {
+	camera, err := NewDrawer()
 	if err != nil {
-
-		return &PlayScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
+		return func() (*PlayScene, error) {
+			return &PlayScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
+		}
 	}
 	ps := PlayScene{
 		entities: []Entity{},
 		drawer:   camera,
 	}
 	// なにもしない
-	return &ps, nil
+	return func() (*PlayScene, error) {
+		return &ps, nil
+	}
 }
-
-// test
-var _ Utils.Factory[*PlayScene] = NewPlayScene
 
 // Name implements [Scene].
 func (s PlayScene) Name() string {
