@@ -72,8 +72,9 @@ func NewCamera(layers map[string]int) Utils.Factory[*Camera] {
 	}
 	return func() (*Camera, error) {
 		return &Camera{
-			center: Utils.Position{},
-			layers: layers,
+			center:     Utils.Position{},
+			layers:     layers,
+			layerCount: len(layers),
 		}, nil
 	}
 }
