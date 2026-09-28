@@ -10,14 +10,23 @@ import (
 // カメラの本実装
 // 場所を指定したらその場所を中心として映す
 type Camera struct {
-	center Utils.Position
+	center     Utils.Position
+	layers     map[string]uint // 値のintは正の数
+	layerCount int
+}
+
+type drawImage struct {
+	image  *ebiten.Image
+	option *ebiten.DrawImageOptions
 }
 
 // Draw implements [Drawer].
 func (c Camera) Draw(screen *ebiten.Image, objects []Entity) {
 	scSize := screen.Bounds().Size()
+	images := make([][]drawImage, c.layerCount)
 	for _, obj := range objects {
-		image, _ := obj.Draw()
+		image, Layer := obj.Draw()
+		layernum := c.layers[Layer] // 存在しない場合はゼロ
 		pos := obj.Position().Offset(c.center)
 
 		posx, posy := pos.X+float64(scSize.X)/2, pos.Y+float64(scSize.Y)/2
@@ -26,7 +35,15 @@ func (c Camera) Draw(screen *ebiten.Image, objects []Entity) {
 
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(iposx, iposy)
-		screen.DrawImage(image, op)
+
+		// 各レイヤーに割り当て
+		images[layernum] = append(images[layernum], drawImage{image: image, option: op})
+	}
+
+	for _, layer := range images {
+		for _, draw := range layer {
+			screen.DrawImage(draw.image, draw.option)
+		}
 	}
 }
 
