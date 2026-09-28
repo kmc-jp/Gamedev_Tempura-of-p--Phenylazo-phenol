@@ -45,7 +45,7 @@ func (c Camera) Draw(screen *ebiten.Image, objects []Entity) {
 
 		// 各レイヤーに割り当て
 		if images[layernum] == nil {
-			images[layernum] = make([]drawImage, len(objects))
+			images[layernum] = make([]drawImage, 0, len(objects))
 		}
 		images[layernum] = append(images[layernum], imagedata)
 	}
