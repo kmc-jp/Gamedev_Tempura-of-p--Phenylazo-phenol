@@ -38,11 +38,16 @@ func (c Camera) Draw(screen *ebiten.Image, objects []Entity) {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(iposx, iposy)
 
+		imagedata := drawImage{image: image, option: op}
+		if imagedata.image == nil {
+			panic(fmt.Errorf("Entity %s の image が nil です。", obj.Name()))
+		}
+
 		// 各レイヤーに割り当て
 		if images[layernum] == nil {
 			images[layernum] = make([]drawImage, len(objects))
 		}
-		images[layernum] = append(images[layernum], drawImage{image: image, option: op})
+		images[layernum] = append(images[layernum], imagedata)
 	}
 
 	for _, layer := range images {
