@@ -37,6 +37,9 @@ func (c Camera) Draw(screen *ebiten.Image, objects []Entity) {
 		op.GeoM.Translate(iposx, iposy)
 
 		// 各レイヤーに割り当て
+		if images[layernum] == nil {
+			images[layernum] = make([]drawImage, len(objects))
+		}
 		images[layernum] = append(images[layernum], drawImage{image: image, option: op})
 	}
 
