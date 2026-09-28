@@ -1,6 +1,7 @@
 package component
 
 import (
+	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 	"image"
@@ -46,6 +47,8 @@ func NewEmptyRender() (*StdRender, error) {
 	return &r, nil
 }
 
-func (r StdRender) Draw() (image *ebiten.Image) {
-	return r.img
+func (r StdRender) Draw() (image *ebiten.Image, Layer string) {
+	return r.img, ""
 }
+
+var _ gameobject.Render = StdRender{}

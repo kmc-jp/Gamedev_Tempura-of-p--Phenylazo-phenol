@@ -17,7 +17,7 @@ type Camera struct {
 func (c Camera) Draw(screen *ebiten.Image, objects []Entity) {
 	scSize := screen.Bounds().Size()
 	for _, obj := range objects {
-		image := obj.Draw()
+		image, _ := obj.Draw()
 		pos := obj.Position().Offset(c.center)
 
 		posx, posy := pos.X+float64(scSize.X)/2, pos.Y+float64(scSize.Y)/2

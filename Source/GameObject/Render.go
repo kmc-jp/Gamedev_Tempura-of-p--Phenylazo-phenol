@@ -5,5 +5,5 @@ import (
 )
 
 type Render interface {
-	Draw() (image *ebiten.Image)
+	Draw() (image *ebiten.Image, Layer string)
 }
