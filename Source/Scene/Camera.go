@@ -2,7 +2,9 @@ package scene
 
 import (
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+	"fmt"
 	"math"
+	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -11,7 +13,7 @@ import (
 // 場所を指定したらその場所を中心として映す
 type Camera struct {
 	center     Utils.Position
-	layers     map[string]uint // 値のintは正の数
+	layers     map[string]int // 値のintは正の数
 	layerCount int
 }
 
@@ -56,11 +58,52 @@ func (c *Camera) SetCenter(center Utils.Position) {
 
 var _ Drawer = &Camera{}
 
-func NewCamera() (*Camera, error) {
-	return &Camera{
-		center: Utils.Position{},
-	}, nil
+type kvp struct {
+	key   string
+	value int
 }
 
-// test
-var _ Utils.Factory[*Camera] = NewCamera
+func NewCamera(layers map[string]int) Utils.Factory[*Camera] {
+	layers, err := compressValues(layers)
+	if err != nil {
+		return func() (*Camera, error) {
+			return nil, fmt.Errorf("compressValues(layers) でエラーが発生しました。,%w", err)
+		}
+	}
+	return func() (*Camera, error) {
+		return &Camera{
+			center: Utils.Position{},
+			layers: layers,
+		}, nil
+	}
+}
+
+func compressValues(data map[string]int) (map[string]int, error) {
+	// 1. 各要素をスライスに集める
+	pairs := make([]kvp, 0, len(data))
+	for k, v := range data {
+		pairs = append(pairs, kvp{k, v})
+	}
+
+	// 2. Valueを基準に昇順ソートする
+	slices.SortFunc(pairs, func(a, b kvp) int {
+		return a.value - b.value
+	})
+
+	// 3. 事前チェック: 隣り合うValueを比較して重複があればエラーを返す
+	// ※ソート済みのため、重複があれば必ず隣り合います
+	for i := 1; i < len(pairs); i++ {
+		if pairs[i].value == pairs[i-1].value {
+			return nil, fmt.Errorf("重複するValueを検出しました: %d (キー: %s, %s)",
+				pairs[i].value, pairs[i-1].key, pairs[i].key)
+		}
+	}
+
+	// 4. 0 ~ n の連番に圧縮して新しいマップを作成
+	compressed := make(map[string]int, len(data))
+	for i, p := range pairs {
+		compressed[p.key] = i
+	}
+
+	return compressed, nil
+}
