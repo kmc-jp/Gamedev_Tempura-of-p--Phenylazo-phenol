@@ -40,7 +40,8 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*scen
 		}
 	}
 
-	playscene, err := scene.NewPlayScene(cameraFactory.(Utils.Factory[scene.Drawer]))()
+	DrawerFactory := Utils.CastFactory[*scene.Camera, scene.Drawer](cameraFactory.(Utils.Factory[*scene.Camera]))
+	playscene, err := scene.NewPlayScene(DrawerFactory)()
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
 			return playscene, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
