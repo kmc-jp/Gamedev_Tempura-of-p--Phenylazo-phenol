@@ -25,11 +25,10 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*scen
 		}
 	}
 
-	serimanager := assetsManager.Serialize
-	shelfdata, err := serialize.NewSerializeData("shelf", reflect.TypeFor[serializetarget.TileMapData](), "TileMap.toml", serimanager)
+	shelfdata, err := serialize.NewSerializeData("shelf", reflect.TypeFor[serializetarget.TileMapData](), "TileMap.toml", assetsManager.Serialize)
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
-			return playscene, fmt.Errorf("serialize.NewSerializeData(\"shelf\", reflect.TypeFor[serializetarget.TileMapData](), \"TileMap.toml\", serimanager) でエラーが発生しました。\n%w", err)
+			return playscene, fmt.Errorf("serialize.NewSerializeData(\"shelf\", reflect.TypeFor[serializetarget.TileMapData](), \"TileMap.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
 		}
 	}
 	mapdataAny, err := assetsManager.Serialize.Load(*shelfdata)
