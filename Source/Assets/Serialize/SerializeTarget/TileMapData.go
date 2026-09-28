@@ -8,12 +8,21 @@ import (
 )
 
 type TileMapData struct {
-	// タイル名のキーとデータの組
-	TileData map[string]TileData
-	// 位置 "x,y" とタイルキーの組
-	MapData map[string]string
 	// タイルサイズ
 	TileSize Utils.Vec2
+	// 床のデータ
+	Floor FloorData
+
+	// タイル名のキーとデータの組
+	TileData map[string]TileData
+
+	// Floor 以外のタイルで敷き詰めたい床
+	// 位置 "x,y" とタイルキーの組
+	AdditionalFloor map[string]string
+
+	// 床の上に置いてあるもの
+	MapData map[string]string
+
 	// デコードされない : ファイルパスを入れておく
 	filePath string
 	// デコードされない
@@ -26,6 +35,15 @@ type TileData struct {
 	Name     string
 	JsonPath string
 	PngPath  string
+}
+
+type FloorData struct {
+	// 敷き詰めるデフォルトのタイル
+	Tile string
+	// 敷き詰め領域の左上角
+	UpLeft tilemap.TilePosition
+	// 敷き詰め領域の右下角
+	DownRight tilemap.TilePosition
 }
 
 func (tmd *TileMapData) Init(filePath string, imageManager *imageassets.ImageManager) {
