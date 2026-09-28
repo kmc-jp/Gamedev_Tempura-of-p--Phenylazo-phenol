@@ -18,7 +18,10 @@ import (
 
 // とりあえず PlayScene を組み立てる
 func PlaySceneConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*scene.PlayScene] {
-	playscene, err := scene.NewPlayScene()
+	// カメラ設定
+	cameraFactory := Utils.CastFactory[*scene.Camera, scene.Drawer](scene.NewCamera(map[string]int{"": 0}))
+
+	playscene, err := scene.NewPlayScene(cameraFactory)()
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
 			return playscene, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
