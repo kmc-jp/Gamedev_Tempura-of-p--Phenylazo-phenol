@@ -44,20 +44,20 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*scen
 	playscene, err := scene.NewPlayScene(DrawerFactory)()
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
-			return playscene, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
+			return nil, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
 		}
 	}
 
 	shelfdata, err := serialize.NewSerializeData("shelf", reflect.TypeFor[serializetarget.TileMapData](), "TileMap.toml", assetsManager.Serialize)
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
-			return playscene, fmt.Errorf("serialize.NewSerializeData(\"shelf\", reflect.TypeFor[serializetarget.TileMapData](), \"TileMap.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
+			return nil, fmt.Errorf("serialize.NewSerializeData(\"shelf\", reflect.TypeFor[serializetarget.TileMapData](), \"TileMap.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
 		}
 	}
 	mapdataAny, err := assetsManager.Serialize.Load(*shelfdata)
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
-			return playscene, fmt.Errorf("assetsManager.Serialize.Load(*shelfdata) でエラーが発生しました。\n%w", err)
+			return nil, fmt.Errorf("assetsManager.Serialize.Load(*shelfdata) でエラーが発生しました。\n%w", err)
 		}
 	}
 	mapdataDeserialized := mapdataAny.(serializetarget.TileMapData)
@@ -65,7 +65,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*scen
 	mapdataConstructed, err := mapdataDeserialized.Construct()
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
-			return playscene, fmt.Errorf("mapdataDeserialized.Construct() でエラーが発生しました。\n%w", err)
+			return nil, fmt.Errorf("mapdataDeserialized.Construct() でエラーが発生しました。\n%w", err)
 		}
 	}
 
@@ -81,7 +81,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*scen
 	tilemapobj, err := NewTileMapObject("TileMapObj", mapdataConstructed.(tilemap.TileMapData), playscene, NewTransform, NewRenderer, assetsManager)()
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
-			return playscene, fmt.Errorf("NewTileMapObject() でエラーが発生しました。\n%w", err)
+			return nil, fmt.Errorf("NewTileMapObject() でエラーが発生しました。\n%w", err)
 		}
 	}
 	playscene.AddEntity(tilemapobj)
