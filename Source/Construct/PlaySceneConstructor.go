@@ -19,9 +19,28 @@ import (
 // とりあえず PlayScene を組み立てる
 func PlaySceneConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*scene.PlayScene] {
 	// カメラ設定
-	cameraFactory := Utils.CastFactory[*scene.Camera, scene.Drawer](scene.NewCamera(map[string]int{"": 0}))
+	cameraConfigData, err := serialize.NewSerializeData("CameraConfig", reflect.TypeFor[serializetarget.CameraConfig](), "CameraConfig.toml", assetsManager.Serialize)
+	if err != nil {
+		return func() (*scene.PlayScene, error) {
+			return nil, fmt.Errorf("serialize.NewSerializeData(\"CameraConfig\", reflect.TypeFor[serializetarget.CameraConfig](), \"CameraConfig.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
+		}
+	}
+	cameraConfigAny, err := assetsManager.Serialize.Load(*cameraConfigData)
+	if err != nil {
+		return func() (*scene.PlayScene, error) {
+			return nil, fmt.Errorf("assetsManager.Serialize.Load(*cameraConfigData) でエラーが発生しました。\n%w", err)
+		}
+	}
 
-	playscene, err := scene.NewPlayScene(cameraFactory)()
+	cameraConfig := cameraConfigAny.(serializetarget.CameraConfig)
+	cameraFactory, err := cameraConfig.Construct()
+	if err != nil {
+		return func() (*scene.PlayScene, error) {
+			return nil, fmt.Errorf("cameraConfig.Construct() でエラーが発生しました。\n%w", err)
+		}
+	}
+
+	playscene, err := scene.NewPlayScene(cameraFactory.(Utils.Factory[scene.Drawer]))()
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
 			return playscene, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
