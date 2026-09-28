@@ -72,6 +72,8 @@ https://ebitengine.org/en/documents/install.html?os=windows
 │   ├── TileMap
 │   │   └── PlayScene の TileMap 周りの定義
 │   └── Utils
+│   　   ├──Color
+│   　   │   └── 色関係の定義
 │   　   └── ユーティリティ
 ├── go.mod
 ├── go.sum
