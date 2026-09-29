@@ -51,6 +51,7 @@ func (tm TileMap) SetGameObject(
 		name string,
 		data tilemap.TileData,
 		scene *scene.PlayScene,
+		layer string,
 		transformFactry Utils.Factory[gameobject.Transform],
 	) Utils.Factory[*gameobject.GameObject],
 	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
@@ -70,8 +71,12 @@ func (tm TileMap) SetGameObject(
 		// 位置
 		position := pos.ToPosition().PtoV().HadamardProd(tm.TileSize).VtoP()
 		transformFactry := NewTransform(position)
+
+		// レイヤー
+		layer := pos.Layer
+
 		// GameObject を作成
-		obj, err := NewTileObj(name, data, scene, transformFactry)()
+		obj, err := NewTileObj(name, data, scene, layer, transformFactry)()
 		if err != nil {
 			return fmt.Errorf("NewTileObj() でエラーが発生しました。\n%w", err)
 		}

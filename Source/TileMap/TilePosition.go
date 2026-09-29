@@ -5,8 +5,9 @@ import (
 )
 
 type TilePosition struct {
-	X int
-	Y int
+	X     int
+	Y     int
+	Layer string
 }
 
 func (t TilePosition) ToPosition() Utils.Position {

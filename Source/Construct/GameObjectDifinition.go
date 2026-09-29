@@ -45,7 +45,7 @@ func NewTileMapObject(
 	mapdata tilemap.TileMapData,
 	PlScene *scene.PlayScene,
 	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
-	NewRender func(asp *goaseprite.File, img *ebiten.Image) Utils.Factory[gameobject.Render],
+	NewRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render],
 	assetsManager *assets.AssetsManager,
 ) Utils.Factory[*gameobject.GameObject] {
 	newEmptyRender := func() (gameobject.Render, error) {
@@ -82,6 +82,7 @@ func NewTileMapObject(
 		name string,
 		data tilemap.TileData,
 		Scene *scene.PlayScene,
+		layer string,
 		transformFactry Utils.Factory[gameobject.Transform],
 	) Utils.Factory[*gameobject.GameObject] {
 		return func() (*gameobject.GameObject, error) {
@@ -90,7 +91,7 @@ func NewTileMapObject(
 				mock, _ := gameobject.NewMockGameObject(name)()
 				return mock, fmt.Errorf("assetsManager.Image.Load(data.ImageData) でエラーが発生しました。\n%w", err)
 			}
-			toFactory := NewTileObject(name, data, Scene, transformFactry, NewRender(asp, img))
+			toFactory := NewTileObject(name, data, Scene, transformFactry, NewRender(asp, img, layer))
 			return toFactory()
 		}
 	}
