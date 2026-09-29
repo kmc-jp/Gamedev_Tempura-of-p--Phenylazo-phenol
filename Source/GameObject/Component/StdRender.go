@@ -1,6 +1,7 @@
 package component
 
 import (
+	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 	"image"
@@ -11,11 +12,12 @@ import (
 
 // 静止画像を映すRender
 type StdRender struct {
-	asp *goaseprite.File
-	img *ebiten.Image
+	asp   *goaseprite.File
+	img   *ebiten.Image
+	layer string
 }
 
-func NewStdRender(asp *goaseprite.File, img *ebiten.Image) Utils.Factory[*StdRender] {
+func NewLayerableRender(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[*StdRender] {
 	player := asp.CreatePlayer()
 
 	startTag := asp.Tags[0]
@@ -30,22 +32,17 @@ func NewStdRender(asp *goaseprite.File, img *ebiten.Image) Utils.Factory[*StdRen
 	sub := img.SubImage(image.Rect(player.CurrentFrameCoords())).(*ebiten.Image)
 
 	rndr := StdRender{
-		asp: asp,
-		img: sub,
+		asp:   asp,
+		img:   sub,
+		layer: layer,
 	}
 	return func() (*StdRender, error) {
 		return &rndr, nil
 	}
 }
 
-func NewEmptyRender() (*StdRender, error) {
-	EmptyImage := ebiten.NewImage(1, 1)
-	r := StdRender{
-		img: EmptyImage,
-	}
-	return &r, nil
+func (r StdRender) Draw() (image *ebiten.Image, Layer string) {
+	return r.img, r.layer
 }
 
-func (r StdRender) Draw() (image *ebiten.Image) {
-	return r.img
-}
+var _ gameobject.Render = StdRender{}

@@ -15,7 +15,7 @@ type MockCamera struct {
 // Draw implements [Drawer].
 func (m MockCamera) Draw(screen *ebiten.Image, objects []Entity) {
 	for _, obj := range objects {
-		image := obj.Draw()
+		image, _ := obj.Draw()
 		pos := obj.Position()
 
 		posx, posy := pos.X, pos.Y

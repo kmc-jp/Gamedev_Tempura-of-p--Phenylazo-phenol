@@ -9,6 +9,6 @@ import (
 type Entity interface {
 	Name() string
 	Update(active bool) (err error)
-	Draw() (image *ebiten.Image)
+	Draw() (image *ebiten.Image, Layer string)
 	Position() Utils.Position
 }

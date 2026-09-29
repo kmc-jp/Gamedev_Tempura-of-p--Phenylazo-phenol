@@ -7,8 +7,9 @@ import (
 type TileData struct {
 	Name      string
 	ImageData imageassets.ImageData
+	Layer     string
 }
 
-func NewTileData(name string, imgData *imageassets.ImageData) (*TileData, error) {
-	return &TileData{Name: name, ImageData: *imgData}, nil
+func NewTileData(name string, imgData *imageassets.ImageData, layer string) (*TileData, error) {
+	return &TileData{Name: name, ImageData: *imgData, Layer: layer}, nil
 }
