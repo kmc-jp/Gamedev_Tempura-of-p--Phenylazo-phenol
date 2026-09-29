@@ -85,7 +85,6 @@ func (tmd TileMapData) Construct() (any, error) {
 	left := tmd.Floor.UpLeft.X
 	down := tmd.Floor.DownRight.Y
 	right := tmd.Floor.DownRight.X
-	fmt.Printf("%d,%d,%d,%d,", up, left, down, right)
 
 	for j := up; j <= down; j++ {
 		for i := left; i <= right; i++ {
