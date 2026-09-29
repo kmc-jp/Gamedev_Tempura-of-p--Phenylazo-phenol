@@ -58,13 +58,14 @@ func (tmd TileMapData) Construct() (any, error) {
 		return nil, fmt.Errorf("TileMapData が初期化されていません。 *TileMapData.Init() を実行してください。")
 	}
 
+	// タイル種別の一覧
 	Tiles := map[string]*tilemap.TileData{}
 	for tilekey, tiledata := range tmd.TileData {
 		imagedata, err := imageassets.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath, tmd.imageManager)
 		if err != nil {
 			return nil, fmt.Errorf("imageassets.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath, &tmd.imageManager) でエラーが発生しました。\nfilePath: %s, tiledata.Name: %s, tiledata.PngPath: %s, tiledata.JsonPath: %s\n%w", tmd.filePath, tiledata.Name, tiledata.PngPath, tiledata.JsonPath, err)
 		}
-		tile, err := tilemap.NewTileData(tiledata.Name, imagedata)
+		tile, err := tilemap.NewTileData(tiledata.Name, imagedata, "")
 		Tiles[tilekey] = tile
 	}
 
