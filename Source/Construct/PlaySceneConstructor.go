@@ -76,7 +76,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*scen
 		}
 	}
 	NewRenderer := func(asp *goaseprite.File, img *ebiten.Image) Utils.Factory[gameobject.Render] {
-		return Utils.CastFactory[*component.LayerableRender, gameobject.Render](component.NewLayerableRender(asp, img, ""))
+		return Utils.CastFactory[*component.StdRender, gameobject.Render](component.NewLayerableRender(asp, img, ""))
 	}
 	tilemapobj, err := NewTileMapObject("TileMapObj", mapdataConstructed.(tilemap.TileMapData), playscene, NewTransform, NewRenderer, assetsManager)()
 	if err != nil {
