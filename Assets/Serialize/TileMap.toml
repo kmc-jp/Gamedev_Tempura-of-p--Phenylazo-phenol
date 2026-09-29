@@ -1,26 +1,29 @@
 TileSize = {X = 54, Y = 54}
+Floor = {Tile = "floor", UpLeft = {X = -30, Y = -20}, DownRight = {X = 30, Y = 20}}
+FloorLayer = "Floor"
 
 [TileData]
 shelf = {Name = "shelf", JsonPath = "みんげー_棚.json", PngPath = "みんげー_棚.png"}
+floor = {Name = "floor", JsonPath = "みんげー_床大.json", PngPath = "みんげー_床大.png"}
 
-[MapData]
-"1,1" = "shelf"
-"2,1" = "shelf"
-"3,1" = "shelf"
-"4,1" = "shelf"
-"5,1" = "shelf"
-"6,1" = "shelf"
-"7,1" = "shelf"
-"8,1" = "shelf"
-"9,1" = "shelf"
-"10,1" = "shelf"
-"1,2" = "shelf"
-"2,2" = "shelf"
-"3,2" = "shelf"
-"4,2" = "shelf"
-"5,2" = "shelf"
-"6,2" = "shelf"
-"7,2" = "shelf"
-"8,2" = "shelf"
-"9,2" = "shelf"
-"10,2" = "shelf"
+[ObjectMap]
+"1,1" = {Tile =  "shelf", Layer = "Object"}
+"2,1" = {Tile =  "shelf", Layer = "Object"}
+"3,1" = {Tile =  "shelf", Layer = "Object"}
+"4,1" = {Tile =  "shelf", Layer = "Object"}
+"5,1" = {Tile =  "shelf", Layer = "Object"}
+"6,1" = {Tile =  "shelf", Layer = "Object"}
+"7,1" = {Tile =  "shelf", Layer = "Object"}
+"8,1" = {Tile =  "shelf", Layer = "Object"}
+"9,1" = {Tile =  "shelf", Layer = "Object"}
+"10,1" = {Tile =  "shelf", Layer = "Object"}
+"1,2" = {Tile =  "shelf", Layer = "Object"}
+"2,2" = {Tile =  "shelf", Layer = "Object"}
+"3,2" = {Tile =  "shelf", Layer = "Object"}
+"4,2" = {Tile =  "shelf", Layer = "Object"}
+"5,2" = {Tile =  "shelf", Layer = "Object"}
+"6,2" = {Tile =  "shelf", Layer = "Object"}
+"7,2" = {Tile =  "shelf", Layer = "Object"}
+"8,2" = {Tile =  "shelf", Layer = "Object"}
+"9,2" = {Tile =  "shelf", Layer = "Object"}
+"10,2" = {Tile =  "shelf", Layer = "Object"}
