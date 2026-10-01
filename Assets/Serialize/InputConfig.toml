@@ -1,0 +1,5 @@
+[KeyMap]
+ActionMoveLeft = ["a", "left"]
+ActionMoveRight = ["d", "right"]
+ActionMoveUp = ["w", "up"]
+ActionMoveDown = ["s", "down"]
