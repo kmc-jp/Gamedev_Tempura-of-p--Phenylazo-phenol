@@ -15,6 +15,14 @@ type Game struct {
 	bufferScreen *ebiten.Image
 }
 
+func NewGame(InitialScene Scene) Utils.Factory[*Game] {
+	return func() (*Game, error) {
+		return &Game{
+			ActiveScene: InitialScene,
+		}, nil
+	}
+}
+
 // 実装テスト
 var _ ebiten.Game = &Game{}
 

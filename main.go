@@ -26,11 +26,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("初期シーンの読み込みに失敗しました\n%v", err)
 	}
-	game := game.Game{
-		ActiveScene: initScene,
+	game, err := game.NewGame(initScene)()
+	if err != nil {
+		log.Fatalf("ゲームの読み込みに失敗しました。\n%v", err)
 	}
 	ebiten.SetFullscreen(true)
-	if err := ebiten.RunGame(&game); err != nil {
+	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal("ゲームがクラッシュしました。\n%w", err)
 	}
 }
