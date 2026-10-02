@@ -41,7 +41,7 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 		}
 	}
 
-	initScene, err := PlaySceneConstruct(assetsManager)() // 起動時に表示されるシーン
+	initScene, err := PlaySceneConstruct(assetsManager, Handler)() // 起動時に表示されるシーン
 	if err != nil {
 		return func() (*game.Game, error) {
 			return nil, fmt.Errorf("初期シーンの読み込みに失敗しました\n%v", err)

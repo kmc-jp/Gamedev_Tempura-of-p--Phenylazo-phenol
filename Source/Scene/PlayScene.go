@@ -7,15 +7,17 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	input "github.com/quasilyte/ebitengine-input"
 )
 
 // メインの遊べるシーン
 type PlayScene struct {
 	entities []Entity
 	drawer   Drawer
+	Input    *input.Handler
 }
 
-func NewPlayScene(NewDrawer Utils.Factory[Drawer]) Utils.Factory[*PlayScene] {
+func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler) Utils.Factory[*PlayScene] {
 	camera, err := NewDrawer()
 	if err != nil {
 		return func() (*PlayScene, error) {
@@ -25,6 +27,7 @@ func NewPlayScene(NewDrawer Utils.Factory[Drawer]) Utils.Factory[*PlayScene] {
 	ps := PlayScene{
 		entities: []Entity{},
 		drawer:   camera,
+		Input:    Input,
 	}
 	// なにもしない
 	return func() (*PlayScene, error) {
