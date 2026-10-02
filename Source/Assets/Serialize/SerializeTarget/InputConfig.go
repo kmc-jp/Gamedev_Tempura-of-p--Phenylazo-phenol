@@ -31,5 +31,10 @@ func (ic InputConfig) Construct() (any, error) {
 		keymap[key] = value
 	}
 
-	return keymap, nil
+	config, err := inputconfig.NewInputConfig(keymap)()
+	if err != nil {
+		return nil, fmt.Errorf("inputconfig.NewInputConfig(keymap)() でエラーが発生しました。\n%w", err)
+	}
+
+	return config, nil
 }
