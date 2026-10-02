@@ -47,7 +47,7 @@ func (s PlayScene) Draw(screen *ebiten.Image) {
 
 // Update implements [Scene].
 func (s PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
-	// なにもしない
+	// 何か軽いテストはここでやりましょう
 	return
 }
 
