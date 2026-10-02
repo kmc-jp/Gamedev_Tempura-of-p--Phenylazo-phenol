@@ -35,6 +35,12 @@ type InputConfig struct {
 	keymap input.Keymap // map[input.Action]([]Key)
 }
 
+func NewInputConfig(keymap input.Keymap) Utils.Factory[*InputConfig] {
+	return func() (*InputConfig, error) {
+		return &InputConfig{keymap: keymap}, nil
+	}
+}
+
 func (ic InputConfig) Setup() (*input.Handler, error) {
 	// inputSystem を初期化
 	var inputSystem input.System
