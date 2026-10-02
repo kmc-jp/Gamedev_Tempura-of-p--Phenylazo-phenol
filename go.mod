@@ -6,6 +6,7 @@ require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/hajimehoshi/ebiten/v2 v2.9.9
 	github.com/solarlune/goaseprite v1.0.1
+	github.com/quasilyte/ebitengine-input v0.9.1
 )
 
 require (
@@ -14,7 +15,6 @@ require (
 	github.com/ebitengine/purego v0.9.0 // indirect
 	github.com/go-text/typesetting v0.3.0 // indirect
 	github.com/jezek/xgb v1.1.1 // indirect
-	github.com/quasilyte/ebitengine-input v0.9.1 // indirect
 	github.com/quasilyte/gmath v0.0.0-20221217210116-fba37a2e15c7 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/tidwall/gjson v1.10.2 // indirect
