@@ -34,7 +34,7 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 		}
 	}
 
-	Handler, err := inputConfigAny.(inputconfig.InputConfig).Setup()
+	Handler, err := inputConfigAny.(*inputconfig.InputConfig).Setup()
 	if err != nil {
 		return func() (*game.Game, error) {
 			return nil, fmt.Errorf("inputConfigAny.(inputconfig.InputConfig).Setup() でエラーが発生しました。\n%w", err)
