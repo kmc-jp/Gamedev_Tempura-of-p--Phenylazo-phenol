@@ -15,6 +15,14 @@ const (
 	ActionMoveDown
 )
 
+var actionConstList [5]input.Action = [5]input.Action{
+	ActionUnknown,
+	ActionMoveLeft,
+	ActionMoveRight,
+	ActionMoveUp,
+	ActionMoveDown,
+}
+
 func ActionConst(name string) (input.Action, error) {
 	switch name {
 	case "ActionUnknown":
@@ -30,6 +38,10 @@ func ActionConst(name string) (input.Action, error) {
 	default:
 		return ActionUnknown, fmt.Errorf("%s というアクションは見つかりませんでした。", name)
 	}
+}
+
+func ActionConstList() *[5]input.Action {
+	return &actionConstList
 }
 
 type InputConfig struct {
