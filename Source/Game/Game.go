@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	input "github.com/quasilyte/ebitengine-input"
 )
 
 type Game struct {
@@ -13,12 +14,16 @@ type Game struct {
 	BackScenes  Utils.Stack[Scene]
 	// 中継用の画像バッファ(毎フレーム生成すると重い)
 	bufferScreen *ebiten.Image
+
+	// 入力ハンドラー
+	InputHandler *input.Handler
 }
 
-func NewGame(InitialScene Scene) Utils.Factory[*Game] {
+func NewGame(InitialScene Scene, inputHandler *input.Handler) Utils.Factory[*Game] {
 	return func() (*Game, error) {
 		return &Game{
-			ActiveScene: InitialScene,
+			ActiveScene:  InitialScene,
+			InputHandler: inputHandler,
 		}, nil
 	}
 }
