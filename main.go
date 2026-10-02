@@ -6,7 +6,6 @@ import (
 
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
 	construct "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Construct"
-	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -22,11 +21,7 @@ func main() {
 		log.Fatalf("assets.NewAssetsManager(&assetsFS) でエラーが発生しました。\n%v", err)
 	}
 	// ゲーム起動
-	initScene, err := construct.PlaySceneConstruct(AssetsManager)() // 起動時に表示されるシーン
-	if err != nil {
-		log.Fatalf("初期シーンの読み込みに失敗しました\n%v", err)
-	}
-	game, err := game.NewGame(initScene)()
+	game, err := construct.GameConstruct(AssetsManager)()
 	if err != nil {
 		log.Fatalf("ゲームの読み込みに失敗しました。\n%v", err)
 	}
