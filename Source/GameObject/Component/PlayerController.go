@@ -5,6 +5,8 @@ import (
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+	"fmt"
+	"reflect"
 
 	input "github.com/quasilyte/ebitengine-input"
 )
@@ -39,9 +41,17 @@ func (p Player) Update(active bool) (err error) {
 	return nil
 }
 
-func NewPlayer(scene *scene.PlayScene, TW *TileWalker) Utils.Factory[*Player] {
+func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject) Utils.Factory[*Player] {
+	// TileWalker を取得
+	tw, err := obj.GetComponent(reflect.TypeFor[TileWalker]())
+	if err != nil {
+		return func() (*Player, error) {
+			return nil, fmt.Errorf("obj.GetComponent(reflect.TypeFor[TileWalker]()) で失敗しました。\n%w", err)
+		}
+	}
+
 	pl := &Player{
-		tw:  TW,
+		tw:  tw.(*TileWalker),
 		ipt: scene.Input,
 	}
 
