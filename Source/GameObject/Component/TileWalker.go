@@ -19,7 +19,9 @@ func (h TileWalker) Update(active bool) (err error) {
 	return nil
 }
 
-func (h *TileWalker) Move()
+func (h *TileWalker) Move(Direction Utils.Vec2Int) {
+	h.Move(Direction)
+}
 
 func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition) Utils.Factory[*TileWalker] {
 	return func() (*TileWalker, error) {
