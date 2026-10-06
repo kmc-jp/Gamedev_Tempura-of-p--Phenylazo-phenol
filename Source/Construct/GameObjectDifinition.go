@@ -141,3 +141,37 @@ func NewCharactor(
 		return o, nil
 	}
 }
+
+func NewPlayer(
+	name string,
+	position tilemap.TilePosition,
+	TileData tilemap.TileData,
+	PlScene *scene.PlayScene,
+	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
+	NewRender Utils.Factory[gameobject.Render],
+) Utils.Factory[*gameobject.GameObject] {
+	pl, err := NewCharactor(name, position, TileData, PlScene, NewTransform, NewRender)()
+	if err != nil {
+		return func() (*gameobject.GameObject, error) {
+			return nil, fmt.Errorf("NewCharactor() でエラーが発生しました。")
+		}
+	}
+
+	// player (Component)
+	plc, err := component.NewPlayer(PlScene, pl)()
+	if err != nil {
+		return func() (*gameobject.GameObject, error) {
+			return nil, fmt.Errorf("component.NewPlayer(PlScene, pl)() でエラーが発生しました。\n%w", err)
+		}
+	}
+	err = pl.AddComponent(plc)
+	if err != nil {
+		return func() (*gameobject.GameObject, error) {
+			return nil, fmt.Errorf("pl.AddComponent(plc) でエラーが発生しました。\n%w", err)
+		}
+	}
+
+	return func() (*gameobject.GameObject, error) {
+		return pl, nil
+	}
+}
