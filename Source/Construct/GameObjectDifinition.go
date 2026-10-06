@@ -123,6 +123,7 @@ func NewCharactor(
 		}
 	}
 
+	// TileWalker
 	TW, err := component.NewTileWalker(TileData, position)()
 	if err != nil {
 		return func() (*gameobject.GameObject, error) {
