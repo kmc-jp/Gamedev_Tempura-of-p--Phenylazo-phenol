@@ -107,3 +107,36 @@ func NewTileMapObject(
 		return o, nil
 	}
 }
+
+func NewCharactor(
+	name string,
+	position tilemap.TilePosition,
+	TileData tilemap.TileData,
+	PlScene *scene.PlayScene,
+	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
+	NewRender Utils.Factory[gameobject.Render],
+) Utils.Factory[*gameobject.GameObject] {
+	o, err := gameobject.NewGameObject(name, PlScene, NewTransform(position.ToPosition()), NewRender)()
+	if err != nil {
+		return func() (*gameobject.GameObject, error) {
+			return o, fmt.Errorf("newStdObject() でエラーが発生しました。\n%w", err)
+		}
+	}
+
+	TW, err := component.NewTileWalker(TileData, position)()
+	if err != nil {
+		return func() (*gameobject.GameObject, error) {
+			return nil, fmt.Errorf("component.NewTileWalker(TileData, position)() でエラーが発生しました。\n%w", err)
+		}
+	}
+	err = o.AddComponent(TW)
+	if err != nil {
+		return func() (*gameobject.GameObject, error) {
+			return nil, fmt.Errorf("o.AddComponent(TW) でエラーが発生しました。\n%w", err)
+		}
+	}
+
+	return func() (*gameobject.GameObject, error) {
+		return o, nil
+	}
+}
