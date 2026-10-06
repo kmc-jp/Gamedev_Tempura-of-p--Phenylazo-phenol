@@ -18,3 +18,23 @@ func (t Vec2Int) Sub(target Vec2Int) Vec2Int {
 		Y: t.Y * target.Y,
 	}
 }
+
+func NewVecIntZero() Vec2Int {
+	return Vec2Int{X: 0, Y: 0}
+}
+
+func NewVecIntUp() Vec2Int {
+	return Vec2Int{X: 0, Y: 1}
+}
+
+func NewVecIntDown() Vec2Int {
+	return Vec2Int{X: 0, Y: -1}
+}
+
+func NewVecIntRight() Vec2Int {
+	return Vec2Int{X: 1, Y: 0}
+}
+
+func NewVecIntLeft() Vec2Int {
+	return Vec2Int{X: -1, Y: 0}
+}
