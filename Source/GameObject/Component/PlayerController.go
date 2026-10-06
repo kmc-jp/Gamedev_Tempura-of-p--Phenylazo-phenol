@@ -3,14 +3,15 @@ package component
 import (
 	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
+	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 
 	input "github.com/quasilyte/ebitengine-input"
 )
 
 type Player struct {
-	ipt input.Handler
-	tw  TileWalker
+	ipt *input.Handler
+	tw  *TileWalker
 }
 
 func (p Player) Update(active bool) (err error) {
@@ -38,9 +39,14 @@ func (p Player) Update(active bool) (err error) {
 	return nil
 }
 
-func NewPlayer() Utils.Factory[*Player] {
+func NewPlayer(scene scene.PlayScene, TW *TileWalker) Utils.Factory[*Player] {
+	pl := &Player{
+		tw:  TW,
+		ipt: scene.Input,
+	}
+
 	return func() (*Player, error) {
-		return &Player{}, nil
+		return pl, nil
 	}
 }
 
