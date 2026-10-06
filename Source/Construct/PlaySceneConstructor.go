@@ -13,11 +13,12 @@ import (
 	"reflect"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	input "github.com/quasilyte/ebitengine-input"
 	"github.com/solarlune/goaseprite"
 )
 
 // とりあえず PlayScene を組み立てる
-func PlaySceneConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*scene.PlayScene] {
+func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler) Utils.Factory[*scene.PlayScene] {
 	// カメラ設定
 	cameraConfigData, err := serialize.NewSerializeData("CameraConfig", reflect.TypeFor[serializetarget.CameraConfig](), "CameraConfig.toml", assetsManager.Serialize)
 	if err != nil {
@@ -41,7 +42,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*scen
 	}
 
 	DrawerFactory := Utils.CastFactory[*scene.Camera, scene.Drawer](cameraFactory.(Utils.Factory[*scene.Camera]))
-	playscene, err := scene.NewPlayScene(DrawerFactory)()
+	playscene, err := scene.NewPlayScene(DrawerFactory, inputHandler)()
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
 			return nil, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
