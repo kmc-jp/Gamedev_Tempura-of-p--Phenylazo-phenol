@@ -39,7 +39,7 @@ func (p Player) Update(active bool) (err error) {
 	return nil
 }
 
-func NewPlayer(scene scene.PlayScene, TW *TileWalker) Utils.Factory[*Player] {
+func NewPlayer(scene *scene.PlayScene, TW *TileWalker) Utils.Factory[*Player] {
 	pl := &Player{
 		tw:  TW,
 		ipt: scene.Input,
