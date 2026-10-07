@@ -34,13 +34,13 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 		}
 	}
 
-	shelfdata, err := serialize.NewSerializeData("shelf", reflect.TypeFor[serializetarget.TileMapData](), "TileMap.toml", assetsManager.Serialize)
+	TileMapSeriData, err := serialize.NewSerializeData("shelf", reflect.TypeFor[serializetarget.TileMapData](), "TileMap.toml", assetsManager.Serialize)
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
 			return nil, fmt.Errorf("serialize.NewSerializeData(\"shelf\", reflect.TypeFor[serializetarget.TileMapData](), \"TileMap.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
 		}
 	}
-	mapdataAny, err := assetsManager.Serialize.Load(*shelfdata)
+	mapdataAny, err := assetsManager.Serialize.Load(*TileMapSeriData)
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
 			return nil, fmt.Errorf("assetsManager.Serialize.Load(*shelfdata) でエラーが発生しました。\n%w", err)
