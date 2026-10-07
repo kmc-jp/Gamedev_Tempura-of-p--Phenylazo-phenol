@@ -71,10 +71,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 	}
 
 	NewTransform := func(position Utils.Position) Utils.Factory[gameobject.Transform] {
-		return func() (gameobject.Transform, error) {
-			tf, err := component.NewStdTransform(position)()
-			return tf, err
-		}
+		return Utils.CastFactory[*component.StdTransform, gameobject.Transform](component.NewStdTransform(position))
 	}
 	NewRenderer := func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render] {
 		return Utils.CastFactory[*component.StdRender, gameobject.Render](component.NewLayerableRender(asp, img, layer))
@@ -89,4 +86,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 	return func() (*scene.PlayScene, error) {
 		return playscene, nil
 	}
+
+	// Player を設置
+
 }
