@@ -34,24 +34,11 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 		}
 	}
 
-	TileMapSeriData, err := serialize.NewSerializeData("shelf", reflect.TypeFor[serializetarget.TileMapData](), "TileMap.toml", assetsManager.Serialize)
+	// タイルマップ
+	TileMapData, err := MakeTileMap(assetsManager)
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
-			return nil, fmt.Errorf("serialize.NewSerializeData(\"shelf\", reflect.TypeFor[serializetarget.TileMapData](), \"TileMap.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
-		}
-	}
-	mapdataAny, err := assetsManager.Serialize.Load(*TileMapSeriData)
-	if err != nil {
-		return func() (*scene.PlayScene, error) {
-			return nil, fmt.Errorf("assetsManager.Serialize.Load(*shelfdata) でエラーが発生しました。\n%w", err)
-		}
-	}
-	mapdataDeserialized := mapdataAny.(serializetarget.TileMapData)
-	mapdataDeserialized.Init("TileMap.toml", assetsManager.Image)
-	mapdataConstructed, err := mapdataDeserialized.Construct()
-	if err != nil {
-		return func() (*scene.PlayScene, error) {
-			return nil, fmt.Errorf("mapdataDeserialized.Construct() でエラーが発生しました。\n%w", err)
+			return nil, fmt.Errorf("MakeTileMap(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 	}
 
@@ -61,7 +48,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 	NewRenderer := func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render] {
 		return Utils.CastFactory[*component.StdRender, gameobject.Render](component.NewLayerableRender(asp, img, layer))
 	}
-	tilemapobj, err := NewTileMapObject("TileMapObj", mapdataConstructed.(tilemap.TileMapData), playscene, NewTransform, NewRenderer, assetsManager)()
+	tilemapobj, err := NewTileMapObject("TileMapObj", *TileMapData, playscene, NewTransform, NewRenderer, assetsManager)()
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
 			return nil, fmt.Errorf("NewTileMapObject() でエラーが発生しました。\n%w", err)
@@ -95,4 +82,24 @@ func MakeDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[scene
 
 	DrawerFactory := Utils.CastFactory[*scene.Camera, scene.Drawer](cameraFactory.(Utils.Factory[*scene.Camera]))
 	return DrawerFactory, nil
+}
+
+// タイルマップ設定
+func MakeTileMap(assetsManager *assets.AssetsManager) (*tilemap.TileMapData, error) {
+	TileMapSeriData, err := serialize.NewSerializeData("shelf", reflect.TypeFor[serializetarget.TileMapData](), "TileMap.toml", assetsManager.Serialize)
+	if err != nil {
+		return nil, fmt.Errorf("serialize.NewSerializeData(\"shelf\", reflect.TypeFor[serializetarget.TileMapData](), \"TileMap.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
+	}
+	mapdataAny, err := assetsManager.Serialize.Load(*TileMapSeriData)
+	if err != nil {
+		return nil, fmt.Errorf("assetsManager.Serialize.Load(*shelfdata) でエラーが発生しました。\n%w", err)
+	}
+	mapdataDeserialized := mapdataAny.(serializetarget.TileMapData)
+	mapdataDeserialized.Init("TileMap.toml", assetsManager.Image)
+	mapdataConstructed, err := mapdataDeserialized.Construct()
+	if err != nil {
+		return nil, fmt.Errorf("mapdataDeserialized.Construct() でエラーが発生しました。\n%w", err)
+	}
+
+	return mapdataConstructed.(*tilemap.TileMapData), nil
 }
