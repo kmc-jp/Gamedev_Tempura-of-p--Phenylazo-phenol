@@ -24,11 +24,11 @@ func NewVecIntZero() Vec2Int {
 }
 
 func NewVecIntUp() Vec2Int {
-	return Vec2Int{X: 0, Y: 1}
+	return Vec2Int{X: 0, Y: -1}
 }
 
 func NewVecIntDown() Vec2Int {
-	return Vec2Int{X: 0, Y: -1}
+	return Vec2Int{X: 0, Y: 1}
 }
 
 func NewVecIntRight() Vec2Int {
