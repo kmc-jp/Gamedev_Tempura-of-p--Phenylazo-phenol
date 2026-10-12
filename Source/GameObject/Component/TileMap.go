@@ -83,7 +83,7 @@ func (tm TileMap) SetGameObject(
 
 		scene.AddEntity(obj)
 
-		fmt.Printf("Tile %s が追加されました。\n", obj.Name())
+		// fmt.Printf("Tile %s が追加されました。\n", obj.Name())
 	}
 	return nil
 }
