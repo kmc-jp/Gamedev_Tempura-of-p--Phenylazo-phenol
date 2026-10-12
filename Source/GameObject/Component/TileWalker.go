@@ -16,7 +16,7 @@ type TileWalker struct {
 // test
 var _ gameobject.Component = &TileWalker{}
 
-func (h *TileWalker) Update(active bool) (err error) {
+func (w *TileWalker) Update(active bool) (err error) {
 	if !active {
 		return nil
 	}
@@ -24,8 +24,8 @@ func (h *TileWalker) Update(active bool) (err error) {
 	return nil
 }
 
-func (h *TileWalker) Move(Direction Utils.Vec2Int) {
-	h.Position.Move(Direction)
+func (w *TileWalker) Move(Direction Utils.Vec2Int) {
+	w.Position.Move(Direction)
 }
 
 func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition, tf gameobject.Transform, Map *TileMap) Utils.Factory[*TileWalker] {
