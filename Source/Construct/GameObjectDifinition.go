@@ -119,6 +119,11 @@ func NewCharactor(
 ) Utils.Factory[*gameobject.GameObject] {
 	// キャラクター画像設定
 	asp, img, err := assetsManager.Image.Load(TileData.ImageData)
+	if err != nil {
+		return func() (*gameobject.GameObject, error) {
+			return nil, fmt.Errorf("assetsManager.Image.Load(TileData.ImageData) でエラーが発生しました。\n%w", err)
+		}
+	}
 
 	o, err := gameobject.NewGameObject(name, PlScene, NewTransform(position.ToPosition()), NewRender(asp, img, TileData.Layer))()
 	if err != nil {
