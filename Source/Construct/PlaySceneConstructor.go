@@ -35,23 +35,10 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 	}
 
 	// タイルマップ
-	TileMapData, err := MakeTileMap(assetsManager)
+	tilemapobj, err := MakeTileMapObj(assetsManager, playscene)
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
-			return nil, fmt.Errorf("MakeTileMap(assetsManager) でエラーが発生しました。\n%w", err)
-		}
-	}
-
-	NewTransform := func(position Utils.Position) Utils.Factory[gameobject.Transform] {
-		return Utils.CastFactory[*component.StdTransform, gameobject.Transform](component.NewStdTransform(position))
-	}
-	NewRenderer := func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render] {
-		return Utils.CastFactory[*component.StdRender, gameobject.Render](component.NewLayerableRender(asp, img, layer))
-	}
-	tilemapobj, err := NewTileMapObject("TileMapObj", *TileMapData, playscene, NewTransform, NewRenderer, assetsManager)()
-	if err != nil {
-		return func() (*scene.PlayScene, error) {
-			return nil, fmt.Errorf("NewTileMapObject() でエラーが発生しました。\n%w", err)
+			return nil, fmt.Errorf("MakeTileMapObj(assetsManager, playscene) でエラーが発生しました。\n%w", err)
 		}
 	}
 	playscene.AddEntity(tilemapobj)
@@ -85,7 +72,7 @@ func MakeDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[scene
 }
 
 // タイルマップ設定
-func MakeTileMap(assetsManager *assets.AssetsManager) (*tilemap.TileMapData, error) {
+func MakeTileMapData(assetsManager *assets.AssetsManager) (*tilemap.TileMapData, error) {
 	TileMapSeriData, err := serialize.NewSerializeData("shelf", reflect.TypeFor[serializetarget.TileMapData](), "TileMap.toml", assetsManager.Serialize)
 	if err != nil {
 		return nil, fmt.Errorf("serialize.NewSerializeData(\"shelf\", reflect.TypeFor[serializetarget.TileMapData](), \"TileMap.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
@@ -102,4 +89,24 @@ func MakeTileMap(assetsManager *assets.AssetsManager) (*tilemap.TileMapData, err
 	}
 
 	return mapdataConstructed.(*tilemap.TileMapData), nil
+}
+
+func MakeTileMapObj(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene) (*gameobject.GameObject, error) {
+	TileMapData, err := MakeTileMapData(assetsManager)
+	if err != nil {
+		return nil, fmt.Errorf("MakeTileMap(assetsManager) でエラーが発生しました。\n%w", err)
+	}
+
+	NewTransform := func(position Utils.Position) Utils.Factory[gameobject.Transform] {
+		return Utils.CastFactory[*component.StdTransform, gameobject.Transform](component.NewStdTransform(position))
+	}
+	NewRenderer := func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render] {
+		return Utils.CastFactory[*component.StdRender, gameobject.Render](component.NewLayerableRender(asp, img, layer))
+	}
+	tilemapobj, err := NewTileMapObject("TileMapObj", *TileMapData, PlScene, NewTransform, NewRenderer, assetsManager)()
+	if err != nil {
+		return nil, fmt.Errorf("NewTileMapObject() でエラーが発生しました。\n%w", err)
+	}
+
+	return tilemapobj, nil
 }
