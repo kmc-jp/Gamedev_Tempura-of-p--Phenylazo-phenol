@@ -42,12 +42,19 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 		}
 	}
 	playscene.AddEntity(tilemapobj)
+
+	// Player を設置
+	plobj, err := MakePlayer(assetsManager, playscene)
+	if err != nil {
+		return func() (*scene.PlayScene, error) {
+			return nil, fmt.Errorf("MakePlayer(assetsManager, playscene) でエラーが発生しました。\n%w", err)
+		}
+	}
+	playscene.AddEntity(plobj)
+
 	return func() (*scene.PlayScene, error) {
 		return playscene, nil
 	}
-
-	// Player を設置
-
 }
 
 // カメラ設定
@@ -109,4 +116,44 @@ func MakeTileMapObj(assetsManager *assets.AssetsManager, PlScene *scene.PlayScen
 	}
 
 	return tilemapobj, nil
+}
+
+// プレイヤー設定
+func MakePlayer(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene) (*gameobject.GameObject, error) {
+	SerializeData, err := serialize.NewSerializeData("Player", reflect.TypeFor[serializetarget.PlayerConfig](), "Player.toml", assetsManager.Serialize)
+	if err != nil {
+		return nil, fmt.Errorf("serialize.NewSerializeData(\"Player\", reflect.TypeFor[serializetarget.PlayerConfig](), \"Player.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
+	}
+
+	ConfigAny, err := assetsManager.Serialize.Load(*SerializeData)
+	if err != nil {
+		return nil, fmt.Errorf("assetsManager.Serialize.Load(*SerializeData) でエラーが発生しました。\n%w", err)
+	}
+
+	PlayerConfig := ConfigAny.(serializetarget.PlayerConfig)
+
+	err = PlayerConfig.Init(assetsManager)
+	if err != nil {
+		return nil, fmt.Errorf("PlayerConfig.Init(assetsManager) でエラーが発生しました。\n%w", err)
+	}
+
+	constructDataAny, err := PlayerConfig.Construct()
+	if err != nil {
+		return nil, fmt.Errorf("PlayerConfig.Construct() でエラーが発生しました。\n%w", err)
+	}
+	constructData := constructDataAny.(serializetarget.PlayerConstructData)
+
+	NewTransform := func(position Utils.Position) Utils.Factory[gameobject.Transform] {
+		return Utils.CastFactory[*component.StdTransform, gameobject.Transform](component.NewStdTransform(position))
+	}
+	NewRenderer := func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render] {
+		return Utils.CastFactory[*component.StdRender, gameobject.Render](component.NewLayerableRender(asp, img, layer))
+	}
+
+	plobj, err := NewPlayer("Player", constructData.Position, *constructData.TileData, PlScene, NewTransform, NewRenderer, assetsManager)()
+	if err != nil {
+		return nil, fmt.Errorf("NewPlayer() でエラーが発生しました。\n%w", err)
+	}
+
+	return plobj, nil
 }
