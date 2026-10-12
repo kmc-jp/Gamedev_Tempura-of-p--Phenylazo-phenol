@@ -35,6 +35,8 @@ func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition, tf gameo
 		t := TileWalker{
 			Data:     tiledata,
 			Position: pos,
+			tf:       tf,
+			tm:       Map,
 		}
 		return &t, nil
 	}
