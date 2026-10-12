@@ -14,10 +14,13 @@ type TileWalker struct {
 }
 
 // test
-var _ gameobject.Component = Tile{}
+var _ gameobject.Component = &TileWalker{}
 
-func (h TileWalker) Update(active bool) (err error) {
-	// なにもしない
+func (h *TileWalker) Update(active bool) (err error) {
+	if !active {
+		return nil
+	}
+
 	return nil
 }
 
