@@ -21,6 +21,8 @@ func (w *TileWalker) Update(active bool) (err error) {
 		return nil
 	}
 
+	w.tf.SetPosition(w.tm.TilePositionToWorldPosition(w.Position))
+
 	return nil
 }
 
