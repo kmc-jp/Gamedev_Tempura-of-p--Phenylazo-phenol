@@ -4,10 +4,7 @@ import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
 	imageassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Image"
 	serialize "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize"
-	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
-	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	tilemap "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/TileMap"
-	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 )
 
@@ -21,14 +18,6 @@ type PlayerConfig struct {
 
 func (pc *PlayerConfig) Init(
 	assetsManager *assets.AssetsManager,
-	newPlayer func(
-		name string,
-		position tilemap.TilePosition,
-		TileData tilemap.TileData,
-		PlScene *scene.PlayScene,
-		NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
-		NewRender Utils.Factory[gameobject.Render],
-	) Utils.Factory[*gameobject.GameObject],
 ) error {
 	if assetsManager == nil {
 		return fmt.Errorf("assetsManager が nil です。")
