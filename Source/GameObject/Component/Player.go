@@ -43,10 +43,10 @@ func (p Player) Update(active bool) (err error) {
 
 func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject) Utils.Factory[*Player] {
 	// TileWalker を取得
-	tw, err := obj.GetComponent(reflect.TypeFor[TileWalker]())
+	tw, err := obj.GetComponent(reflect.TypeFor[*TileWalker]())
 	if err != nil {
 		return func() (*Player, error) {
-			return nil, fmt.Errorf("obj.GetComponent(reflect.TypeFor[TileWalker]()) で失敗しました。\n%w", err)
+			return nil, fmt.Errorf("obj.GetComponent(reflect.TypeFor[*TileWalker]()) で失敗しました。\n%w", err)
 		}
 	}
 
