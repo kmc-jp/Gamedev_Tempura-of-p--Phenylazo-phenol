@@ -158,7 +158,7 @@ func NewPlayer(
 	pl, err := NewCharactor(name, position, TileData, PlScene, NewTransform, NewRender, assetsManager)()
 	if err != nil {
 		return func() (*gameobject.GameObject, error) {
-			return nil, fmt.Errorf("NewCharactor() でエラーが発生しました。")
+			return nil, fmt.Errorf("NewCharactor() でエラーが発生しました。\n%w", err)
 		}
 	}
 
