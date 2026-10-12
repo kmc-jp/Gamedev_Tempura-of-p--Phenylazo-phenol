@@ -33,21 +33,21 @@ func (im ImageManager) Load(data ImageData) (*goaseprite.File, *ebiten.Image, er
 
 func (im ImageManager) CheckAndCleanPath(path string) (string, error) {
 	if len(strings.TrimSpace(path)) == 0 {
-		return path, fmt.Errorf("path が空です。")
+		return path, fmt.Errorf("path \"%s\" が空です。", path)
 	}
 
 	cleanedpath := filepath.Clean(path)
 	if cleanedpath == "." {
-		return path, fmt.Errorf("jsonpath が不正です。")
+		return path, fmt.Errorf("path \"%s\" が不正です。", path)
 	}
 	cleanedpath = strings.TrimPrefix(cleanedpath, "/")
 
 	info, err := fs.Stat(im.ImageFS, cleanedpath)
 	if err != nil {
-		return cleanedpath, fmt.Errorf("pngpath が使用できません。\n%w", err)
+		return cleanedpath, fmt.Errorf("path \"%s\" が使用できません。\n%w", path, err)
 	}
 	if info.IsDir() {
-		return cleanedpath, fmt.Errorf("pngpath はディレクトリです。")
+		return cleanedpath, fmt.Errorf("path \"%s\" はディレクトリです。", path)
 	}
 
 	return cleanedpath, nil
