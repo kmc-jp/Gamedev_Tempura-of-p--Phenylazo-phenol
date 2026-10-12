@@ -23,6 +23,16 @@ func (pc *PlayerConfig) Init(
 		return fmt.Errorf("assetsManager が nil です。")
 	}
 
+	// ファイルパスチェック
+	_, err := assetsManager.Image.CheckAndCleanPath(pc.TileData.JsonPath)
+	if err != nil {
+		return fmt.Errorf("assetsManager.Image.CheckAndCleanPath(pc.TileData.JsonPath) でエラーが発生しました。 JsonPath が不正です。\n%w", err)
+	}
+	_, err = assetsManager.Image.CheckAndCleanPath(pc.TileData.PngPath)
+	if err != nil {
+		return fmt.Errorf("assetsManager.Image.CheckAndCleanPath(pc.TileData.PngPath) でエラーが発生しました。 PngPath が不正です。\n%w", err)
+	}
+
 	pc.initialized = true
 	pc.assetsManager = assetsManager
 	return nil
