@@ -114,9 +114,13 @@ func NewCharactor(
 	TileData tilemap.TileData,
 	PlScene *scene.PlayScene,
 	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
-	NewRender Utils.Factory[gameobject.Render],
+	NewRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render],
+	assetsManager *assets.AssetsManager,
 ) Utils.Factory[*gameobject.GameObject] {
-	o, err := gameobject.NewGameObject(name, PlScene, NewTransform(position.ToPosition()), NewRender)()
+	// キャラクター画像設定
+	asp, img, err := assetsManager.Image.Load(TileData.ImageData)
+
+	o, err := gameobject.NewGameObject(name, PlScene, NewTransform(position.ToPosition()), NewRender(asp, img, TileData.Layer))()
 	if err != nil {
 		return func() (*gameobject.GameObject, error) {
 			return o, fmt.Errorf("newStdObject() でエラーが発生しました。\n%w", err)
@@ -148,9 +152,10 @@ func NewPlayer(
 	TileData tilemap.TileData,
 	PlScene *scene.PlayScene,
 	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
-	NewRender Utils.Factory[gameobject.Render],
+	NewRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render],
+	assetsManager *assets.AssetsManager,
 ) Utils.Factory[*gameobject.GameObject] {
-	pl, err := NewCharactor(name, position, TileData, PlScene, NewTransform, NewRender)()
+	pl, err := NewCharactor(name, position, TileData, PlScene, NewTransform, NewRender, assetsManager)()
 	if err != nil {
 		return func() (*gameobject.GameObject, error) {
 			return nil, fmt.Errorf("NewCharactor() でエラーが発生しました。")
