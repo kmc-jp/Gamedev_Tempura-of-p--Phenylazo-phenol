@@ -46,15 +46,15 @@ func (g GameObject) Update(active bool) (err error) {
 }
 
 func (g GameObject) Draw() (image *ebiten.Image, Layer string) {
-	return g.render().Draw()
+	return g.Render().Draw()
 }
 
 func (g GameObject) Position() Utils.Position {
 	return g.tf.Position()
 }
 
-func (g GameObject) transform() Transform    { return g.tf }
-func (g GameObject) render() Render          { return g.rd }
+func (g GameObject) Transform() Transform    { return g.tf }
+func (g GameObject) Render() Render          { return g.rd }
 func (g GameObject) components() []Component { return g.cmps }
 func (g GameObject) Name() string            { return g.name }
 
