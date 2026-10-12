@@ -59,7 +59,7 @@ func (tmd *TileMapData) Init(filePath string, imageManager *imageassets.ImageMan
 	tmd.isInitialized = true
 }
 
-// tilemap.TileMapData を生成して返す
+// *tilemap.TileMapData を生成して返す
 func (tmd TileMapData) Construct() (any, error) {
 	if !tmd.isInitialized {
 		return nil, fmt.Errorf("TileMapData が初期化されていません。 *TileMapData.Init() を実行してください。")
@@ -133,7 +133,7 @@ func (tmd TileMapData) Construct() (any, error) {
 		mapdata[pos] = realtiledata
 	}
 
-	result := tilemap.TileMapData{
+	result := &tilemap.TileMapData{
 		MapData:  mapdata,
 		TileSize: tmd.TileSize,
 	}
