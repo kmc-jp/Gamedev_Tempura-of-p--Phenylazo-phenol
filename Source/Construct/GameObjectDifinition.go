@@ -112,6 +112,7 @@ func NewCharactor(
 	name string,
 	position tilemap.TilePosition,
 	TileData tilemap.TileData,
+	TileMap *component.TileMap,
 	PlScene *scene.PlayScene,
 	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
 	NewRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render],
@@ -133,7 +134,7 @@ func NewCharactor(
 	}
 
 	// TileWalker
-	TW, err := component.NewTileWalker(TileData, position)()
+	TW, err := component.NewTileWalker(TileData, position, o.Transform(), TileMap)()
 	if err != nil {
 		return func() (*gameobject.GameObject, error) {
 			return nil, fmt.Errorf("component.NewTileWalker(TileData, position)() でエラーが発生しました。\n%w", err)
@@ -155,12 +156,13 @@ func NewPlayer(
 	name string,
 	position tilemap.TilePosition,
 	TileData tilemap.TileData,
+	TileMap *component.TileMap,
 	PlScene *scene.PlayScene,
 	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
 	NewRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render],
 	assetsManager *assets.AssetsManager,
 ) Utils.Factory[*gameobject.GameObject] {
-	plobj, err := NewCharactor(name, position, TileData, PlScene, NewTransform, NewRender, assetsManager)()
+	plobj, err := NewCharactor(name, position, TileData, TileMap, PlScene, NewTransform, NewRender, assetsManager)()
 	if err != nil {
 		return func() (*gameobject.GameObject, error) {
 			return nil, fmt.Errorf("NewCharactor() でエラーが発生しました。\n%w", err)

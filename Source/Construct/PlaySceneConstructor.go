@@ -43,8 +43,15 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 	}
 	playscene.AddEntity(tilemapobj)
 
-	// Player を設置
-	plobj, err := MakePlayer(assetsManager, playscene)
+	// Player を設置 (タイルマップ情報が必要)
+	TMC, err := tilemapobj.GetComponent(reflect.TypeFor[*component.TileMap]())
+	if err != nil {
+		return func() (*scene.PlayScene, error) {
+			return nil, fmt.Errorf("tilemapobj.GetComponent(reflect.TypeFor[*component.TileMap]()) でエラーが発生しました。\n%w", err)
+		}
+	}
+	TM := TMC.(*component.TileMap)
+	plobj, err := MakePlayer(assetsManager, playscene, TM)
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
 			return nil, fmt.Errorf("MakePlayer(assetsManager, playscene) でエラーが発生しました。\n%w", err)
@@ -119,7 +126,7 @@ func MakeTileMapObj(assetsManager *assets.AssetsManager, PlScene *scene.PlayScen
 }
 
 // プレイヤー設定
-func MakePlayer(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene) (*gameobject.GameObject, error) {
+func MakePlayer(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene, TileMap *component.TileMap) (*gameobject.GameObject, error) {
 	SerializeData, err := serialize.NewSerializeData("Player", reflect.TypeFor[serializetarget.PlayerConfig](), "Player.toml", assetsManager.Serialize)
 	if err != nil {
 		return nil, fmt.Errorf("serialize.NewSerializeData(\"Player\", reflect.TypeFor[serializetarget.PlayerConfig](), \"Player.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
@@ -150,7 +157,7 @@ func MakePlayer(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene) (
 		return Utils.CastFactory[*component.StdRender, gameobject.Render](component.NewLayerableRender(asp, img, layer))
 	}
 
-	plobj, err := NewPlayer("Player", constructData.Position, *constructData.TileData, PlScene, NewTransform, NewRenderer, assetsManager)()
+	plobj, err := NewPlayer("Player", constructData.Position, *constructData.TileData, TileMap, PlScene, NewTransform, NewRenderer, assetsManager)()
 	if err != nil {
 		return nil, fmt.Errorf("NewPlayer() でエラーが発生しました。\n%w", err)
 	}

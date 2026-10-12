@@ -9,6 +9,8 @@ import (
 type TileWalker struct {
 	Data     tilemap.TileData
 	Position tilemap.TilePosition
+	tf       gameobject.Transform
+	tm       *TileMap
 }
 
 // test
@@ -23,7 +25,7 @@ func (h *TileWalker) Move(Direction Utils.Vec2Int) {
 	h.Position.Move(Direction)
 }
 
-func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition) Utils.Factory[*TileWalker] {
+func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition, tf gameobject.Transform, Map *TileMap) Utils.Factory[*TileWalker] {
 	return func() (*TileWalker, error) {
 		t := TileWalker{
 			Data:     tiledata,
