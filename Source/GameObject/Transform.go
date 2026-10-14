@@ -6,4 +6,5 @@ import (
 
 type Transform interface {
 	Position() Utils.Position
+	SetPosition(Utils.Position)
 }

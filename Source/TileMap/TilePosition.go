@@ -16,3 +16,8 @@ func (t TilePosition) ToPosition() Utils.Position {
 		Y: float64(t.Y),
 	}
 }
+
+func (t *TilePosition) Move(Direction Utils.Vec2Int) {
+	t.X += Direction.X
+	t.Y += Direction.Y
+}

@@ -14,6 +14,10 @@ func (s StdTransform) Position() Utils.Position {
 	return s.position
 }
 
+func (s *StdTransform) SetPosition(pos Utils.Position) {
+	s.position = pos
+}
+
 func NewStdTransform(position Utils.Position) Utils.Factory[*StdTransform] {
 	return func() (*StdTransform, error) {
 		return &StdTransform{position: position}, nil
@@ -24,5 +28,5 @@ func NewStdTransform(position Utils.Position) Utils.Factory[*StdTransform] {
 var _ Utils.Factory[*StdTransform] = NewStdTransform(Utils.Position{})
 
 func test() {
-	var _ gameobject.Transform = StdTransform{}
+	var _ gameobject.Transform = &StdTransform{}
 }

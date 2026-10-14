@@ -41,11 +41,11 @@ func (al AsepriteLoader) Load(data ImageData, fs fs.FS) (*goaseprite.File, *ebit
 func (al AsepriteLoader) fetch(data ImageData, fs fs.FS) (*goaseprite.File, *ebiten.Image, error) {
 	aspFile, err := goaseprite.Open(data.JsonPath, fs)
 	if err != nil {
-		return nil, nil, fmt.Errorf("goaseprite.Open(data.JsonPath) でエラーが発生しました。\n%w", err)
+		return nil, nil, fmt.Errorf("goaseprite.Open(data.JsonPath) でエラーが発生しました。\ndata.JsonPath : %s\n%w", data.JsonPath, err)
 	}
-	img, _, err := ebitenutil.NewImageFromFileSystem(fs, aspFile.ImagePath)
+	img, _, err := ebitenutil.NewImageFromFileSystem(fs, data.PngPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("ebitenutil.NewImageFromFile(aspFile.ImagePath) でエラーが発生しました。\n%w", err)
+		return nil, nil, fmt.Errorf("ebitenutil.NewImageFromFile(aspFile.ImagePath) でエラーが発生しました。\naspFile.ImagePath : %s\n%w", aspFile.ImagePath, err)
 	}
 	return aspFile, img, nil
 }

@@ -69,7 +69,7 @@ func (tm TileMap) SetGameObject(
 		name := fmt.Sprintf("%s%d", data.Name, i+1)
 
 		// 位置
-		position := pos.ToPosition().PtoV().HadamardProd(tm.TileSize).VtoP()
+		position := tm.TilePositionToWorldPosition(pos)
 		transformFactry := NewTransform(position)
 
 		// レイヤー
@@ -83,7 +83,11 @@ func (tm TileMap) SetGameObject(
 
 		scene.AddEntity(obj)
 
-		fmt.Printf("Tile %s が追加されました。\n", obj.Name())
+		// fmt.Printf("Tile %s が追加されました。\n", obj.Name())
 	}
 	return nil
+}
+
+func (tm TileMap) TilePositionToWorldPosition(pos tilemap.TilePosition) Utils.Position {
+	return pos.ToPosition().PtoV().HadamardProd(tm.TileSize).VtoP()
 }

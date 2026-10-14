@@ -2,7 +2,6 @@ package scene
 
 import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
-	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
@@ -50,23 +49,11 @@ func (s PlayScene) Draw(screen *ebiten.Image) {
 
 // Update implements [Scene].
 func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
-	// 何か軽いテストはここでやりましょう
-	for _, action := range inputconfig.ActionConstList() {
-		if s.Input.ActionIsPressed(action) {
-			switch action {
-			case inputconfig.ActionMoveLeft:
-				s.cameraCenter.Move(Utils.NewLeftVec2())
-			case inputconfig.ActionMoveRight:
-				s.cameraCenter.Move(Utils.NewRightVec2())
-			case inputconfig.ActionMoveUp:
-				s.cameraCenter.Move(Utils.NewUpVec2())
-			case inputconfig.ActionMoveDown:
-				s.cameraCenter.Move(Utils.NewDownVec2())
-			default: // 何もしない
-			}
-		}
+	for _, entity := range s.entities {
+		entity.Update(active)
 	}
-	s.SetCameraCenter(s.cameraCenter)
+
+	// 何か軽いテストはここでやりましょう
 	return
 }
 

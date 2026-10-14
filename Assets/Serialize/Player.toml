@@ -1,0 +1,11 @@
+Name = "Player"
+[Position]
+X = 0
+Y = 0
+Layer = "Human"
+
+
+[TileData]
+Name = "Player"
+JsonPath = "みんげー_主人公.json"
+PngPath = "みんげー_主人公.png"
