@@ -9,8 +9,9 @@
 ## tilemap.TilePosition
 
 {
-    x int
-    y int
+    x     int
+    y     int
+    Layer string
 }
 
 ## tilemap.TileData
