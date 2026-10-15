@@ -48,9 +48,9 @@ type FloorData struct {
 	// 敷き詰めるデフォルトのタイル
 	Tile string
 	// 敷き詰め領域の左上角
-	UpLeft tilemap.TilePosition
+	UpLeft Utils.Vec2Int
 	// 敷き詰め領域の右下角
-	DownRight tilemap.TilePosition
+	DownRight Utils.Vec2Int
 }
 
 func (tmd *TileMapData) Init(filePath string, imageManager *imageassets.ImageManager) {
@@ -95,7 +95,7 @@ func (tmd TileMapData) Construct() (any, error) {
 			}
 
 			// posを指定
-			pos := tilemap.TilePosition{X: i, Y: j, Layer: tmd.FloorLayer}
+			pos := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: j}, Layer: tmd.FloorLayer}
 
 			// 実際のタイルのデータを生成
 			tileFactory, ok := Tiles[floorKey]
@@ -115,7 +115,7 @@ func (tmd TileMapData) Construct() (any, error) {
 	for posstr, ObjectData := range tmd.ObjectMap {
 		//　pos の指定
 		pos := tilemap.TilePosition{Layer: ObjectData.Layer}
-		_, err := fmt.Sscanf(posstr, "%d,%d", &pos.X, &pos.Y)
+		_, err := fmt.Sscanf(posstr, "%d,%d", &pos.Position.X, &pos.Position.Y)
 		if err != nil {
 			return nil, fmt.Errorf("MapData のキーが不正です。 \"x,y\" の形式で入力してください。\nfilePath: %s, key: %s\n%w", tmd.filePath, posstr, err)
 		}
