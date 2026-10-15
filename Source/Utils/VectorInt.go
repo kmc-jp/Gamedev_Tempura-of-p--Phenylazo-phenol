@@ -19,6 +19,13 @@ func (t Vec2Int) Sub(target Vec2Int) Vec2Int {
 	}
 }
 
+func (t Vec2Int) ToVec2() Vec2 {
+	return Vec2{
+		X: (float64)(t.X),
+		Y: (float64)(t.Y),
+	}
+}
+
 func NewVecIntZero() Vec2Int {
 	return Vec2Int{X: 0, Y: 0}
 }
