@@ -18,6 +18,5 @@ func (t TilePosition) ToPosition() Utils.Position {
 }
 
 func (t *TilePosition) Move(Direction Utils.Vec2Int) {
-	t.Position.X += Direction.X
-	t.Position.Y += Direction.Y
+	t.Position = t.Position.Add(Direction)
 }
