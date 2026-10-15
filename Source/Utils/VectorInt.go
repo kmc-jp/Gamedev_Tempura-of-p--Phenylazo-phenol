@@ -30,6 +30,10 @@ func NewVecIntZero() Vec2Int {
 	return Vec2Int{X: 0, Y: 0}
 }
 
+func NewVecIntOne() Vec2Int {
+	return Vec2Int{X: 1, Y: 1}
+}
+
 func NewVecIntUp() Vec2Int {
 	return Vec2Int{X: 0, Y: -1}
 }
