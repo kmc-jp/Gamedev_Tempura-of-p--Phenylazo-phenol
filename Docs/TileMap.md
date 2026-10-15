@@ -9,14 +9,17 @@
 ## tilemap.TilePosition
 
 {
-    x     int
-    y     int
-    Layer string
+    // 左上の座標
+    Position Utils.Vec2Int
+    Layer    string
+    // 標準座標からずらしたい場合
+    Offset   Utils.Vec2Int
 }
 
 ## tilemap.TileData
 
 タイルの種類に関する情報を保持
+複数タイル使う場合もここに書いておく
 
 ## Component.TileMap
 
@@ -35,3 +38,9 @@
 
 タイルマップ上を動くものに関する情報
 動く
+
+## 実装していないものの一覧
+
+- tilemap.TilePosition.Offset
+- 複数タイル使う場合の処理
+- 壁貼り(とりあえず素材待ち)
