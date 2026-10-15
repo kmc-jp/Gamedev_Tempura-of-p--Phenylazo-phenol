@@ -37,6 +37,7 @@ type TileData struct {
 	Name     string
 	JsonPath string
 	PngPath  string
+	Size     Utils.Vec2Int
 }
 
 type ObjectData struct {
@@ -73,7 +74,14 @@ func (tmd TileMapData) Construct() (any, error) {
 		if err != nil {
 			return nil, fmt.Errorf("imageassets.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath, &tmd.imageManager) でエラーが発生しました。\nfilePath: %s, tiledata.Name: %s, tiledata.PngPath: %s, tiledata.JsonPath: %s\n%w", tmd.filePath, tiledata.Name, tiledata.PngPath, tiledata.JsonPath, err)
 		}
-		tile := makeTileData(tiledata.Name, imagedata)
+
+		// タイルサイズのデフォルト値設定
+		tileSize := tiledata.Size
+		if tileSize == Utils.NewVecIntZero() {
+			tileSize = Utils.NewVecIntOne()
+		}
+
+		tile := makeTileData(tiledata.Name, imagedata, tileSize)
 		Tiles[tilekey] = tile
 	}
 
@@ -142,8 +150,8 @@ func (tmd TileMapData) Construct() (any, error) {
 }
 
 // 部分適用
-func makeTileData(name string, imgData *imageassets.ImageData) func(layer string) (*tilemap.TileData, error) {
+func makeTileData(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int) func(layer string) (*tilemap.TileData, error) {
 	return func(layer string) (*tilemap.TileData, error) {
-		return tilemap.NewTileData(name, imgData, "hogehoge")
+		return tilemap.NewTileData(name, imgData, layer, tileSize)
 	}
 }
