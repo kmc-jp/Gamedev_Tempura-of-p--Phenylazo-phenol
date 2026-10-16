@@ -9,8 +9,9 @@ import (
 )
 
 type TileMap struct {
-	Tiles    map[tilemap.TilePosition]*Tile
-	TileSize Utils.Vec2Int
+	Tiles     map[tilemap.TilePosition]*Tile
+	TileSize  Utils.Vec2Int
+	Enterable map[Utils.Vec2Int]bool // 何も入ってなければ進入可能
 }
 
 // test
@@ -37,8 +38,9 @@ func NewTileMap(mapdata tilemap.TileMapData) Utils.Factory[*TileMap] {
 		tilelist[pos] = t
 	}
 	t := TileMap{
-		Tiles:    tilelist,
-		TileSize: mapdata.TileSize,
+		Tiles:     tilelist,
+		TileSize:  mapdata.TileSize,
+		Enterable: mapdata.Enterable,
 	}
 	return func() (*TileMap, error) {
 		return &t, nil

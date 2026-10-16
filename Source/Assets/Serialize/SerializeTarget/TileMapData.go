@@ -91,6 +91,7 @@ func (tmd TileMapData) Construct() (any, error) {
 
 	// マップを組み立てる
 	mapdata := map[tilemap.TilePosition]*tilemap.TileData{}
+	enterabledata := map[Utils.Vec2Int]bool{}
 
 	// 床
 	up := tmd.Floor.UpLeft.Y
@@ -143,11 +144,13 @@ func (tmd TileMapData) Construct() (any, error) {
 			return nil, fmt.Errorf("Object %s の生成に失敗しました。\n%w\n", ObjectData.Tilekey, err)
 		}
 		mapdata[pos] = realtiledata
+		enterabledata[pos.Position] = false
 	}
 
 	result := &tilemap.TileMapData{
-		MapData:  mapdata,
-		TileSize: tmd.TileSize,
+		MapData:   mapdata,
+		TileSize:  tmd.TileSize,
+		Enterable: enterabledata,
 	}
 
 	return result, nil
