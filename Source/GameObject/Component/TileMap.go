@@ -10,7 +10,7 @@ import (
 
 type TileMap struct {
 	Tiles    map[tilemap.TilePosition]*Tile
-	TileSize Utils.Vec2
+	TileSize Utils.Vec2Int
 }
 
 // test
@@ -89,5 +89,5 @@ func (tm TileMap) SetGameObject(
 }
 
 func (tm TileMap) TilePositionToWorldPosition(pos tilemap.TilePosition) Utils.Position {
-	return pos.ToPosition().PtoV().HadamardProd(tm.TileSize).Add(pos.Offset.ToVec2()).VtoP()
+	return pos.ToPosition().PtoV().HadamardProd(tm.TileSize.ToVec2()).Add(pos.Offset.ToVec2()).VtoP()
 }

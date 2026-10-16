@@ -9,7 +9,7 @@ import (
 
 type TileMapData struct {
 	// タイルサイズ
-	TileSize Utils.Vec2
+	TileSize Utils.Vec2Int
 	// 床のデータ
 	Floor FloorData
 	// 床のレイヤー
