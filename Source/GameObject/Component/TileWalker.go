@@ -27,7 +27,10 @@ func (w *TileWalker) Update(active bool) (err error) {
 }
 
 func (w *TileWalker) Move(Direction Utils.Vec2Int) {
-	w.Position.Move(Direction)
+	moveto := w.Position.Position.Add(Direction)
+	if enterable, ok := w.tm.Enterable[moveto]; enterable || !ok {
+		w.Position.Move(Direction)
+	}
 }
 
 func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition, tf gameobject.Transform, Map *TileMap) Utils.Factory[*TileWalker] {
