@@ -5,8 +5,10 @@ FloorLayer = "Floor"
 [TileData]
 shelf = {Name = "shelf", JsonPath = "みんげー_棚.json", PngPath = "みんげー_棚.png"}
 floor = {Name = "floor", JsonPath = "みんげー_床大.json", PngPath = "みんげー_床大.png"}
+register = {Name = "register", JsonPath =  "みんげー_レジ机.json", PngPath = "みんげー_レジ机.png", TileSize = {X = 1, Y = 1}, Offset = {X = 19, Y = 4}}
 
 [ObjectMap]
+"-1, 0" = {Tile =  "register", Layer = "Object"}
 "1,1" = {Tile =  "shelf", Layer = "Object"}
 "2,1" = {Tile =  "shelf", Layer = "Object"}
 "3,1" = {Tile =  "shelf", Layer = "Object"}
