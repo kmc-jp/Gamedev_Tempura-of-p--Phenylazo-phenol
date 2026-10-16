@@ -38,11 +38,12 @@ type TileData struct {
 	JsonPath string
 	PngPath  string
 	Size     Utils.Vec2Int
+	Offset   Utils.Vec2Int
 }
 
 type ObjectData struct {
-	Tile  string
-	Layer string
+	Tilekey string `toml:"Tile"`
+	Layer   string
 }
 
 type FloorData struct {
@@ -69,6 +70,8 @@ func (tmd TileMapData) Construct() (any, error) {
 	// タイル種別の一覧
 	// レイヤーを入れればタイルがデータが返ってくるようになってる
 	Tiles := map[string](func(layer string) (*tilemap.TileData, error)){}
+	// タイル毎のOffsetの一覧
+	Offsets := map[string]Utils.Vec2Int{}
 	for tilekey, tiledata := range tmd.TileData {
 		imagedata, err := imageassets.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath, tmd.imageManager)
 		if err != nil {
@@ -83,6 +86,7 @@ func (tmd TileMapData) Construct() (any, error) {
 
 		tile := makeTileData(tiledata.Name, imagedata, tileSize)
 		Tiles[tilekey] = tile
+		Offsets[tilekey] = tiledata.Offset
 	}
 
 	// マップを組み立てる
@@ -103,7 +107,7 @@ func (tmd TileMapData) Construct() (any, error) {
 			}
 
 			// posを指定
-			pos := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: j}, Layer: tmd.FloorLayer}
+			pos := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: j}, Layer: tmd.FloorLayer, Offset: Offsets[floorKey]}
 
 			// 実際のタイルのデータを生成
 			tileFactory, ok := Tiles[floorKey]
@@ -122,21 +126,21 @@ func (tmd TileMapData) Construct() (any, error) {
 
 	for posstr, ObjectData := range tmd.ObjectMap {
 		//　pos の指定
-		pos := tilemap.TilePosition{Layer: ObjectData.Layer}
+		pos := tilemap.TilePosition{Layer: ObjectData.Layer, Offset: Offsets[ObjectData.Tilekey]}
 		_, err := fmt.Sscanf(posstr, "%d,%d", &pos.Position.X, &pos.Position.Y)
 		if err != nil {
 			return nil, fmt.Errorf("MapData のキーが不正です。 \"x,y\" の形式で入力してください。\nfilePath: %s, key: %s\n%w", tmd.filePath, posstr, err)
 		}
 
 		// 実際のタイルのデータを生成
-		tileFactory, ok := Tiles[ObjectData.Tile]
+		tileFactory, ok := Tiles[ObjectData.Tilekey]
 		if !ok {
-			return nil, fmt.Errorf("FloorLayer のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, ObjectData.Tile)
+			return nil, fmt.Errorf("FloorLayer のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, ObjectData.Tilekey)
 		}
 
 		realtiledata, err := tileFactory(ObjectData.Layer)
 		if err != nil {
-			return nil, fmt.Errorf("Object %s の生成に失敗しました。\n%w\n", ObjectData.Tile, err)
+			return nil, fmt.Errorf("Object %s の生成に失敗しました。\n%w\n", ObjectData.Tilekey, err)
 		}
 		mapdata[pos] = realtiledata
 	}
