@@ -5,10 +5,27 @@ import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+	"fmt"
 
 	input "github.com/quasilyte/ebitengine-input"
 )
 
-func TitleSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata) Utils.Factory[*scene.PlayScene] {
+func TitleSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata) Utils.Factory[*scene.TitleScene] {
+	DrawerFactory, err := MakeDrawerFactory(assetsManager)
+	if err != nil {
+		return func() (*scene.TitleScene, error) {
+			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
+		}
+	}
 
+	titlescene, err := scene.NewTitleScene(DrawerFactory, inputHandler, gdata)()
+	if err != nil {
+		return func() (*scene.TitleScene, error) {
+			return nil, fmt.Errorf("NewTitleScene() でエラーが発生しました。\n%w", err)
+		}
+	}
+
+	return func() (*scene.TitleScene, error) {
+		return titlescene, nil
+	}
 }
