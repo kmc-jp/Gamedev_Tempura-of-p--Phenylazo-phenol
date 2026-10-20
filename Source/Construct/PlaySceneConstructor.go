@@ -154,7 +154,7 @@ func MakePlayer(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene, T
 		return Utils.CastFactory[*component.StdTransform, gameobject.Transform](component.NewStdTransform(position))
 	}
 	NewRenderer := func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render] {
-		return Utils.CastFactory[*component.StdRender, gameobject.Render](component.NewLayerableRender(asp, img, layer))
+		return Utils.CastFactory[*component.AnimRender, gameobject.Render](component.NewAnimRender(asp, img, layer, ""))
 	}
 
 	plobj, err := NewPlayer("Player", constructData.Position, *constructData.TileData, TileMap, PlScene, NewTransform, NewRenderer, assetsManager)()
