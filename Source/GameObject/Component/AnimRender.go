@@ -65,4 +65,10 @@ func (r AnimRender) Draw() (*ebiten.Image, string) {
 	return img, r.layer
 }
 
-var _ gameobject.Render = AnimRender{}
+func (r *AnimRender) Update() error {
+	r.FrameUpdate()
+
+	return nil
+}
+
+var _ gameobject.Render = &AnimRender{}
