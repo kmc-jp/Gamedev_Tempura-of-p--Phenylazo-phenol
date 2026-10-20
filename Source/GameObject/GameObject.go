@@ -42,6 +42,11 @@ func (g GameObject) Update(active bool) (err error) {
 			return fmt.Errorf("コンポーネント %s でエラーが発生しました。\n%w", reflect.TypeOf(c), err)
 		}
 	}
+
+	err = g.Render().Update()
+	if err != nil {
+		return fmt.Errorf("Render でエラーが発生しました。\n%w", err)
+	}
 	return nil
 }
 
