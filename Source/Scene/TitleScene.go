@@ -42,14 +42,14 @@ func (s TitleScene) Name() string {
 	return fmt.Sprintf("%T", s)
 }
 
-func (s TitleScene) Draw(screen *ebiten.Image) {
+func (s *TitleScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
 	ui.DrawText(Utils.Position{}, color.Orange(),
 		"Title\nPress Space Key to Start",
 		ui.FontFace(s.gamedata.Font, 50), screen)
 }
 
-func (s TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
+func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
 	if !active {
 		return
 	}
@@ -59,9 +59,7 @@ func (s TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeySpace) {
-		return func() (game.Scene, error) {
-			return &PlayScene{}, nil
-		}, transition.NewScene(), nil
+		//PlaySceneへの遷移
 	}
 
 	return
