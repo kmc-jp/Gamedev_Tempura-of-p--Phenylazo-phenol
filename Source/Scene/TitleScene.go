@@ -1,6 +1,7 @@
 package scene
 
 import (
+	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 
@@ -11,9 +12,10 @@ type TitleScene struct {
 	entities []Entity
 	drawer   Drawer
 	Input    *input.Handler
+	gamedata game.Gamedata
 }
 
-func NewTitleScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler) Utils.Factory[*PlayScene] {
+func NewTitleScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata) Utils.Factory[*PlayScene] {
 	camera, err := NewDrawer()
 	if err != nil {
 		return func() (*PlayScene, error) {
@@ -24,6 +26,7 @@ func NewTitleScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler) Utils.
 		entities: []Entity{},
 		drawer:   camera,
 		Input:    Input,
+		gamedata: gdata,
 	}
 	// なにもしない
 	return func() (*PlayScene, error) {
