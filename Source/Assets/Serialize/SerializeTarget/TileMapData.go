@@ -127,11 +127,12 @@ func (tmd TileMapData) Construct() (any, error) {
 
 	for posstr, ObjectData := range tmd.ObjectMap {
 		//　pos の指定
-		pos := tilemap.TilePosition{Layer: ObjectData.Layer, Offset: Offsets[ObjectData.Tilekey]}
-		_, err := fmt.Sscanf(posstr, "%d,%d", &pos.Position.X, &pos.Position.Y)
+		posvec := Utils.Vec2Int{}
+		_, err := fmt.Sscanf(posstr, "%d,%d", &posvec.X, &posvec.Y)
 		if err != nil {
 			return nil, fmt.Errorf("MapData のキーが不正です。 \"x,y\" の形式で入力してください。\nfilePath: %s, key: %s\n%w", tmd.filePath, posstr, err)
 		}
+		pos := tilemap.TilePosition{Position: posvec, Layer: ObjectData.Layer, Offset: Offsets[ObjectData.Tilekey]}
 
 		// 実際のタイルのデータを生成
 		tileFactory, ok := Tiles[ObjectData.Tilekey]
@@ -144,7 +145,10 @@ func (tmd TileMapData) Construct() (any, error) {
 			return nil, fmt.Errorf("Object %s の生成に失敗しました。\n%w\n", ObjectData.Tilekey, err)
 		}
 		mapdata[pos] = realtiledata
-		enterabledata[pos.Position] = false
+		Size := realtiledata.Size
+		for offset := range Size.Range() {
+			enterabledata[pos.Position.Add(offset)] = false
+		}
 	}
 
 	result := &tilemap.TileMapData{
