@@ -59,7 +59,13 @@ func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeySpace) {
-		//PlaySceneへの遷移
+		nextScene, err := NewPlayScene(, s.Input, s.gamedata)()
+		if err != nil {
+			return nil, transition.None(), err
+		}
+		return func() (game.Scene, error) {
+			return nextScene, nil
+		}, transition.NewScene(), nil
 	}
 
 	return

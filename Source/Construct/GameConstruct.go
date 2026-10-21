@@ -49,6 +49,7 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 			return nil, fmt.Errorf("ui.LoadFont(\"Assets/Fonts/Noto_Sans_JP/static/NotoSansJP-Medium.ttf\")でエラーが発生しました \n%w", err)
 		}
 	}
+	gdata.AssetsManager = assetsManager
 
 	initScene, err := TitleSceneConstruct(assetsManager, Handler, gdata)() // 起動時に表示されるシーン
 	if err != nil {
