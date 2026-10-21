@@ -71,7 +71,7 @@ func (tm TileMap) SetGameObject(
 		name := fmt.Sprintf("%s%d", data.Name, i+1)
 
 		// 位置
-		position := tm.TilePositionToWorldPosition(pos)
+		position := tm.TilePositionToWorldPosition(pos, data)
 		transformFactry := NewTransform(position)
 
 		// レイヤー
@@ -90,6 +90,6 @@ func (tm TileMap) SetGameObject(
 	return nil
 }
 
-func (tm TileMap) TilePositionToWorldPosition(pos tilemap.TilePosition) Utils.Position {
-	return pos.ToPosition().PtoV().HadamardProd(tm.TileSize.ToVec2()).Add(pos.Offset).VtoP()
+func (tm TileMap) TilePositionToWorldPosition(pos tilemap.TilePosition, data tilemap.TileData) Utils.Position {
+	return pos.Position.ToVec2().HadamardProd(tm.TileSize.ToVec2()).Add(pos.Offset).Add(data.Size.Sub(Utils.NewVecIntOne()).ToVec2().HadamardDiv(data.Size.ToVec2())).VtoP()
 }
