@@ -42,7 +42,6 @@ func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *
 		initScenes: initScenes,
 		timer:      tick.NewTimer(),
 	}
-	ps.gamedata.Text = "0"
 	// なにもしない
 	return func() (*PlayScene, error) {
 		return &ps, nil
@@ -72,6 +71,7 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 
 	if s.gamedata.InitialProcess {
 		s.gamedata.InitialProcess = false
+		s.gamedata.Text = "0"
 	}
 
 	for _, entity := range s.entities {
