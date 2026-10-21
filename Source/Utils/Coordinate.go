@@ -147,6 +147,18 @@ func HadamardProd(v1, v2 Vec2) Vec2 {
 	}
 }
 
+func (v1 Vec2) HadamardDiv(v2 Vec2) Vec2 {
+	return Vec2{
+		X: v1.X / v2.X, Y: v1.Y / v2.Y,
+	}
+}
+
+func HadamardDiv(v1, v2 Vec2) Vec2 {
+	return Vec2{
+		X: v1.X / v2.X, Y: v1.Y / v2.Y,
+	}
+}
+
 func UnitDirection(init, term Vec2) (Vec2, error) {
 	return term.Sub(init).Normalize()
 }
