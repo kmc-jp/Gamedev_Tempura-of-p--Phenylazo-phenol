@@ -47,7 +47,7 @@ func (s PauseScene) Name() string {
 
 func (s *PauseScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
-	ui.DrawText(Utils.Position{}, color.Orange(),
+	ui.DrawText(Utils.Position{X: 0, Y: 250}, color.Orange(),
 		"Pause\nPress ESC Key to Return the Game",
 		ui.FontFace(s.gamedata.Font, 30), screen)
 }

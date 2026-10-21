@@ -48,7 +48,7 @@ func (s TrainScene) Name() string {
 func (s *TrainScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
 	ui.DrawText(Utils.Position{}, color.Orange(),
-		"Train\n",
+		"Train\nESC to Open Pause Menu\n",
 		ui.FontFace(s.gamedata.Font, 30), screen)
 }
 
@@ -68,7 +68,13 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-
+		pauseScene, err := s.initScenes.InitPauseScene()
+		if err != nil {
+			return nil, transition.None(), err
+		}
+		pauseScene.gamedata = s.gamedata
+		pauseScene.initScenes = s.initScenes
+		return func() (game.Scene, error) { return pauseScene, nil }, transition.Push(), nil
 	}
 
 	return

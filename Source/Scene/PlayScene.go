@@ -3,7 +3,9 @@ package scene
 import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
+	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -50,6 +52,9 @@ func (s PlayScene) Name() string {
 // Draw implements [Scene].
 func (s PlayScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
+	ui.DrawText(Utils.Position{}, color.Orange(),
+		"Press Space to Go to the next shop by train\nESC to Open Pause Menu",
+		ui.FontFace(s.gamedata.Font, 30), screen)
 }
 
 // Update implements [Scene].
