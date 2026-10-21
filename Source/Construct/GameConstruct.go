@@ -52,6 +52,7 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 	}
 	gdata.AssetsManager = assetsManager
 
+	//各シーンの Constructor
 	initializedScenes := &scene.InitializedScenes{}
 	ts, err := TitleSceneConstruct(assetsManager, Handler, gdata, initializedScenes)()
 	if err != nil {
@@ -74,6 +75,14 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 		}
 	}
 	initializedScenes.InitPauseScene = func() (*scene.PauseScene, error) { return pss, nil }
+	trs, err := TrainSceneConstruct(assetsManager, Handler, gdata, initializedScenes)()
+	if err != nil {
+		return func() (*game.Game, error) {
+			return nil, fmt.Errorf("TrainSceneの初期化に失敗しました\n%w", err)
+		}
+	}
+	initializedScenes.InitTrainScene = func() (*scene.TrainScene, error) { return trs, nil }
+	//(ここまで)各シーンの Constructor
 
 	initScene, err := TitleSceneConstruct(assetsManager, Handler, gdata, initializedScenes)() // 起動時に表示されるシーン
 	if err != nil {
