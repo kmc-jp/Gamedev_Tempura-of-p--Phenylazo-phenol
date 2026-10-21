@@ -53,6 +53,15 @@ func (s PlayScene) Draw(screen *ebiten.Image) {
 
 // Update implements [Scene].
 func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
+	if !active {
+		return
+	}
+
+	if s.gamedata.InitialProcess {
+		s.gamedata.InitialProcess = false
+
+	}
+
 	for _, entity := range s.entities {
 		entity.Update(active)
 	}

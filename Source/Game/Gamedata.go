@@ -12,6 +12,9 @@ type Gamedata struct {
 	Font *text.GoTextFaceSource
 
 	AssetsManager *assets.AssetsManager
+
+	//シーン読み込み時の初回実行制御用
+	InitialProcess bool
 }
 
 func NewGamedata() *Gamedata {

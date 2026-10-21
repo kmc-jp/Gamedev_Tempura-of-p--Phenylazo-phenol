@@ -56,10 +56,9 @@ func (s *PauseScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 		return
 	}
 
-	init := true
-	if init {
+	if s.gamedata.InitialProcess {
 		//シーン起動時処理
-		init = false
+		s.gamedata.InitialProcess = false
 
 	}
 
@@ -68,15 +67,7 @@ func (s *PauseScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
-		nextScene, err := s.initScenes.InitPlayScene()
-		nextScene.gamedata = s.gamedata
-		nextScene.initScenes = s.initScenes
-		if err != nil {
-			return nil, transition.None(), err
-		}
-		return func() (game.Scene, error) {
-			return nextScene, nil
-		}, transition.NewScene(), nil
+		return nil, transition.Pop(), nil
 	}
 
 	return
