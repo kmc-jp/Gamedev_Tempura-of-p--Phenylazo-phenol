@@ -6,6 +6,7 @@ import (
 	serializetarget "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize/SerializeTarget"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
+	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
@@ -51,7 +52,30 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 	}
 	gdata.AssetsManager = assetsManager
 
-	initScene, err := TitleSceneConstruct(assetsManager, Handler, gdata)() // 起動時に表示されるシーン
+	initializedScenes := &scene.InitializedScenes{}
+	ts, err := TitleSceneConstruct(assetsManager, Handler, gdata, initializedScenes)()
+	if err != nil {
+		return func() (*game.Game, error) {
+			return nil, fmt.Errorf("TitleSceneの初期化に失敗しました\n%w", err)
+		}
+	}
+	initializedScenes.InitTitleScene = func() (*scene.TitleScene, error) { return ts, nil }
+	ps, err := PlaySceneConstruct(assetsManager, Handler, gdata, initializedScenes)()
+	if err != nil {
+		return func() (*game.Game, error) {
+			return nil, fmt.Errorf("PlaySceneの初期化に失敗しました\n%w", err)
+		}
+	}
+	initializedScenes.InitPlayScene = func() (*scene.PlayScene, error) { return ps, nil }
+	pss, err := PauseSceneConstruct(assetsManager, Handler, gdata, initializedScenes)()
+	if err != nil {
+		return func() (*game.Game, error) {
+			return nil, fmt.Errorf("PauseSceneの初期化に失敗しました\n%w", err)
+		}
+	}
+	initializedScenes.InitPauseScene = func() (*scene.PauseScene, error) { return pss, nil }
+
+	initScene, err := TitleSceneConstruct(assetsManager, Handler, gdata, initializedScenes)() // 起動時に表示されるシーン
 	if err != nil {
 		return func() (*game.Game, error) {
 			return nil, fmt.Errorf("初期シーンの読み込みに失敗しました\n%v", err)

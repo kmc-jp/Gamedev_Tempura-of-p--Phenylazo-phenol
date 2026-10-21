@@ -12,15 +12,16 @@ import (
 
 // メインの遊べるシーン
 type PlayScene struct {
-	entities []Entity
-	drawer   Drawer
-	Input    *input.Handler
-	gamedata *game.Gamedata
+	entities   []Entity
+	drawer     Drawer
+	Input      *input.Handler
+	gamedata   *game.Gamedata
+	initScenes *InitializedScenes
 	// テスト用
 	cameraCenter Utils.Position
 }
 
-func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata) Utils.Factory[*PlayScene] {
+func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PlayScene] {
 	camera, err := NewDrawer()
 	if err != nil {
 		return func() (*PlayScene, error) {
@@ -28,10 +29,11 @@ func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *
 		}
 	}
 	ps := PlayScene{
-		entities: []Entity{},
-		drawer:   camera,
-		Input:    Input,
-		gamedata: gdata,
+		entities:   []Entity{},
+		drawer:     camera,
+		Input:      Input,
+		gamedata:   gdata,
+		initScenes: initScenes,
 	}
 	// なにもしない
 	return func() (*PlayScene, error) {

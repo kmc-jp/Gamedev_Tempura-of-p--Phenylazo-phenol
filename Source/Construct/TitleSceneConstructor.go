@@ -10,7 +10,7 @@ import (
 	input "github.com/quasilyte/ebitengine-input"
 )
 
-func TitleSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata) Utils.Factory[*scene.TitleScene] {
+func TitleSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata, initScenes *scene.InitializedScenes) Utils.Factory[*scene.TitleScene] {
 	DrawerFactory, err := MakeDrawerFactory(assetsManager)
 	if err != nil {
 		return func() (*scene.TitleScene, error) {
@@ -18,7 +18,7 @@ func TitleSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inpu
 		}
 	}
 
-	titlescene, err := scene.NewTitleScene(DrawerFactory, inputHandler, gdata)()
+	titlescene, err := scene.NewTitleScene(DrawerFactory, inputHandler, gdata, initScenes)()
 	if err != nil {
 		return func() (*scene.TitleScene, error) {
 			return nil, fmt.Errorf("NewTitleScene() でエラーが発生しました。\n%w", err)

@@ -13,13 +13,14 @@ import (
 )
 
 type TitleScene struct {
-	entities []Entity
-	drawer   Drawer
-	Input    *input.Handler
-	gamedata *game.Gamedata
+	entities   []Entity
+	drawer     Drawer
+	Input      *input.Handler
+	gamedata   *game.Gamedata
+	initScenes *InitializedScenes
 }
 
-func NewTitleScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata) Utils.Factory[*TitleScene] {
+func NewTitleScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TitleScene] {
 	camera, err := NewDrawer()
 	if err != nil {
 		return func() (*TitleScene, error) {
@@ -27,10 +28,11 @@ func NewTitleScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata 
 		}
 	}
 	ts := TitleScene{
-		entities: []Entity{},
-		drawer:   camera,
-		Input:    Input,
-		gamedata: gdata,
+		entities:   []Entity{},
+		drawer:     camera,
+		Input:      Input,
+		gamedata:   gdata,
+		initScenes: initScenes,
 	}
 	// なにもしない
 	return func() (*TitleScene, error) {
@@ -54,12 +56,21 @@ func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 		return
 	}
 
+	init := true
+	if init {
+		//シーン起動時処理
+		init = false
+
+	}
+
 	for _, entity := range s.entities {
 		entity.Update(active)
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeySpace) {
-		nextScene, err := NewPlayScene(, s.Input, s.gamedata)()
+		nextScene, err := s.initScenes.InitPlayScene()
+		nextScene.gamedata = s.gamedata
+		nextScene.initScenes = s.initScenes
 		if err != nil {
 			return nil, transition.None(), err
 		}
