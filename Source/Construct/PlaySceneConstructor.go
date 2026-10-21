@@ -4,6 +4,7 @@ import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
 	serialize "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize"
 	serializetarget "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize/SerializeTarget"
+	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
 	component "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject/Component"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
@@ -18,7 +19,7 @@ import (
 )
 
 // とりあえず PlayScene を組み立てる
-func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler) Utils.Factory[*scene.PlayScene] {
+func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata, initScenes *scene.InitializedScenes) Utils.Factory[*scene.PlayScene] {
 	// カメラ設定
 	DrawerFactory, err := MakeDrawerFactory(assetsManager)
 	if err != nil {
@@ -27,7 +28,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 		}
 	}
 
-	playscene, err := scene.NewPlayScene(DrawerFactory, inputHandler)()
+	playscene, err := scene.NewPlayScene(DrawerFactory, inputHandler, gdata, initScenes)()
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
 			return nil, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
