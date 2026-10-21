@@ -91,5 +91,5 @@ func (tm TileMap) SetGameObject(
 }
 
 func (tm TileMap) TilePositionToWorldPosition(pos tilemap.TilePosition) Utils.Position {
-	return pos.ToPosition().PtoV().HadamardProd(tm.TileSize.ToVec2()).Add(pos.Offset.ToVec2()).VtoP()
+	return pos.ToPosition().PtoV().HadamardProd(tm.TileSize.ToVec2()).Add(pos.Offset).VtoP()
 }

@@ -7,7 +7,7 @@ import (
 type TilePosition struct {
 	Position Utils.Vec2Int
 	Layer    string
-	Offset   Utils.Vec2Int
+	Offset   Utils.Vec2
 }
 
 func (t TilePosition) ToPosition() Utils.Position {

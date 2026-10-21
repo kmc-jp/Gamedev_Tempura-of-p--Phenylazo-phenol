@@ -38,7 +38,7 @@ type TileData struct {
 	JsonPath string
 	PngPath  string
 	Size     Utils.Vec2Int
-	Offset   Utils.Vec2Int
+	Offset   Utils.Vec2
 }
 
 type ObjectData struct {
@@ -71,7 +71,7 @@ func (tmd TileMapData) Construct() (any, error) {
 	// レイヤーを入れればタイルがデータが返ってくるようになってる
 	Tiles := map[string](func(layer string) (*tilemap.TileData, error)){}
 	// タイル毎のOffsetの一覧
-	Offsets := map[string]Utils.Vec2Int{}
+	Offsets := map[string]Utils.Vec2{}
 	for tilekey, tiledata := range tmd.TileData {
 		imagedata, err := imageassets.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath, tmd.imageManager)
 		if err != nil {
