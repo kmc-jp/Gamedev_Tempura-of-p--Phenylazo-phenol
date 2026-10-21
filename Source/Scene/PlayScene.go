@@ -79,6 +79,16 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		return func() (game.Scene, error) { return pauseScene, nil }, transition.Push(), nil
 	}
 
+	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+		trainScene, err := s.initScenes.InitTrainScene()
+		if err != nil {
+			return nil, transition.None(), err
+		}
+		trainScene.gamedata = s.gamedata
+		trainScene.initScenes = s.initScenes
+		return func() (game.Scene, error) { return trainScene, nil }, transition.NewScene(), nil
+	}
+
 	return
 }
 

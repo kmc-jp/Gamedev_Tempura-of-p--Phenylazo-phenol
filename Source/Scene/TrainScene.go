@@ -28,7 +28,7 @@ func NewTrainScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata 
 			return &TrainScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
 	}
-	ps := TrainScene{
+	trs := TrainScene{
 		entities:   []Entity{},
 		drawer:     camera,
 		Input:      Input,
@@ -37,7 +37,7 @@ func NewTrainScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata 
 	}
 	// なにもしない
 	return func() (*TrainScene, error) {
-		return &ps, nil
+		return &trs, nil
 	}
 }
 
@@ -48,7 +48,7 @@ func (s TrainScene) Name() string {
 func (s *TrainScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
 	ui.DrawText(Utils.Position{}, color.Orange(),
-		"Pause\nPress ESC Key to Return the Game",
+		"Train\n",
 		ui.FontFace(s.gamedata.Font, 30), screen)
 }
 
