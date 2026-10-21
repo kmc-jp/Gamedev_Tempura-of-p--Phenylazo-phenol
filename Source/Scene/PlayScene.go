@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	input "github.com/quasilyte/ebitengine-input"
 )
 
@@ -67,6 +68,17 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 	}
 
 	// 何か軽いテストはここでやりましょう
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+		pauseScene, err := s.initScenes.InitPauseScene()
+		if err != nil {
+			return nil, transition.None(), err
+		}
+		pauseScene.gamedata = s.gamedata
+		pauseScene.initScenes = s.initScenes
+		return func() (game.Scene, error) { return pauseScene, nil }, transition.Push(), nil
+	}
+
 	return
 }
 

@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	input "github.com/quasilyte/ebitengine-input"
 )
 
@@ -48,7 +49,7 @@ func (s *PauseScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
 	ui.DrawText(Utils.Position{}, color.Orange(),
 		"Pause\nPress ESC Key to Return the Game",
-		ui.FontFace(s.gamedata.Font, 50), screen)
+		ui.FontFace(s.gamedata.Font, 30), screen)
 }
 
 func (s *PauseScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
@@ -66,7 +67,7 @@ func (s *PauseScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 		entity.Update(active)
 	}
 
-	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		return nil, transition.Pop(), nil
 	}
 

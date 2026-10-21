@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	input "github.com/quasilyte/ebitengine-input"
 )
 
@@ -66,7 +67,7 @@ func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 		entity.Update(active)
 	}
 
-	if ebiten.IsKeyPressed(ebiten.KeySpace) {
+	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		nextScene, err := s.initScenes.InitPlayScene()
 		nextScene.gamedata = s.gamedata
 		nextScene.gamedata.InitialProcess = true
