@@ -26,6 +26,19 @@ func (t Vec2Int) ToVec2() Vec2 {
 	}
 }
 
+// [(0, 0), t) 長方形範囲の格子点を列挙する
+func (t Vec2Int) Range() iter.Seq[Vec2Int] {
+	return func(yield func(Vec2Int) bool) {
+		for x := 0; x < t.X; x++ {
+			for y := 0; y < t.Y; y++ {
+				if !yield(Vec2Int{X: x, Y: y}) {
+					return
+				}
+			}
+		}
+	}
+}
+
 func NewVecIntZero() Vec2Int {
 	return Vec2Int{X: 0, Y: 0}
 }
