@@ -73,6 +73,7 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 			return nil, transition.None(), err
 		}
 		pauseScene.gamedata = s.gamedata
+		pauseScene.gamedata.InitialProcess = true
 		pauseScene.initScenes = s.initScenes
 		return func() (game.Scene, error) { return pauseScene, nil }, transition.Push(), nil
 	}
