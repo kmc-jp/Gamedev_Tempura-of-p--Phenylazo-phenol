@@ -7,20 +7,22 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	input "github.com/quasilyte/ebitengine-input"
 )
 
 // メインの遊べるシーン
 type PlayScene struct {
-	entities []Entity
-	drawer   Drawer
-	Input    *input.Handler
-	gamedata *game.Gamedata
+	entities   []Entity
+	drawer     Drawer
+	Input      *input.Handler
+	gamedata   *game.Gamedata
+	initScenes *InitializedScenes
 	// テスト用
 	cameraCenter Utils.Position
 }
 
-func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata) Utils.Factory[*PlayScene] {
+func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PlayScene] {
 	camera, err := NewDrawer()
 	if err != nil {
 		return func() (*PlayScene, error) {
@@ -28,10 +30,11 @@ func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *
 		}
 	}
 	ps := PlayScene{
-		entities: []Entity{},
-		drawer:   camera,
-		Input:    Input,
-		gamedata: gdata,
+		entities:   []Entity{},
+		drawer:     camera,
+		Input:      Input,
+		gamedata:   gdata,
+		initScenes: initScenes,
 	}
 	// なにもしない
 	return func() (*PlayScene, error) {
@@ -51,11 +54,31 @@ func (s PlayScene) Draw(screen *ebiten.Image) {
 
 // Update implements [Scene].
 func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
+	if !active {
+		return
+	}
+
+	if s.gamedata.InitialProcess {
+		s.gamedata.InitialProcess = false
+
+	}
+
 	for _, entity := range s.entities {
 		entity.Update(active)
 	}
 
 	// 何か軽いテストはここでやりましょう
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+		pauseScene, err := s.initScenes.InitPauseScene()
+		if err != nil {
+			return nil, transition.None(), err
+		}
+		pauseScene.gamedata = s.gamedata
+		pauseScene.initScenes = s.initScenes
+		return func() (game.Scene, error) { return pauseScene, nil }, transition.Push(), nil
+	}
+
 	return
 }
 
