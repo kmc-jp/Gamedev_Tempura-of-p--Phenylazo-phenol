@@ -2,6 +2,7 @@ package scene
 
 import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
+	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
@@ -11,7 +12,6 @@ import (
 	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	input "github.com/quasilyte/ebitengine-input"
 )
 
@@ -99,23 +99,27 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		s.gamedata.Text = strconv.Itoa(num)
 	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+	// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+	if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
 		pauseScene, err := s.initScenes.InitPauseScene()
 		if err != nil {
 			return nil, transition.None(), err
 		}
 		pauseScene.gamedata = s.gamedata
+		pauseScene.gamedata.InitialProcess = true
 		pauseScene.initScenes = s.initScenes
 		return func() (game.Scene, error) { return pauseScene, nil }, transition.Push(), nil
 	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+	// if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+	if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
 		trainScene, err := s.initScenes.InitTrainScene()
 		if err != nil {
 			return nil, transition.None(), err
 		}
 		trainScene.gamedata = s.gamedata
 		trainScene.initScenes = s.initScenes
+		trainScene.gamedata.InitialProcess = true
 		return func() (game.Scene, error) { return trainScene, nil }, transition.NewScene(), nil
 	}
 
