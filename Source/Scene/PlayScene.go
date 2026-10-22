@@ -75,7 +75,10 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 	}
 
 	for _, entity := range s.entities {
-		entity.Update(active)
+		err := entity.Update(active)
+		if err != nil {
+			return nil, transition.None(), fmt.Errorf("%s.Update(%s) でエラーが発生しました。\n%w", entity.Name(), strconv.FormatBool(active), err)
+		}
 	}
 
 	// 何か軽いテストはここでやりましょう
