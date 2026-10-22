@@ -5,6 +5,7 @@ import (
 	imageassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Image"
 	serialize "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize"
 	tilemap "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/TileMap"
+	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 )
 
@@ -33,6 +34,11 @@ func (pc *PlayerConfig) Init(
 		return fmt.Errorf("assetsManager.Image.CheckAndCleanPath(pc.TileData.PngPath) でエラーが発生しました。 PngPath が不正です。\n%w", err)
 	}
 
+	// タイルサイズのデフォルト値設定
+	if pc.TileData.Size == Utils.NewVecIntZero() {
+		pc.TileData.Size = Utils.NewVecIntOne()
+	}
+
 	pc.initialized = true
 	pc.assetsManager = assetsManager
 	return nil
@@ -50,12 +56,16 @@ func (pc PlayerConfig) Construct() (any, error) {
 		return nil, fmt.Errorf("PlayerConfigがイニシャライズされていません。")
 	}
 
+	if pc.TileData.Size == Utils.NewVecIntZero() {
+		return nil, fmt.Errorf("TileData.Size がゼロ値になっています。")
+	}
+
 	imageData, err := imageassets.NewImageData(pc.Name, pc.TileData.PngPath, pc.TileData.JsonPath, pc.assetsManager.Image)
 	if err != nil {
 		return nil, fmt.Errorf("imageassets.NewImageData でエラーが発生しました。\n%w", err)
 	}
 
-	td, err := tilemap.NewTileData(pc.TileData.Name, imageData, pc.Position.Layer)
+	td, err := tilemap.NewTileData(pc.TileData.Name, imageData, pc.Position.Layer, pc.TileData.Size)
 	if err != nil {
 		return nil, fmt.Errorf("tilemap.NewTileData でエラーが発生しました。\n%w", err)
 	}
