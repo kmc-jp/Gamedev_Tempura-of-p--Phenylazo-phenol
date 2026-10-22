@@ -10,6 +10,7 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	input "github.com/quasilyte/ebitengine-input"
 )
 
@@ -48,7 +49,7 @@ func (s TrainScene) Name() string {
 func (s *TrainScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
 	ui.DrawText(Utils.Position{}, color.Orange(),
-		"Train\nESC to Open Pause Menu\n",
+		"Train\nESC to Open Pause Menu\nEnter to Return to PlayScene",
 		ui.FontFace(s.gamedata.Font, 30), screen)
 }
 
@@ -77,6 +78,17 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 		pauseScene.gamedata.InitialProcess = true
 		pauseScene.initScenes = s.initScenes
 		return func() (game.Scene, error) { return pauseScene, nil }, transition.Push(), nil
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		playScene, err := s.initScenes.InitPlayScene()
+		if err != nil {
+			return nil, transition.None(), err
+		}
+		playScene.gamedata = s.gamedata
+		playScene.gamedata.InitialProcess = true
+		playScene.initScenes = s.initScenes
+		return func() (game.Scene, error) { return playScene, nil }, transition.NewScene(), nil
 	}
 
 	return

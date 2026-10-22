@@ -7,7 +7,9 @@ import (
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
+	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
+	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	input "github.com/quasilyte/ebitengine-input"
@@ -20,6 +22,7 @@ type PlayScene struct {
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
+	timer      *tick.Timer
 	// テスト用
 	cameraCenter Utils.Position
 }
@@ -37,6 +40,7 @@ func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *
 		Input:      Input,
 		gamedata:   gdata,
 		initScenes: initScenes,
+		timer:      tick.NewTimer(),
 	}
 	// なにもしない
 	return func() (*PlayScene, error) {
@@ -55,6 +59,8 @@ func (s PlayScene) Draw(screen *ebiten.Image) {
 	ui.DrawText(Utils.Position{}, color.Orange(),
 		"Press Space to Go to the next shop by train\nESC to Open Pause Menu",
 		ui.FontFace(s.gamedata.Font, 30), screen)
+	ui.DrawText(Utils.Position{X: 0, Y: 200}, color.Red(),
+		s.gamedata.Text, ui.FontFace(s.gamedata.Font, 30), screen)
 }
 
 // Update implements [Scene].
@@ -65,14 +71,36 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 
 	if s.gamedata.InitialProcess {
 		s.gamedata.InitialProcess = false
-
+		s.gamedata.Text = "0"
 	}
 
 	for _, entity := range s.entities {
-		entity.Update(active)
+		err := entity.Update(active)
+		if err != nil {
+			return nil, transition.None(), fmt.Errorf("%s.Update(%s) でエラーが発生しました。\n%w", entity.Name(), strconv.FormatBool(active), err)
+		}
 	}
 
 	// 何か軽いテストはここでやりましょう
+
+	if err := s.timer.SetTimer(10); err != nil {
+		return nil, transition.None(), err
+	}
+	if cnt := tick.Count(s.timer); cnt == true {
+		num, _ := strconv.Atoi(s.gamedata.Text)
+		num++
+		if num > 10 {
+			//面倒なのでとりあえずシーン遷移コードを下からコピー
+			trainScene, err := s.initScenes.InitTrainScene()
+			if err != nil {
+				return nil, transition.None(), err
+			}
+			trainScene.gamedata = s.gamedata
+			trainScene.initScenes = s.initScenes
+			return func() (game.Scene, error) { return trainScene, nil }, transition.NewScene(), nil
+		}
+		s.gamedata.Text = strconv.Itoa(num)
+	}
 
 	// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
