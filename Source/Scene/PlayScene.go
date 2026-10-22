@@ -55,7 +55,7 @@ func (s PlayScene) Name() string {
 func (s PlayScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
 	ui.DrawText(Utils.Position{X: 0, Y: 0}, color.Red(),
-		"探索フェーズ 残り時間: "+s.gamedata.Text, ui.FontFace(s.gamedata.Font, 30), screen)
+		"探索フェーズ 残り時間: "+s.gamedata.Text, ui.FontFace(s.gamedata.Font, 15), screen)
 }
 
 // Update implements [Scene].

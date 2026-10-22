@@ -49,7 +49,7 @@ func (s *TitleScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
 	ui.DrawText(Utils.Position{}, color.Orange(),
 		"Title\nPress Space Key to Start",
-		ui.FontFace(s.gamedata.Font, 50), screen)
+		ui.FontFace(s.gamedata.Font, 15), screen)
 }
 
 func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
