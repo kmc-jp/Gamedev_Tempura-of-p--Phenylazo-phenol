@@ -86,7 +86,7 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 			return nil, transition.None(), err
 		}
 		playScene.gamedata = s.gamedata
-		playScene.gamedata.InitialProcess = true
+		playScene.gamedata.ForNewScene(game.Play_Explore)
 		playScene.initScenes = s.initScenes
 		return func() (game.Scene, error) { return playScene, nil }, transition.NewScene(), nil
 	}

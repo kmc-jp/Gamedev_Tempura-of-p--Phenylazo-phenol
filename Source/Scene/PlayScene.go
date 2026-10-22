@@ -68,65 +68,67 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		s.gamedata.InitialProcess = false
 		s.gamedata.Text = "10"
 
-		s.gamedata.Timer = append(s.gamedata.Timer, tick.NewTimer()) //OneSec
-		s.gamedata.Timer = append(s.gamedata.Timer, tick.NewTimer()) //FiveSec
+		s.gamedata.Timer = tick.NewTimer()
 
-		s.gamedata.Flag = append(s.gamedata.Flag, false)
+		fmt.Println(s.gamedata.Timer)
 	}
 
 	//TimeUp後の処理
-	if s.gamedata.Flag[game.TimeUp] {
-		if s.gamedata.Timer[game.FiveSec].Count() {
-			s.gamedata.Timer[game.FiveSec].Set(0)
+	if s.gamedata.State == game.Play_Timeup {
+		s.gamedata.Timer.Set(50)
+		if s.gamedata.Timer.Count() {
+			s.gamedata.Timer.Set(0)
 
 			trainScene, err := s.initScenes.InitTrainScene()
 			if err != nil {
 				return nil, transition.None(), err
 			}
 			trainScene.gamedata = s.gamedata
-			trainScene.gamedata.InitialProcess = true
+			trainScene.gamedata.ForNewScene(game.Train_Default)
 			trainScene.initScenes = s.initScenes
 			return func() (game.Scene, error) { return trainScene, nil }, transition.NewScene(), nil
 		}
 		return
 	}
 
-	for _, entity := range s.entities {
-		err := entity.Update(active)
-		if err != nil {
-			return nil, transition.None(), fmt.Errorf("%s.Update(%s) でエラーが発生しました。\n%w", entity.Name(), strconv.FormatBool(active), err)
+	if s.gamedata.State == game.Play_Explore {
+
+		for _, entity := range s.entities {
+			err := entity.Update(active)
+			if err != nil {
+				return nil, transition.None(), fmt.Errorf("%s.Update(%s) でエラーが発生しました。\n%w", entity.Name(), strconv.FormatBool(active), err)
+			}
 		}
-	}
 
-	// 何か軽いテストはここでやりましょう
+		// 何か軽いテストはここでやりましょう
 
-	s.gamedata.Timer[game.OneSec].Set(10)
-	s.gamedata.Timer[game.FiveSec].Set(50)
+		s.gamedata.Timer.Set(10)
 
-	//制限時間内プレイ中の制御
-	if cnt := s.gamedata.Timer[game.OneSec].Count(); cnt {
-		num, _ := strconv.Atoi(s.gamedata.Text)
-		num--
-		s.gamedata.Text = strconv.Itoa(num)
+		//制限時間内プレイ中の制御
+		if cnt := s.gamedata.Timer.Count(); cnt {
+			num, _ := strconv.Atoi(s.gamedata.Text)
+			num--
+			s.gamedata.Text = strconv.Itoa(num)
 
-		if num <= 0 {
-			s.gamedata.Timer[game.OneSec].Set(0)
-			s.gamedata.Flag[game.TimeUp] = true
+			if num <= 0 {
+				s.gamedata.Timer.Set(0)
+				s.gamedata.State = game.Play_Timeup
 
-			s.gamedata.Text = "0\nTimeUp 次の店に移動します"
+				s.gamedata.Text = "0\nTimeUp 次の店に移動します"
+			}
 		}
-	}
 
-	// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-	if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
-		pauseScene, err := s.initScenes.InitPauseScene()
-		if err != nil {
-			return nil, transition.None(), err
+		// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+		if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
+			pauseScene, err := s.initScenes.InitPauseScene()
+			if err != nil {
+				return nil, transition.None(), err
+			}
+			pauseScene.gamedata = s.gamedata
+			//pauseScene.gamedata.ForNewScene(0)
+			pauseScene.initScenes = s.initScenes
+			return func() (game.Scene, error) { return pauseScene, nil }, transition.Push(), nil
 		}
-		pauseScene.gamedata = s.gamedata
-		pauseScene.gamedata.InitialProcess = true
-		pauseScene.initScenes = s.initScenes
-		return func() (game.Scene, error) { return pauseScene, nil }, transition.Push(), nil
 	}
 
 	return
