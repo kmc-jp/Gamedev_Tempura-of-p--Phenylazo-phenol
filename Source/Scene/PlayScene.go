@@ -58,7 +58,7 @@ func (s PlayScene) Draw(screen *ebiten.Image) {
 		"Press Space to Go to the next shop by train\nESC to Open Pause Menu",
 		ui.FontFace(s.gamedata.Font, 30), screen)
 	ui.DrawText(Utils.Position{X: 0, Y: 200}, color.Red(),
-		s.gamedata.Text, ui.FontFace(s.gamedata.Font, 30), screen)
+		"Timer テスト用テキスト"+s.gamedata.Text, ui.FontFace(s.gamedata.Font, 30), screen)
 }
 
 // Update implements [Scene].
