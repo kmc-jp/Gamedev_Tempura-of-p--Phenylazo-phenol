@@ -22,7 +22,6 @@ type PlayScene struct {
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
-	timer      *tick.Timer
 	// テスト用
 	cameraCenter Utils.Position
 }
@@ -40,7 +39,6 @@ func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *
 		Input:      Input,
 		gamedata:   gdata,
 		initScenes: initScenes,
-		timer:      tick.NewTimer(),
 	}
 	// なにもしない
 	return func() (*PlayScene, error) {
@@ -72,6 +70,7 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 	if s.gamedata.InitialProcess {
 		s.gamedata.InitialProcess = false
 		s.gamedata.Text = "0"
+		s.gamedata.Timer = append(s.gamedata.Timer, tick.NewTimer())
 	}
 
 	for _, entity := range s.entities {
@@ -83,10 +82,10 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 
 	// 何か軽いテストはここでやりましょう
 
-	if err := s.timer.SetTimer(10); err != nil {
+	if err := s.gamedata.Timer[0].SetTimer(10); err != nil {
 		return nil, transition.None(), err
 	}
-	if cnt := tick.Count(s.timer); cnt == true {
+	if cnt := s.gamedata.Timer[0].Count(); cnt == true {
 		num, _ := strconv.Atoi(s.gamedata.Text)
 		num++
 		if num > 10 {

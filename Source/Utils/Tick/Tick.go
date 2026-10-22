@@ -15,7 +15,7 @@ type Timer struct {
 const maxTick uint16 = 36000 // <= up to 65535
 
 // Timerを使う場合はUpdate()にこの処理が必要
-func Count(timer *Timer) bool {
+func (timer *Timer) Count() bool {
 	counted := false
 	timer.tick++
 	if timer.Time != 0 && timer.Time <= maxTick/6 {
