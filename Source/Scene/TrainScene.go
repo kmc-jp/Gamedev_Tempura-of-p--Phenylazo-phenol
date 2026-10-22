@@ -2,6 +2,7 @@ package scene
 
 import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
+	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
@@ -9,7 +10,6 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	input "github.com/quasilyte/ebitengine-input"
 )
 
@@ -67,7 +67,8 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 		entity.Update(active)
 	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+	// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+	if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
 		pauseScene, err := s.initScenes.InitPauseScene()
 		if err != nil {
 			return nil, transition.None(), err
