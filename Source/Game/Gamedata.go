@@ -19,9 +19,22 @@ type Gamedata struct {
 
 	Timer []*tick.Timer
 
+	Flag []bool
+
 	//仮UIでのテスト用テキストデータ
 	Text string
 }
+
+// Timer 識別名
+const (
+	OneSec = iota
+	FiveSec
+)
+
+// Flag 識別名
+const (
+	TimeUp = iota
+)
 
 func NewGamedata() *Gamedata {
 	return &Gamedata{}

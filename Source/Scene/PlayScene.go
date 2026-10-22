@@ -54,11 +54,8 @@ func (s PlayScene) Name() string {
 // Draw implements [Scene].
 func (s PlayScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
-	ui.DrawText(Utils.Position{}, color.Orange(),
-		"Press Space to Go to the next shop by train\nESC to Open Pause Menu",
-		ui.FontFace(s.gamedata.Font, 30), screen)
-	ui.DrawText(Utils.Position{X: 0, Y: 200}, color.Red(),
-		"Timer テスト用テキスト"+s.gamedata.Text, ui.FontFace(s.gamedata.Font, 30), screen)
+	ui.DrawText(Utils.Position{X: 0, Y: 0}, color.Red(),
+		"探索フェーズ 残り時間: "+s.gamedata.Text, ui.FontFace(s.gamedata.Font, 30), screen)
 }
 
 // Update implements [Scene].
@@ -69,8 +66,29 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 
 	if s.gamedata.InitialProcess {
 		s.gamedata.InitialProcess = false
-		s.gamedata.Text = "0"
-		s.gamedata.Timer = append(s.gamedata.Timer, tick.NewTimer())
+		s.gamedata.Text = "10"
+
+		s.gamedata.Timer = append(s.gamedata.Timer, tick.NewTimer()) //OneSec
+		s.gamedata.Timer = append(s.gamedata.Timer, tick.NewTimer()) //FiveSec
+
+		s.gamedata.Flag = append(s.gamedata.Flag, false)
+	}
+
+	//TimeUp後の処理
+	if s.gamedata.Flag[game.TimeUp] {
+		if s.gamedata.Timer[game.FiveSec].Count() {
+			s.gamedata.Timer[game.FiveSec].Set(0)
+
+			trainScene, err := s.initScenes.InitTrainScene()
+			if err != nil {
+				return nil, transition.None(), err
+			}
+			trainScene.gamedata = s.gamedata
+			trainScene.gamedata.InitialProcess = true
+			trainScene.initScenes = s.initScenes
+			return func() (game.Scene, error) { return trainScene, nil }, transition.NewScene(), nil
+		}
+		return
 	}
 
 	for _, entity := range s.entities {
@@ -82,23 +100,21 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 
 	// 何か軽いテストはここでやりましょう
 
-	if err := s.gamedata.Timer[0].SetTimer(10); err != nil {
-		return nil, transition.None(), err
-	}
-	if cnt := s.gamedata.Timer[0].Count(); cnt == true {
+	s.gamedata.Timer[game.OneSec].Set(10)
+	s.gamedata.Timer[game.FiveSec].Set(50)
+
+	//制限時間内プレイ中の制御
+	if cnt := s.gamedata.Timer[game.OneSec].Count(); cnt {
 		num, _ := strconv.Atoi(s.gamedata.Text)
-		num++
-		if num > 10 {
-			//面倒なのでとりあえずシーン遷移コードを下からコピー
-			trainScene, err := s.initScenes.InitTrainScene()
-			if err != nil {
-				return nil, transition.None(), err
-			}
-			trainScene.gamedata = s.gamedata
-			trainScene.initScenes = s.initScenes
-			return func() (game.Scene, error) { return trainScene, nil }, transition.NewScene(), nil
-		}
+		num--
 		s.gamedata.Text = strconv.Itoa(num)
+
+		if num <= 0 {
+			s.gamedata.Timer[game.OneSec].Set(0)
+			s.gamedata.Flag[game.TimeUp] = true
+
+			s.gamedata.Text = "0\nTimeUp 次の店に移動します"
+		}
 	}
 
 	// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
@@ -111,18 +127,6 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		pauseScene.gamedata.InitialProcess = true
 		pauseScene.initScenes = s.initScenes
 		return func() (game.Scene, error) { return pauseScene, nil }, transition.Push(), nil
-	}
-
-	// if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-	if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
-		trainScene, err := s.initScenes.InitTrainScene()
-		if err != nil {
-			return nil, transition.None(), err
-		}
-		trainScene.gamedata = s.gamedata
-		trainScene.initScenes = s.initScenes
-		trainScene.gamedata.InitialProcess = true
-		return func() (game.Scene, error) { return trainScene, nil }, transition.NewScene(), nil
 	}
 
 	return
