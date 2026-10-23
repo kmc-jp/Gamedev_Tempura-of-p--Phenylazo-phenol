@@ -12,6 +12,7 @@ type TileMap struct {
 	Tiles     map[tilemap.TilePosition]*Tile
 	TileSize  Utils.Vec2Int
 	Enterable map[Utils.Vec2Int]bool // 何も入ってなければ進入可能
+	Interact  map[Utils.Vec2Int]InteractableTile
 }
 
 // test
@@ -41,13 +42,14 @@ func NewTileMap(mapdata tilemap.TileMapData) Utils.Factory[*TileMap] {
 		Tiles:     tilelist,
 		TileSize:  mapdata.TileSize,
 		Enterable: mapdata.Enterable,
+		Interact:  map[Utils.Vec2Int]InteractableTile{},
 	}
 	return func() (*TileMap, error) {
 		return &t, nil
 	}
 }
 
-func (tm TileMap) SetGameObject(
+func (tm *TileMap) SetGameObject(
 	scene *scene.PlayScene,
 	NewTileObj func(
 		name string,
@@ -84,6 +86,20 @@ func (tm TileMap) SetGameObject(
 		}
 
 		scene.AddEntity(obj)
+
+		// 干渉可能タイル設定
+		Interact, err := InteractiveTiles(data.Interact)
+		if err != nil {
+			return fmt.Errorf("InteractiveTiles(data.Interact) でエラーが発生しました。\ndata.Interact = %d\n%w", data.Interact, err)
+		}
+		if Interact != nil {
+			ic, err := Interact()
+			if err != nil {
+				return fmt.Errorf("Interact() でエラーが発生しました。\ndata.Interact = %d\n%w", data.Interact, err)
+			}
+			obj.AddComponent(ic)
+			tm.Interact[pos.Position] = ic
+		}
 
 		// fmt.Printf("Tile %s が追加されました。\n", obj.Name())
 	}
