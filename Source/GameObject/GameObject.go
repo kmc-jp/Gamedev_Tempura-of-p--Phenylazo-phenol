@@ -88,6 +88,3 @@ func NewMockGameObject(name string) Utils.Factory[*GameObject] {
 		return &GameObject{name: name}, nil
 	}
 }
-
-// test
-var _ Utils.Factory[*GameObject] = NewGameObject("", nil, nil, nil)

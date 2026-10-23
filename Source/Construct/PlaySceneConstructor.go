@@ -20,47 +20,37 @@ import (
 
 // とりあえず PlayScene を組み立てる
 func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata, initScenes *scene.InitializedScenes) Utils.Factory[*scene.PlayScene] {
-	// カメラ設定
-	DrawerFactory, err := MakeDrawerFactory(assetsManager)
-	if err != nil {
-		return func() (*scene.PlayScene, error) {
+	return func() (*scene.PlayScene, error) {
+		// カメラ設定
+		DrawerFactory, err := MakeDrawerFactory(assetsManager)
+		if err != nil {
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
-	}
 
-	playscene, err := scene.NewPlayScene(DrawerFactory, inputHandler, gdata, initScenes)()
-	if err != nil {
-		return func() (*scene.PlayScene, error) {
+		playscene, err := scene.NewPlayScene(DrawerFactory, inputHandler, gdata, initScenes)()
+		if err != nil {
 			return nil, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
 		}
-	}
 
-	// タイルマップ
-	tilemapobj, err := MakeTileMapObj(assetsManager, playscene)
-	if err != nil {
-		return func() (*scene.PlayScene, error) {
+		// タイルマップ
+		tilemapobj, err := MakeTileMapObj(assetsManager, playscene)
+		if err != nil {
 			return nil, fmt.Errorf("MakeTileMapObj(assetsManager, playscene) でエラーが発生しました。\n%w", err)
 		}
-	}
-	playscene.AddEntity(tilemapobj)
+		playscene.AddEntity(tilemapobj)
 
-	// Player を設置 (タイルマップ情報が必要)
-	TMC, err := tilemapobj.GetComponent(reflect.TypeFor[*component.TileMap]())
-	if err != nil {
-		return func() (*scene.PlayScene, error) {
+		// Player を設置 (タイルマップ情報が必要)
+		TMC, err := tilemapobj.GetComponent(reflect.TypeFor[*component.TileMap]())
+		if err != nil {
 			return nil, fmt.Errorf("tilemapobj.GetComponent(reflect.TypeFor[*component.TileMap]()) でエラーが発生しました。\n%w", err)
 		}
-	}
-	TM := TMC.(*component.TileMap)
-	plobj, err := MakePlayer(assetsManager, playscene, TM)
-	if err != nil {
-		return func() (*scene.PlayScene, error) {
+		TM := TMC.(*component.TileMap)
+		plobj, err := MakePlayer(assetsManager, playscene, TM)
+		if err != nil {
 			return nil, fmt.Errorf("MakePlayer(assetsManager, playscene) でエラーが発生しました。\n%w", err)
 		}
-	}
-	playscene.AddEntity(plobj)
+		playscene.AddEntity(plobj)
 
-	return func() (*scene.PlayScene, error) {
 		return playscene, nil
 	}
 }

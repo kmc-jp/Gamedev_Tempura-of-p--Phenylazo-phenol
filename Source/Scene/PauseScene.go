@@ -22,21 +22,18 @@ type PauseScene struct {
 }
 
 func NewPauseScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PauseScene] {
-	camera, err := NewDrawer()
-	if err != nil {
-		return func() (*PauseScene, error) {
+	return func() (*PauseScene, error) {
+		camera, err := NewDrawer()
+		if err != nil {
 			return &PauseScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-	}
-	ps := PauseScene{
-		entities:   []Entity{},
-		drawer:     camera,
-		Input:      Input,
-		gamedata:   gdata,
-		initScenes: initScenes,
-	}
-	// なにもしない
-	return func() (*PauseScene, error) {
+		ps := PauseScene{
+			entities:   []Entity{},
+			drawer:     camera,
+			Input:      Input,
+			gamedata:   gdata,
+			initScenes: initScenes,
+		}
 		return &ps, nil
 	}
 }

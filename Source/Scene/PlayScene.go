@@ -27,21 +27,18 @@ type PlayScene struct {
 }
 
 func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PlayScene] {
-	camera, err := NewDrawer()
-	if err != nil {
-		return func() (*PlayScene, error) {
+	return func() (*PlayScene, error) {
+		camera, err := NewDrawer()
+		if err != nil {
 			return &PlayScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-	}
-	ps := PlayScene{
-		entities:   []Entity{},
-		drawer:     camera,
-		Input:      Input,
-		gamedata:   gdata,
-		initScenes: initScenes,
-	}
-	// なにもしない
-	return func() (*PlayScene, error) {
+		ps := PlayScene{
+			entities:   []Entity{},
+			drawer:     camera,
+			Input:      Input,
+			gamedata:   gdata,
+			initScenes: initScenes,
+		}
 		return &ps, nil
 	}
 }
@@ -79,14 +76,16 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		if s.gamedata.Timer.Count() {
 			s.gamedata.Timer.Set(0)
 
-			trainScene, err := s.initScenes.InitTrainScene()
-			if err != nil {
-				return nil, transition.None(), err
-			}
-			trainScene.gamedata = s.gamedata
-			trainScene.gamedata.ForNewScene(game.Train_Default)
-			trainScene.initScenes = s.initScenes
-			return func() (game.Scene, error) { return trainScene, nil }, transition.NewScene(), nil
+			return func() (game.Scene, error) {
+				trainScene, err := s.initScenes.InitTrainScene()
+				if err != nil {
+					return nil, err
+				}
+				trainScene.gamedata = s.gamedata
+				trainScene.gamedata.ForNewScene(game.Train_Default)
+				trainScene.initScenes = s.initScenes
+				return trainScene, nil
+			}, transition.NewScene(), nil
 		}
 		return
 	}
@@ -120,14 +119,16 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 
 		// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
-			pauseScene, err := s.initScenes.InitPauseScene()
-			if err != nil {
-				return nil, transition.None(), err
-			}
-			pauseScene.gamedata = s.gamedata
-			//pauseScene.gamedata.ForNewScene(0)
-			pauseScene.initScenes = s.initScenes
-			return func() (game.Scene, error) { return pauseScene, nil }, transition.Push(), nil
+			return func() (game.Scene, error) {
+				pauseScene, err := s.initScenes.InitPauseScene()
+				if err != nil {
+					return nil, err
+				}
+				pauseScene.gamedata = s.gamedata
+				//pauseScene.gamedata.ForNewScene(0)
+				pauseScene.initScenes = s.initScenes
+				return pauseScene, nil
+			}, transition.Push(), nil
 		}
 	}
 

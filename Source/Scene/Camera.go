@@ -69,13 +69,11 @@ type kvp struct {
 }
 
 func NewCamera(layers map[string]int) Utils.Factory[*Camera] {
-	layers, err := compressValues(layers)
-	if err != nil {
-		return func() (*Camera, error) {
+	return func() (*Camera, error) {
+		layers, err := compressValues(layers)
+		if err != nil {
 			return nil, fmt.Errorf("compressValues(layers) でエラーが発生しました。,%w", err)
 		}
-	}
-	return func() (*Camera, error) {
 		return &Camera{
 			center:     Utils.Position{},
 			layers:     layers,
