@@ -45,26 +45,10 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 
 		//各シーンの Constructor
 		initializedScenes := &scene.InitializedScenes{}
-		ts, err := TitleSceneConstruct(assetsManager, Handler, gdata, initializedScenes)()
-		if err != nil {
-			return nil, fmt.Errorf("TitleSceneの初期化に失敗しました\n%w", err)
-		}
-		initializedScenes.InitTitleScene = func() (*scene.TitleScene, error) { return ts, nil }
-		ps, err := PlaySceneConstruct(assetsManager, Handler, gdata, initializedScenes)()
-		if err != nil {
-			return nil, fmt.Errorf("PlaySceneの初期化に失敗しました\n%w", err)
-		}
-		initializedScenes.InitPlayScene = func() (*scene.PlayScene, error) { return ps, nil }
-		pss, err := PauseSceneConstruct(assetsManager, Handler, gdata, initializedScenes)()
-		if err != nil {
-			return nil, fmt.Errorf("PauseSceneの初期化に失敗しました\n%w", err)
-		}
-		initializedScenes.InitPauseScene = func() (*scene.PauseScene, error) { return pss, nil }
-		trs, err := TrainSceneConstruct(assetsManager, Handler, gdata, initializedScenes)()
-		if err != nil {
-			return nil, fmt.Errorf("TrainSceneの初期化に失敗しました\n%w", err)
-		}
-		initializedScenes.InitTrainScene = func() (*scene.TrainScene, error) { return trs, nil }
+		initializedScenes.InitTitleScene = TitleSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
+		initializedScenes.InitPlayScene = PlaySceneConstruct(assetsManager, Handler, gdata, initializedScenes)
+		initializedScenes.InitPauseScene = PauseSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
+		initializedScenes.InitTrainScene = TrainSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
 		//(ここまで)各シーンの Constructor
 
 		initScene, err := TitleSceneConstruct(assetsManager, Handler, gdata, initializedScenes)() // 起動時に表示されるシーン

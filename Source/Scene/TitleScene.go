@@ -68,14 +68,14 @@ func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 
 	// if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 	if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
-		nextScene, err := s.initScenes.InitPlayScene()
-		nextScene.gamedata = s.gamedata
-		nextScene.gamedata.InitialProcess = true
-		nextScene.initScenes = s.initScenes
-		if err != nil {
-			return nil, transition.None(), err
-		}
 		return func() (game.Scene, error) {
+			nextScene, err := s.initScenes.InitPlayScene()
+			nextScene.gamedata = s.gamedata
+			nextScene.gamedata.InitialProcess = true
+			nextScene.initScenes = s.initScenes
+			if err != nil {
+				return nil, err
+			}
 			return nextScene, nil
 		}, transition.NewScene(), nil
 	}

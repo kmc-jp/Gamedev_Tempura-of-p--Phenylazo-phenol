@@ -68,25 +68,29 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 
 	// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
-		pauseScene, err := s.initScenes.InitPauseScene()
-		if err != nil {
-			return nil, transition.None(), err
-		}
-		pauseScene.gamedata = s.gamedata
-		pauseScene.gamedata.InitialProcess = true
-		pauseScene.initScenes = s.initScenes
-		return func() (game.Scene, error) { return pauseScene, nil }, transition.Push(), nil
+		return func() (game.Scene, error) {
+			pauseScene, err := s.initScenes.InitPauseScene()
+			if err != nil {
+				return nil, err
+			}
+			pauseScene.gamedata = s.gamedata
+			pauseScene.gamedata.InitialProcess = true
+			pauseScene.initScenes = s.initScenes
+			return pauseScene, nil
+		}, transition.Push(), nil
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		playScene, err := s.initScenes.InitPlayScene()
-		if err != nil {
-			return nil, transition.None(), err
-		}
-		playScene.gamedata = s.gamedata
-		playScene.gamedata.InitialProcess = true
-		playScene.initScenes = s.initScenes
-		return func() (game.Scene, error) { return playScene, nil }, transition.NewScene(), nil
+		return func() (game.Scene, error) {
+			playScene, err := s.initScenes.InitPlayScene()
+			if err != nil {
+				return nil, err
+			}
+			playScene.gamedata = s.gamedata
+			playScene.gamedata.InitialProcess = true
+			playScene.initScenes = s.initScenes
+			return playScene, nil
+		}, transition.NewScene(), nil
 	}
 
 	return
