@@ -14,9 +14,10 @@ import (
 type Player struct {
 	ipt *input.Handler
 	tw  *TileWalker
+	dir Utils.Vec2Int
 }
 
-func (p Player) Update(active bool) (err error) {
+func (p *Player) Update(active bool) (err error) {
 	// なにもしない
 	if !active {
 		return nil
@@ -27,12 +28,16 @@ func (p Player) Update(active bool) (err error) {
 			switch action {
 			case inputconfig.ActionMoveLeft:
 				p.tw.Move(Utils.NewVecIntLeft())
+				p.dir = Utils.NewVecIntLeft()
 			case inputconfig.ActionMoveRight:
 				p.tw.Move(Utils.NewVecIntRight())
+				p.dir = Utils.NewVecIntRight()
 			case inputconfig.ActionMoveUp:
 				p.tw.Move(Utils.NewVecIntUp())
+				p.dir = Utils.NewVecIntUp()
 			case inputconfig.ActionMoveDown:
 				p.tw.Move(Utils.NewVecIntDown())
+				p.dir = Utils.NewVecIntDown()
 			default: // 何もしない
 			}
 		}
@@ -59,4 +64,4 @@ func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject) Utils.Factory
 }
 
 // test
-var _ gameobject.Component = Player{}
+var _ gameobject.Component = &Player{}
