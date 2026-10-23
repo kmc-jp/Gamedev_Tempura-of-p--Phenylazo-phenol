@@ -17,12 +17,37 @@ type Gamedata struct {
 	//シーン読み込み時の初回実行制御用
 	InitialProcess bool
 
-	Timer []*tick.Timer
+	Timer *tick.Timer
+
+	Flag []bool
+
+	State state
 
 	//仮UIでのテスト用テキストデータ
 	Text string
 }
 
+// Flag 識別名
+const ()
+
+// state識別名
+const (
+	Play_Explore state = iota
+	Play_Timeup
+
+	Train_Default
+)
+
+type state uint
+
 func NewGamedata() *Gamedata {
 	return &Gamedata{}
+}
+
+func (g *Gamedata) ForNewScene(state state) {
+	g.InitialProcess = true
+	g.Timer = &tick.Timer{}
+	g.Flag = []bool{}
+	g.State = state
+	g.Text = ""
 }

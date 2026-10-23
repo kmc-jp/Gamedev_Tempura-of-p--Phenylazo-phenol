@@ -39,7 +39,7 @@ func NewTimer() *Timer {
 }
 
 //SetTimer(カウントする時間(0.1 sec))
-func (timer *Timer) SetTimer(time uint16) error {
+func (timer *Timer) Set(time uint16) error {
 	//すでに計測中の場合はTimer設定をスキップ
 	if timer.Time != 0 {
 		return nil

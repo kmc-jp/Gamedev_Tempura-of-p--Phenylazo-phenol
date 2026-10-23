@@ -48,7 +48,7 @@ func (s *TrainScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
 	ui.DrawText(Utils.Position{}, color.Orange(),
 		"Train\nESC to Open Pause Menu\nEnter to Return to PlayScene",
-		ui.FontFace(s.gamedata.Font, 30), screen)
+		ui.FontFace(s.gamedata.Font, 15), screen)
 }
 
 func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
@@ -87,7 +87,7 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 				return nil, err
 			}
 			playScene.gamedata = s.gamedata
-			playScene.gamedata.InitialProcess = true
+			playScene.gamedata.ForNewScene(game.Play_Explore)
 			playScene.initScenes = s.initScenes
 			return playScene, nil
 		}, transition.NewScene(), nil
