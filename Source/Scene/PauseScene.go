@@ -22,21 +22,18 @@ type PauseScene struct {
 }
 
 func NewPauseScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PauseScene] {
-	camera, err := NewDrawer()
-	if err != nil {
-		return func() (*PauseScene, error) {
+	return func() (*PauseScene, error) {
+		camera, err := NewDrawer()
+		if err != nil {
 			return &PauseScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-	}
-	ps := PauseScene{
-		entities:   []Entity{},
-		drawer:     camera,
-		Input:      Input,
-		gamedata:   gdata,
-		initScenes: initScenes,
-	}
-	// なにもしない
-	return func() (*PauseScene, error) {
+		ps := PauseScene{
+			entities:   []Entity{},
+			drawer:     camera,
+			Input:      Input,
+			gamedata:   gdata,
+			initScenes: initScenes,
+		}
 		return &ps, nil
 	}
 }
@@ -47,9 +44,9 @@ func (s PauseScene) Name() string {
 
 func (s *PauseScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
-	ui.DrawText(Utils.Position{X: 0, Y: 250}, color.Orange(),
+	ui.DrawText(Utils.Position{X: 0, Y: 50}, color.Orange(),
 		"Pause\nPress ESC Key to Return the Game",
-		ui.FontFace(s.gamedata.Font, 30), screen)
+		ui.FontFace(s.gamedata.Font, 15), screen)
 }
 
 func (s *PauseScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {

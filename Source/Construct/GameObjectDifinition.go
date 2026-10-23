@@ -17,25 +17,19 @@ import (
 
 // タイルマップ関連
 func NewTileObject(name string, data tilemap.TileData, scene *scene.PlayScene, NewTransform Utils.Factory[gameobject.Transform], NewRender Utils.Factory[gameobject.Render]) Utils.Factory[*gameobject.GameObject] {
-	o, err := gameobject.NewGameObject(name, scene, NewTransform, NewRender)()
-	if err != nil {
-		return func() (*gameobject.GameObject, error) {
+	return func() (*gameobject.GameObject, error) {
+		o, err := gameobject.NewGameObject(name, scene, NewTransform, NewRender)()
+		if err != nil {
 			return o, fmt.Errorf("newStdObject() でエラーが発生しました。\n%w", err)
 		}
-	}
-	t, err := component.NewTile(data)()
-	if err != nil {
-		return func() (*gameobject.GameObject, error) {
+		t, err := component.NewTile(data)()
+		if err != nil {
 			return o, fmt.Errorf("NewTile() でエラーが発生しました。\n%w", err)
 		}
-	}
-	err = o.AddComponent(t)
-	if err != nil {
-		return func() (*gameobject.GameObject, error) {
+		err = o.AddComponent(t)
+		if err != nil {
 			return o, fmt.Errorf("GameObject.AddComponent() でエラーが発生しました。\n%w", err)
 		}
-	}
-	return func() (*gameobject.GameObject, error) {
 		return o, nil
 	}
 }
@@ -48,62 +42,54 @@ func NewTileMapObject(
 	NewRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render],
 	assetsManager *assets.AssetsManager,
 ) Utils.Factory[*gameobject.GameObject] {
-	newEmptyRender := func() (gameobject.Render, error) {
-		r, e := component.NewEmptyRender()
-		return r, e
-	}
-	o, err := gameobject.NewGameObject(
-		name,
-		PlScene,
-		NewTransform(Utils.NewZeroVec2().VtoP()),
-		newEmptyRender,
-	)()
-	if err != nil {
-		return func() (*gameobject.GameObject, error) {
+	return func() (*gameobject.GameObject, error) {
+		newEmptyRender := func() (gameobject.Render, error) {
+			r, e := component.NewEmptyRender()
+			return r, e
+		}
+		o, err := gameobject.NewGameObject(
+			name,
+			PlScene,
+			NewTransform(Utils.NewZeroVec2().VtoP()),
+			newEmptyRender,
+		)()
+		if err != nil {
 			return o, fmt.Errorf("newStdObject() でエラーが発生しました。\n%w", err)
 		}
-	}
 
-	tm, err := component.NewTileMap(mapdata)()
-	if err != nil {
-		return func() (*gameobject.GameObject, error) {
+		tm, err := component.NewTileMap(mapdata)()
+		if err != nil {
 			return o, fmt.Errorf("NewTileMap() でエラーが発生しました。\n%w", err)
 		}
-	}
-	err = o.AddComponent(tm)
-	if err != nil {
-		return func() (*gameobject.GameObject, error) {
+		err = o.AddComponent(tm)
+		if err != nil {
 			return o, fmt.Errorf("GameObject.AddComponent() でエラーが発生しました。\n%w", err)
 		}
-	}
 
-	// タイル配置
-	newTileObj := func(
-		name string,
-		data tilemap.TileData,
-		Scene *scene.PlayScene,
-		layer string,
-		transformFactry Utils.Factory[gameobject.Transform],
-	) Utils.Factory[*gameobject.GameObject] {
-		return func() (*gameobject.GameObject, error) {
-			asp, img, err := assetsManager.Image.Load(data.ImageData)
-			if err != nil {
-				mock, _ := gameobject.NewMockGameObject(name)()
-				return mock, fmt.Errorf("assetsManager.Image.Load(data.ImageData) でエラーが発生しました。\n%w", err)
+		// タイル配置
+		newTileObj := func(
+			name string,
+			data tilemap.TileData,
+			Scene *scene.PlayScene,
+			layer string,
+			transformFactry Utils.Factory[gameobject.Transform],
+		) Utils.Factory[*gameobject.GameObject] {
+			return func() (*gameobject.GameObject, error) {
+				asp, img, err := assetsManager.Image.Load(data.ImageData)
+				if err != nil {
+					mock, _ := gameobject.NewMockGameObject(name)()
+					return mock, fmt.Errorf("assetsManager.Image.Load(data.ImageData) でエラーが発生しました。\n%w", err)
+				}
+				toFactory := NewTileObject(name, data, Scene, transformFactry, NewRender(asp, img, layer))
+				return toFactory()
 			}
-			toFactory := NewTileObject(name, data, Scene, transformFactry, NewRender(asp, img, layer))
-			return toFactory()
 		}
-	}
 
-	err = tm.SetGameObject(PlScene, newTileObj, NewTransform)
-	if err != nil {
-		return func() (*gameobject.GameObject, error) {
+		err = tm.SetGameObject(PlScene, newTileObj, NewTransform)
+		if err != nil {
 			return o, fmt.Errorf("TileMap.SetGameObject() でエラーが発生しました。\n%w", err)
 		}
-	}
 
-	return func() (*gameobject.GameObject, error) {
 		return o, nil
 	}
 }
@@ -118,36 +104,28 @@ func NewCharactor(
 	NewRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render],
 	assetsManager *assets.AssetsManager,
 ) Utils.Factory[*gameobject.GameObject] {
-	// キャラクター画像設定
-	asp, img, err := assetsManager.Image.Load(TileData.ImageData)
-	if err != nil {
-		return func() (*gameobject.GameObject, error) {
+	return func() (*gameobject.GameObject, error) {
+		// キャラクター画像設定
+		asp, img, err := assetsManager.Image.Load(TileData.ImageData)
+		if err != nil {
 			return nil, fmt.Errorf("assetsManager.Image.Load(TileData.ImageData) でエラーが発生しました。\n%w", err)
 		}
-	}
 
-	o, err := gameobject.NewGameObject(name, PlScene, NewTransform(position.Position.ToVec2().VtoP()), NewRender(asp, img, TileData.Layer))()
-	if err != nil {
-		return func() (*gameobject.GameObject, error) {
+		o, err := gameobject.NewGameObject(name, PlScene, NewTransform(position.Position.ToVec2().VtoP()), NewRender(asp, img, TileData.Layer))()
+		if err != nil {
 			return o, fmt.Errorf("newStdObject() でエラーが発生しました。\n%w", err)
 		}
-	}
 
-	// TileWalker
-	TW, err := component.NewTileWalker(TileData, position, o.Transform(), TileMap)()
-	if err != nil {
-		return func() (*gameobject.GameObject, error) {
+		// TileWalker
+		TW, err := component.NewTileWalker(TileData, position, o.Transform(), TileMap)()
+		if err != nil {
 			return nil, fmt.Errorf("component.NewTileWalker(TileData, position)() でエラーが発生しました。\n%w", err)
 		}
-	}
-	err = o.AddComponent(TW)
-	if err != nil {
-		return func() (*gameobject.GameObject, error) {
+		err = o.AddComponent(TW)
+		if err != nil {
 			return nil, fmt.Errorf("o.AddComponent(TW) でエラーが発生しました。\n%w", err)
 		}
-	}
 
-	return func() (*gameobject.GameObject, error) {
 		return o, nil
 	}
 }
@@ -162,28 +140,22 @@ func NewPlayer(
 	NewRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render],
 	assetsManager *assets.AssetsManager,
 ) Utils.Factory[*gameobject.GameObject] {
-	plobj, err := NewCharactor(name, position, TileData, TileMap, PlScene, NewTransform, NewRender, assetsManager)()
-	if err != nil {
-		return func() (*gameobject.GameObject, error) {
+	return func() (*gameobject.GameObject, error) {
+		plobj, err := NewCharactor(name, position, TileData, TileMap, PlScene, NewTransform, NewRender, assetsManager)()
+		if err != nil {
 			return nil, fmt.Errorf("NewCharactor() でエラーが発生しました。\n%w", err)
 		}
-	}
 
-	// player (Component)
-	plc, err := component.NewPlayer(PlScene, plobj)()
-	if err != nil {
-		return func() (*gameobject.GameObject, error) {
+		// player (Component)
+		plc, err := component.NewPlayer(PlScene, plobj)()
+		if err != nil {
 			return nil, fmt.Errorf("component.NewPlayer(PlScene, pl)() でエラーが発生しました。\n%w", err)
 		}
-	}
-	err = plobj.AddComponent(plc)
-	if err != nil {
-		return func() (*gameobject.GameObject, error) {
+		err = plobj.AddComponent(plc)
+		if err != nil {
 			return nil, fmt.Errorf("pl.AddComponent(plc) でエラーが発生しました。\n%w", err)
 		}
-	}
 
-	return func() (*gameobject.GameObject, error) {
 		return plobj, nil
 	}
 }

@@ -23,21 +23,19 @@ type TrainScene struct {
 }
 
 func NewTrainScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TrainScene] {
-	camera, err := NewDrawer()
-	if err != nil {
-		return func() (*TrainScene, error) {
+	return func() (*TrainScene, error) {
+		camera, err := NewDrawer()
+		if err != nil {
 			return &TrainScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-	}
-	trs := TrainScene{
-		entities:   []Entity{},
-		drawer:     camera,
-		Input:      Input,
-		gamedata:   gdata,
-		initScenes: initScenes,
-	}
-	// なにもしない
-	return func() (*TrainScene, error) {
+		trs := TrainScene{
+			entities:   []Entity{},
+			drawer:     camera,
+			Input:      Input,
+			gamedata:   gdata,
+			initScenes: initScenes,
+		}
+		// なにもしない
 		return &trs, nil
 	}
 }
@@ -50,7 +48,7 @@ func (s *TrainScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
 	ui.DrawText(Utils.Position{}, color.Orange(),
 		"Train\nESC to Open Pause Menu\nEnter to Return to PlayScene",
-		ui.FontFace(s.gamedata.Font, 30), screen)
+		ui.FontFace(s.gamedata.Font, 15), screen)
 }
 
 func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
@@ -70,25 +68,29 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 
 	// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
-		pauseScene, err := s.initScenes.InitPauseScene()
-		if err != nil {
-			return nil, transition.None(), err
-		}
-		pauseScene.gamedata = s.gamedata
-		pauseScene.gamedata.InitialProcess = true
-		pauseScene.initScenes = s.initScenes
-		return func() (game.Scene, error) { return pauseScene, nil }, transition.Push(), nil
+		return func() (game.Scene, error) {
+			pauseScene, err := s.initScenes.InitPauseScene()
+			if err != nil {
+				return nil, err
+			}
+			pauseScene.gamedata = s.gamedata
+			pauseScene.gamedata.InitialProcess = true
+			pauseScene.initScenes = s.initScenes
+			return pauseScene, nil
+		}, transition.Push(), nil
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		playScene, err := s.initScenes.InitPlayScene()
-		if err != nil {
-			return nil, transition.None(), err
-		}
-		playScene.gamedata = s.gamedata
-		playScene.gamedata.InitialProcess = true
-		playScene.initScenes = s.initScenes
-		return func() (game.Scene, error) { return playScene, nil }, transition.NewScene(), nil
+		return func() (game.Scene, error) {
+			playScene, err := s.initScenes.InitPlayScene()
+			if err != nil {
+				return nil, err
+			}
+			playScene.gamedata = s.gamedata
+			playScene.gamedata.ForNewScene(game.Play_Explore)
+			playScene.initScenes = s.initScenes
+			return playScene, nil
+		}, transition.NewScene(), nil
 	}
 
 	return
