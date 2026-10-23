@@ -38,6 +38,11 @@ func (p *Player) Update(active bool) (err error) {
 			case inputconfig.ActionMoveDown:
 				p.tw.Move(Utils.NewVecIntDown())
 				p.dir = Utils.NewVecIntDown()
+			case inputconfig.ActionInteract:
+				err := p.interact()
+				if err != nil {
+					return fmt.Errorf("p.interact() でエラーが発生しました。\n%w", err)
+				}
 			default: // 何もしない
 			}
 		}
@@ -61,6 +66,20 @@ func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject) Utils.Factory
 
 		return pl, nil
 	}
+}
+
+func (p Player) interact() error {
+	mypos := p.tw.Position.Position
+	targetpos := mypos.Add(p.dir)
+
+	if tgt, ok := p.tw.tm.Interact[targetpos]; ok {
+		err := tgt.Interact()
+		if err != nil {
+			return fmt.Errorf("target.Interact() でエラーが発生しました。\ntergetpos = %d\n%w", targetpos, err)
+		}
+	}
+
+	return nil
 }
 
 // test
