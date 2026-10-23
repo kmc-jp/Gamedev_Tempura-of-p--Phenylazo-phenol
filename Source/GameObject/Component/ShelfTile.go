@@ -9,7 +9,7 @@ type ShelfTile struct {
 }
 
 func (s ShelfTile) Interact() error {
-	fmt.Printf("Interact with Shelf.")
+	fmt.Printf("Interact with Shelf.\n")
 	return nil
 }
 
