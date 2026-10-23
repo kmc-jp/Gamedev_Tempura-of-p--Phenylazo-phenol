@@ -9,8 +9,9 @@ import (
 )
 
 type TileMap struct {
-	Tiles    map[tilemap.TilePosition]*Tile
-	TileSize Utils.Vec2
+	Tiles     map[tilemap.TilePosition]*Tile
+	TileSize  Utils.Vec2Int
+	Enterable map[Utils.Vec2Int]bool // 何も入ってなければ進入可能
 }
 
 // test
@@ -37,8 +38,9 @@ func NewTileMap(mapdata tilemap.TileMapData) Utils.Factory[*TileMap] {
 		tilelist[pos] = t
 	}
 	t := TileMap{
-		Tiles:    tilelist,
-		TileSize: mapdata.TileSize,
+		Tiles:     tilelist,
+		TileSize:  mapdata.TileSize,
+		Enterable: mapdata.Enterable,
 	}
 	return func() (*TileMap, error) {
 		return &t, nil
@@ -69,7 +71,7 @@ func (tm TileMap) SetGameObject(
 		name := fmt.Sprintf("%s%d", data.Name, i+1)
 
 		// 位置
-		position := tm.TilePositionToWorldPosition(pos)
+		position := tm.TilePositionToWorldPosition(pos, data)
 		transformFactry := NewTransform(position)
 
 		// レイヤー
@@ -88,6 +90,12 @@ func (tm TileMap) SetGameObject(
 	return nil
 }
 
-func (tm TileMap) TilePositionToWorldPosition(pos tilemap.TilePosition) Utils.Position {
-	return pos.ToPosition().PtoV().HadamardProd(tm.TileSize).VtoP()
+func (tm TileMap) TilePositionToWorldPosition(pos tilemap.TilePosition, data tilemap.TileData) Utils.Position {
+	tileposf := pos.Position.ToVec2()
+	sizeoffset := data.Size.Sub(Utils.NewVecIntOne()).ToVec2().HadamardDiv(data.Size.ToVec2())
+	to := tileposf.Add(sizeoffset).HadamardProd(tm.TileSize.ToVec2()).Add(pos.Offset)
+	// if data.Size != Utils.NewVecIntOne() {
+	// 	fmt.Printf("TilePositionToWorldPosition\npos %d -> size %d -> %f\ntileposf = %f, pos.Offset = %f, sizeoffset = %f", pos.Position, data.Size, to.HadamardDiv(tm.TileSize.ToVec2()), tileposf, pos.Offset, sizeoffset)
+	// }
+	return to.VtoP()
 }

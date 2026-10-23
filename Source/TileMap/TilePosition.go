@@ -5,19 +5,18 @@ import (
 )
 
 type TilePosition struct {
-	X     int
-	Y     int
-	Layer string
+	Position Utils.Vec2Int
+	Layer    string
+	Offset   Utils.Vec2
 }
 
-func (t TilePosition) ToPosition() Utils.Position {
-	return Utils.Position{
-		X: float64(t.X),
-		Y: float64(t.Y),
-	}
-}
+// func (t TilePosition) ToPosition() Utils.Position {
+// 	return Utils.Position{
+// 		X: float64(t.Position.X),
+// 		Y: float64(t.Position.Y),
+// 	}
+// }
 
 func (t *TilePosition) Move(Direction Utils.Vec2Int) {
-	t.X += Direction.X
-	t.Y += Direction.Y
+	t.Position = t.Position.Add(Direction)
 }

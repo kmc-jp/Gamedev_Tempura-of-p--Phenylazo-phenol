@@ -19,7 +19,7 @@ import (
 )
 
 // とりあえず PlayScene を組み立てる
-func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata) Utils.Factory[*scene.PlayScene] {
+func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata, initScenes *scene.InitializedScenes) Utils.Factory[*scene.PlayScene] {
 	// カメラ設定
 	DrawerFactory, err := MakeDrawerFactory(assetsManager)
 	if err != nil {
@@ -28,7 +28,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 		}
 	}
 
-	playscene, err := scene.NewPlayScene(DrawerFactory, inputHandler, gdata)()
+	playscene, err := scene.NewPlayScene(DrawerFactory, inputHandler, gdata, initScenes)()
 	if err != nil {
 		return func() (*scene.PlayScene, error) {
 			return nil, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)

@@ -126,7 +126,7 @@ func NewCharactor(
 		}
 	}
 
-	o, err := gameobject.NewGameObject(name, PlScene, NewTransform(position.ToPosition()), NewRender(asp, img, TileData.Layer))()
+	o, err := gameobject.NewGameObject(name, PlScene, NewTransform(position.Position.ToVec2().VtoP()), NewRender(asp, img, TileData.Layer))()
 	if err != nil {
 		return func() (*gameobject.GameObject, error) {
 			return o, fmt.Errorf("newStdObject() でエラーが発生しました。\n%w", err)

@@ -25,7 +25,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("ゲームの読み込みに失敗しました。\n%v", err)
 	}
-	ebiten.SetFullscreen(true)
+	ebiten.SetFullscreen(false)
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal("ゲームがクラッシュしました。\n%w", err)
 	}
