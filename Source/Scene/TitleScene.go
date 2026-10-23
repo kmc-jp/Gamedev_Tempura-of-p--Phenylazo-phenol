@@ -22,21 +22,20 @@ type TitleScene struct {
 }
 
 func NewTitleScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TitleScene] {
-	camera, err := NewDrawer()
-	if err != nil {
-		return func() (*TitleScene, error) {
+	return func() (*TitleScene, error) {
+		camera, err := NewDrawer()
+		if err != nil {
+
 			return &TitleScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-	}
-	ts := TitleScene{
-		entities:   []Entity{},
-		drawer:     camera,
-		Input:      Input,
-		gamedata:   gdata,
-		initScenes: initScenes,
-	}
-	// なにもしない
-	return func() (*TitleScene, error) {
+		ts := TitleScene{
+			entities:   []Entity{},
+			drawer:     camera,
+			Input:      Input,
+			gamedata:   gdata,
+			initScenes: initScenes,
+		}
+		// なにもしない
 		return &ts, nil
 	}
 }

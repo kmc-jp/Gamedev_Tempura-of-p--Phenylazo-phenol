@@ -27,21 +27,18 @@ type PlayScene struct {
 }
 
 func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PlayScene] {
-	camera, err := NewDrawer()
-	if err != nil {
-		return func() (*PlayScene, error) {
+	return func() (*PlayScene, error) {
+		camera, err := NewDrawer()
+		if err != nil {
 			return &PlayScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-	}
-	ps := PlayScene{
-		entities:   []Entity{},
-		drawer:     camera,
-		Input:      Input,
-		gamedata:   gdata,
-		initScenes: initScenes,
-	}
-	// なにもしない
-	return func() (*PlayScene, error) {
+		ps := PlayScene{
+			entities:   []Entity{},
+			drawer:     camera,
+			Input:      Input,
+			gamedata:   gdata,
+			initScenes: initScenes,
+		}
 		return &ps, nil
 	}
 }

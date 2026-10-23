@@ -23,21 +23,19 @@ type TrainScene struct {
 }
 
 func NewTrainScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TrainScene] {
-	camera, err := NewDrawer()
-	if err != nil {
-		return func() (*TrainScene, error) {
+	return func() (*TrainScene, error) {
+		camera, err := NewDrawer()
+		if err != nil {
 			return &TrainScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-	}
-	trs := TrainScene{
-		entities:   []Entity{},
-		drawer:     camera,
-		Input:      Input,
-		gamedata:   gdata,
-		initScenes: initScenes,
-	}
-	// なにもしない
-	return func() (*TrainScene, error) {
+		trs := TrainScene{
+			entities:   []Entity{},
+			drawer:     camera,
+			Input:      Input,
+			gamedata:   gdata,
+			initScenes: initScenes,
+		}
+		// なにもしない
 		return &trs, nil
 	}
 }
