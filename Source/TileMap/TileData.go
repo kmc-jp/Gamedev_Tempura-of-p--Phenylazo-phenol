@@ -24,6 +24,6 @@ func IsIntaractive(t InteractType) bool {
 	return t != None
 }
 
-func NewTileData(name string, imgData *imageassets.ImageData, layer string, size Utils.Vec2Int) (*TileData, error) {
-	return &TileData{Name: name, ImageData: *imgData, Layer: layer, Size: size}, nil
+func NewTileData(name string, imgData *imageassets.ImageData, layer string, size Utils.Vec2Int, Interact InteractType) (*TileData, error) {
+	return &TileData{Name: name, ImageData: *imgData, Layer: layer, Size: size, Interact: Interact}, nil
 }
