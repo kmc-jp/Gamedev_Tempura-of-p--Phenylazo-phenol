@@ -21,7 +21,7 @@ type Gamedata struct {
 
 	Flag []bool
 
-	State gameState
+	State state
 
 	//仮UIでのテスト用テキストデータ
 	Text string
@@ -32,19 +32,19 @@ const ()
 
 // state識別名
 const (
-	Play_Explore gameState = iota
+	Play_Explore state = iota
 	Play_Timeup
 
 	Train_Default
 )
 
-type gameState uint
+type state uint
 
 func NewGamedata() *Gamedata {
 	return &Gamedata{}
 }
 
-func (g *Gamedata) ForNewScene(state gameState) {
+func (g *Gamedata) ForNewScene(state state) {
 	g.InitialProcess = true
 	g.Timer = &tick.Timer{}
 	g.Flag = []bool{}
