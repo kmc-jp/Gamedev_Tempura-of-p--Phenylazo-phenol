@@ -22,21 +22,20 @@ type TitleScene struct {
 }
 
 func NewTitleScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TitleScene] {
-	camera, err := NewDrawer()
-	if err != nil {
-		return func() (*TitleScene, error) {
+	return func() (*TitleScene, error) {
+		camera, err := NewDrawer()
+		if err != nil {
+
 			return &TitleScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-	}
-	ts := TitleScene{
-		entities:   []Entity{},
-		drawer:     camera,
-		Input:      Input,
-		gamedata:   gdata,
-		initScenes: initScenes,
-	}
-	// なにもしない
-	return func() (*TitleScene, error) {
+		ts := TitleScene{
+			entities:   []Entity{},
+			drawer:     camera,
+			Input:      Input,
+			gamedata:   gdata,
+			initScenes: initScenes,
+		}
+		// なにもしない
 		return &ts, nil
 	}
 }
@@ -69,14 +68,14 @@ func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 
 	// if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 	if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
-		nextScene, err := s.initScenes.InitPlayScene()
-		nextScene.gamedata = s.gamedata
-		nextScene.gamedata.InitialProcess = true
-		nextScene.initScenes = s.initScenes
-		if err != nil {
-			return nil, transition.None(), err
-		}
 		return func() (game.Scene, error) {
+			nextScene, err := s.initScenes.InitPlayScene()
+			nextScene.gamedata = s.gamedata
+			nextScene.gamedata.InitialProcess = true
+			nextScene.initScenes = s.initScenes
+			if err != nil {
+				return nil, err
+			}
 			return nextScene, nil
 		}, transition.NewScene(), nil
 	}
