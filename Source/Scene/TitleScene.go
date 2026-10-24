@@ -16,6 +16,7 @@ import (
 type TitleScene struct {
 	entities   []Entity
 	drawer     Drawer
+	text       *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
@@ -28,9 +29,19 @@ func NewTitleScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata 
 
 			return &TitleScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
+		text, err := ui.NewText(
+			Utils.Position{},
+			color.Orange(),
+			"Title\nPress Space Key to Start",
+			ui.FontFace(gdata.Font, 15),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
+		}
 		ts := TitleScene{
 			entities:   []Entity{},
 			drawer:     camera,
+			text:       text,
 			Input:      Input,
 			gamedata:   gdata,
 			initScenes: initScenes,
@@ -46,9 +57,7 @@ func (s TitleScene) Name() string {
 
 func (s *TitleScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
-	ui.DrawText(Utils.Position{}, color.Orange(),
-		"Title\nPress Space Key to Start",
-		ui.FontFace(s.gamedata.Font, 15), screen)
+	s.text.Draw(screen)
 }
 
 func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
@@ -71,7 +80,7 @@ func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 		return func() (game.Scene, error) {
 			nextScene, err := s.initScenes.InitPlayScene()
 			nextScene.gamedata = s.gamedata
-			nextScene.gamedata.InitialProcess = true
+			nextScene.gamedata.ForNewScene(game.Play_Explore)
 			nextScene.initScenes = s.initScenes
 			if err != nil {
 				return nil, err

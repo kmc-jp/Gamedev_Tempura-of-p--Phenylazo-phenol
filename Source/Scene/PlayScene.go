@@ -19,6 +19,7 @@ import (
 type PlayScene struct {
 	entities   []Entity
 	drawer     Drawer
+	text       *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
@@ -32,9 +33,19 @@ func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *
 		if err != nil {
 			return &PlayScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
+		text, err := ui.NewText(
+			Utils.Position{X: 0, Y: 0},
+			color.Red(),
+			"",
+			ui.FontFace(gdata.Font, 15),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
+		}
 		ps := PlayScene{
 			entities:   []Entity{},
 			drawer:     camera,
+			text:       text,
 			Input:      Input,
 			gamedata:   gdata,
 			initScenes: initScenes,
@@ -51,8 +62,7 @@ func (s PlayScene) Name() string {
 // Draw implements [Scene].
 func (s PlayScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
-	ui.DrawText(Utils.Position{X: 0, Y: 0}, color.Red(),
-		"探索フェーズ 残り時間: "+s.gamedata.Text, ui.FontFace(s.gamedata.Font, 15), screen)
+	s.text.Draw(screen)
 }
 
 // Update implements [Scene].
@@ -64,6 +74,7 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 	if s.gamedata.InitialProcess {
 		s.gamedata.InitialProcess = false
 		s.gamedata.Text = "10"
+		s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
 
 		s.gamedata.Timer = tick.NewTimer()
 
@@ -114,8 +125,10 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 				s.gamedata.State = game.Play_Timeup
 
 				s.gamedata.Text = "0\nTimeUp 次の店に移動します"
+				s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
 			}
 		}
+		s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
 
 		// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {

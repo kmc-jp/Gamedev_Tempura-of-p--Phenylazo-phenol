@@ -10,13 +10,13 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	input "github.com/quasilyte/ebitengine-input"
 )
 
 type TrainScene struct {
 	entities   []Entity
 	drawer     Drawer
+	text       *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
@@ -28,9 +28,19 @@ func NewTrainScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata 
 		if err != nil {
 			return &TrainScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
+		text, err := ui.NewText(
+			Utils.Position{},
+			color.Orange(),
+			"電車で移動中\nESCキーでメニューを開く\nEnterキー で Result へ",
+			ui.FontFace(gdata.Font, 15),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
+		}
 		trs := TrainScene{
 			entities:   []Entity{},
 			drawer:     camera,
+			text:       text,
 			Input:      Input,
 			gamedata:   gdata,
 			initScenes: initScenes,
@@ -46,9 +56,7 @@ func (s TrainScene) Name() string {
 
 func (s *TrainScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
-	ui.DrawText(Utils.Position{}, color.Orange(),
-		"Train\nESC to Open Pause Menu\nEnter to Return to PlayScene",
-		ui.FontFace(s.gamedata.Font, 15), screen)
+	s.text.Draw(screen)
 }
 
 func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
@@ -80,16 +88,16 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 		}, transition.Push(), nil
 	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 		return func() (game.Scene, error) {
-			playScene, err := s.initScenes.InitPlayScene()
+			resultScene, err := s.initScenes.InitResultScene()
 			if err != nil {
 				return nil, err
 			}
-			playScene.gamedata = s.gamedata
-			playScene.gamedata.ForNewScene(game.Play_Explore)
-			playScene.initScenes = s.initScenes
-			return playScene, nil
+			resultScene.gamedata = s.gamedata
+			resultScene.gamedata.ForNewScene(game.Result_Default)
+			resultScene.initScenes = s.initScenes
+			return resultScene, nil
 		}, transition.NewScene(), nil
 	}
 
