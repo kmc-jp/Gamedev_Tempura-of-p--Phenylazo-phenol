@@ -15,6 +15,7 @@ const (
 	ActionMoveDown
 	ActionSpace
 	ActionEscape
+	ActionEnter
 )
 
 var actionConstList [7]input.Action = [7]input.Action{
@@ -43,6 +44,8 @@ func ActionConst(name string) (input.Action, error) {
 		return ActionSpace, nil
 	case "ActionEscape":
 		return ActionEscape, nil
+	case "ActionEnter":
+		return ActionEnter, nil
 	default:
 		return ActionUnknown, fmt.Errorf("%s というアクションは見つかりませんでした。", name)
 	}
