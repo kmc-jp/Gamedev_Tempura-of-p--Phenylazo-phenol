@@ -60,6 +60,8 @@ const (
 	CPU kinds = iota
 	GPU
 	RAM
+
+	Others
 )
 
 type kinds uint
