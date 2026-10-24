@@ -80,7 +80,7 @@ func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 		return func() (game.Scene, error) {
 			nextScene, err := s.initScenes.InitPlayScene()
 			nextScene.gamedata = s.gamedata
-			nextScene.gamedata.InitialProcess = true
+			nextScene.gamedata.ForNewScene(game.Play_Explore)
 			nextScene.initScenes = s.initScenes
 			if err != nil {
 				return nil, err

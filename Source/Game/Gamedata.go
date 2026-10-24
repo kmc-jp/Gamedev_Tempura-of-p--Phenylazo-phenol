@@ -32,7 +32,9 @@ const ()
 
 // state識別名
 const (
-	Play_Explore state = iota
+	Title_Default state = iota
+
+	Play_Explore
 	Play_Timeup
 
 	Train_Default

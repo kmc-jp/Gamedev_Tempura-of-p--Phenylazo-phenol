@@ -76,11 +76,11 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 	}
 
 	// if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-	if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
+	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 		return func() (game.Scene, error) {
-			nextScene, err := s.initScenes.InitPlayScene()
+			nextScene, err := s.initScenes.InitTitleScene()
 			nextScene.gamedata = s.gamedata
-			nextScene.gamedata.ForNewScene(game.Result_Default)
+			nextScene.gamedata.ForNewScene(game.Title_Default)
 			nextScene.initScenes = s.initScenes
 			if err != nil {
 				return nil, err
