@@ -25,6 +25,17 @@ type Gamedata struct {
 
 	//仮UIでのテスト用テキストデータ
 	Text string
+
+	//以下ゲーム用データ
+
+	//荷物重量
+	weight int
+
+	//所持金
+	money int
+
+	//所持品
+	Parts []*Part
 }
 
 // Flag 識別名
@@ -43,6 +54,39 @@ const (
 )
 
 type state uint
+
+// パーツ種別
+const (
+	CPU kinds = iota
+	GPU
+	RAM
+)
+
+type kinds uint
+
+// パーツの状態ランク
+const (
+	A rank = iota
+	B
+	C
+	D
+)
+
+type rank uint
+
+// PCパーツ用の構造体
+type Part struct {
+	Name        string
+	Kind        kinds
+	Weight      int
+	Value       int
+	Rank        rank
+	Performance int
+}
+
+func NewPart() *Part {
+	return &Part{}
+}
 
 func NewGamedata() *Gamedata {
 	return &Gamedata{}
