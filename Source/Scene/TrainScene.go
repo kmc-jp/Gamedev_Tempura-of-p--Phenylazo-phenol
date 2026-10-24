@@ -17,6 +17,7 @@ import (
 type TrainScene struct {
 	entities   []Entity
 	drawer     Drawer
+	text       *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
@@ -28,9 +29,19 @@ func NewTrainScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata 
 		if err != nil {
 			return &TrainScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
+		text, err := ui.NewText(
+			Utils.Position{},
+			color.Orange(),
+			"Train\nESC to Open Pause Menu\nEnter to Return to PlayScene",
+			ui.FontFace(gdata.Font, 15),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
+		}
 		trs := TrainScene{
 			entities:   []Entity{},
 			drawer:     camera,
+			text:       text,
 			Input:      Input,
 			gamedata:   gdata,
 			initScenes: initScenes,
@@ -46,9 +57,7 @@ func (s TrainScene) Name() string {
 
 func (s *TrainScene) Draw(screen *ebiten.Image) {
 	s.drawer.Draw(screen, s.entities)
-	ui.DrawText(Utils.Position{}, color.Orange(),
-		"Train\nESC to Open Pause Menu\nEnter to Return to PlayScene",
-		ui.FontFace(s.gamedata.Font, 15), screen)
+	s.text.Draw(screen)
 }
 
 func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
