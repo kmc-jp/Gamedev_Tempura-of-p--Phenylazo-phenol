@@ -39,6 +39,29 @@ type TileData struct {
 	PngPath  string
 	Size     Utils.Vec2Int
 	Offset   Utils.Vec2
+	Type     tileType
+}
+
+type tileType int
+
+const (
+	object tileType = iota
+	shelf
+)
+
+// tileTypeのデシリアライズに使えるようにする
+func (tt *tileType) UnmarshalText(text []byte) error {
+	switch string(text) {
+	case "object":
+		*tt = object
+	case "shelf":
+		*tt = shelf
+	case "":
+		*tt = object
+	default:
+		return fmt.Errorf("invalid Hoge value: %s", text)
+	}
+	return nil
 }
 
 type ObjectData struct {
@@ -84,7 +107,13 @@ func (tmd TileMapData) Construct() (any, error) {
 			tileSize = Utils.NewVecIntOne()
 		}
 
-		tile := makeTileData(tiledata.Name, imagedata, tileSize)
+		// 干渉可能設定
+		interactivity, err := Interactivity(tiledata.Type)
+		if err != nil {
+			return nil, fmt.Errorf("Interactivity(tiledata.Type) で失敗しました。\n%w", err)
+		}
+
+		tile := makeTileData(tiledata.Name, imagedata, tileSize, interactivity)
 		Tiles[tilekey] = tile
 		Offsets[tilekey] = tiledata.Offset
 	}
@@ -125,6 +154,7 @@ func (tmd TileMapData) Construct() (any, error) {
 		}
 	}
 
+	// 床以外のオブジェクト
 	for posstr, ObjectData := range tmd.ObjectMap {
 		//　pos の指定
 		posvec := Utils.Vec2Int{}
@@ -161,8 +191,20 @@ func (tmd TileMapData) Construct() (any, error) {
 }
 
 // 部分適用
-func makeTileData(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int) func(layer string) (*tilemap.TileData, error) {
+func makeTileData(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType) func(layer string) (*tilemap.TileData, error) {
 	return func(layer string) (*tilemap.TileData, error) {
-		return tilemap.NewTileData(name, imgData, layer, tileSize)
+		return tilemap.NewTileData(name, imgData, layer, tileSize, Interact)
+	}
+}
+
+// tileType から干渉可能設定を取り出す関数
+func Interactivity(Type tileType) (tilemap.InteractType, error) {
+	switch Type {
+	case object:
+		return tilemap.None, nil
+	case shelf:
+		return tilemap.Shelf, nil
+	default:
+		return tilemap.None, fmt.Errorf("未設定の tileType です。\ntileType = %d", Type)
 	}
 }
