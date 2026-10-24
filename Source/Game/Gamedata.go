@@ -82,7 +82,7 @@ type Part struct {
 	Name        string
 	Kind        kinds
 	Weight      int
-	Value       int
+	Val         int
 	Rank        rank
 	Performance int
 }
@@ -97,6 +97,18 @@ func (g *Gamedata) TotalWeight() int {
 		wg += p.Weight
 	}
 	return wg
+}
+
+func (p *Part) Value() int {
+	return p.Val * int(p.Rank)
+}
+
+func (g *Gamedata) TotalValue() int {
+	var v int
+	for _, p := range g.Parts {
+		v += p.Value()
+	}
+	return v
 }
 
 func NewGamedata() *Gamedata {
