@@ -67,14 +67,15 @@ const (
 type kinds uint
 
 // パーツの状態ランク
+// Value倍率を定義
 const (
-	A rank = iota
-	B
-	C
-	D
+	A rank = 2
+	B rank = 1.5
+	C rank = 1
+	D rank = 0.5
 )
 
-type rank uint
+type rank float32
 
 // PCパーツ用の構造体
 type Part struct {
