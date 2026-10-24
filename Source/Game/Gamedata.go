@@ -36,6 +36,8 @@ const (
 	Play_Timeup
 
 	Train_Default
+
+	Result_Default
 )
 
 type state uint
