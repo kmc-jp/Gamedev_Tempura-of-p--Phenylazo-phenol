@@ -1,6 +1,7 @@
 package ui
 
 import (
+	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
@@ -8,11 +9,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
-
-type Element interface {
-	Update(active bool) error
-	Draw(screen *ebiten.Image)
-}
 
 type Text struct {
 	position utils.Position
@@ -54,4 +50,4 @@ func (t *Text) SetText(value string) {
 	t.text = value
 }
 
-var _ Element = (*Text)(nil)
+var _ scene.Element = (*Text)(nil)
