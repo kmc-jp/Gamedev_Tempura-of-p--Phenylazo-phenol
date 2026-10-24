@@ -15,14 +15,14 @@ import (
 
 type PauseScene struct {
 	entities   []Entity
-	drawer     Drawer
+	drawer     WorldDrawer
 	text       *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
 }
 
-func NewPauseScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PauseScene] {
+func NewPauseScene(NewDrawer Utils.Factory[WorldDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PauseScene] {
 	return func() (*PauseScene, error) {
 		camera, err := NewDrawer()
 		if err != nil {

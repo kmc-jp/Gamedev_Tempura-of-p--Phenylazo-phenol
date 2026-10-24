@@ -16,14 +16,14 @@ import (
 
 type TrainScene struct {
 	entities   []Entity
-	drawer     Drawer
+	drawer     WorldDrawer
 	text       *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
 }
 
-func NewTrainScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TrainScene] {
+func NewTrainScene(NewDrawer Utils.Factory[WorldDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TrainScene] {
 	return func() (*TrainScene, error) {
 		camera, err := NewDrawer()
 		if err != nil {

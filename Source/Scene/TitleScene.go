@@ -15,14 +15,14 @@ import (
 
 type TitleScene struct {
 	entities   []Entity
-	drawer     Drawer
+	drawer     WorldDrawer
 	text       *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
 }
 
-func NewTitleScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TitleScene] {
+func NewTitleScene(NewDrawer Utils.Factory[WorldDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TitleScene] {
 	return func() (*TitleScene, error) {
 		camera, err := NewDrawer()
 		if err != nil {

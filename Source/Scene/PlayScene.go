@@ -18,7 +18,7 @@ import (
 // メインの遊べるシーン
 type PlayScene struct {
 	entities   []Entity
-	drawer     Drawer
+	drawer     WorldDrawer
 	text       *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
@@ -27,7 +27,7 @@ type PlayScene struct {
 	cameraCenter Utils.Position
 }
 
-func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PlayScene] {
+func NewPlayScene(NewDrawer Utils.Factory[WorldDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PlayScene] {
 	return func() (*PlayScene, error) {
 		camera, err := NewDrawer()
 		if err != nil {

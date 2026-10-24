@@ -12,7 +12,7 @@ import (
 type MockCamera struct {
 }
 
-// Draw implements [Drawer].
+// Draw implements [WorldDrawer].
 func (m MockCamera) Draw(screen *ebiten.Image, objects []Entity) {
 	for _, obj := range objects {
 		image, _ := obj.Draw()
@@ -38,4 +38,4 @@ func NewMockCamera() (*MockCamera, error) {
 
 // test
 var _ Utils.Factory[*MockCamera] = NewMockCamera
-var _ Drawer = MockCamera{}
+var _ WorldDrawer = MockCamera{}

@@ -56,7 +56,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 }
 
 // カメラ設定
-func MakeDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[scene.Drawer], error) {
+func MakeDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[scene.WorldDrawer], error) {
 	cameraConfigData, err := serialize.NewSerializeData("CameraConfig", reflect.TypeFor[serializetarget.CameraConfig](), "CameraConfig.toml", assetsManager.Serialize)
 	if err != nil {
 		return nil, fmt.Errorf("serialize.NewSerializeData(\"CameraConfig\", reflect.TypeFor[serializetarget.CameraConfig](), \"CameraConfig.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
@@ -72,7 +72,7 @@ func MakeDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[scene
 		return nil, fmt.Errorf("cameraConfig.Construct() でエラーが発生しました。\n%w", err)
 	}
 
-	DrawerFactory := Utils.CastFactory[*scene.Camera, scene.Drawer](cameraFactory.(Utils.Factory[*scene.Camera]))
+	DrawerFactory := Utils.CastFactory[*scene.Camera, scene.WorldDrawer](cameraFactory.(Utils.Factory[*scene.Camera]))
 	return DrawerFactory, nil
 }
 
