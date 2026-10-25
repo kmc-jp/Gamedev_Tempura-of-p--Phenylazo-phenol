@@ -41,10 +41,13 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 		}
 
 		// UI
-		text, err := ui.NewText(
+		text, err := ui.NewGameDataText(
 			Utils.Position{X: 0, Y: 0},
 			color.Red(),
-			"",
+			gdata,
+			func(g game.Gamedata) string {
+				return fmt.Sprintf("探索フェーズ 残り時間: %s", g.Text)
+			},
 			ui.FontFace(gdata.Font, 15),
 		)
 		if err != nil {
