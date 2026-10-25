@@ -1,118 +1,124 @@
 @startuml Scene_class_diagram
 
-package transition {
-    class Type{}
-}
+top to bottom direction
 
 package game {
     interface Scene {
         + Name() string
-        + Update(active bool) (nextScene SceneFactory, transitionType transition.Type, err error)
-        + Draw(screen *ebiten.Image)
-    }
-
-    Scene .right.> transition.Type
-}
-
-package scene {
-    class PlayScene {
-        - objects []Entity
-        - drawer Drawer
-        + NewPlayScene() Utils.Factory[PlayScene]
-        + Name() string
         + Update(active bool) (nextScene Utils.Factory[Scene], transitionType transition.Type, err error)
         + Draw(screen *ebiten.Image)
     }
-    note right of PlayScene : Update() は　objects.Update() を呼ぶ\nDraw() は drawer.Draw() を呼ぶ\nNewHogeScene() の型は関数型をいい感じに命名したもの
+}
 
-    PlayScene -up-|> game.Scene
-    PlayScene .up.> transition.Type
+package scene {
+    interface WorldDrawer {
+        + Draw(screen *ebiten.Image, objects []Entity)
+        + SetCenter(center Utils.Position)
+    }
 
+    interface UIDrawer {
+        + Draw(screen *ebiten.Image, objects []Element)
+    }
 
-    PlayScene "1" *-- "0..*" Entity
-    PlayScene "1" *-left- "1" Drawer
+    interface Element {
+        + Update(active bool) error
+        + Draw(screen *ebiten.Image)
+    }
 
     interface Entity {
         + Name() string
-        + Update(active bool) (err error)
-        + Draw() (image *ebiten.Image)
+        + Update(active bool) error
+        + Draw() (image *ebiten.Image, Layer string)
         + Position() Utils.Position
     }
 
-    interface Drawer {
-        + Draw(screen *ebiten.Image, objects []Entity, center Position)
+    class "各種Scene" as HogeScene {
+        - entities []Entity
+        - elements []Element
+        - worldDrawer WorldDrawer
+        - uiDrawer UIDrawer
+        + Name() string
+        + Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error)
+        + Draw(screen *ebiten.Image)
     }
 
-    class MockCamera {
-        + Draw(screen *ebiten.Image, objects []Entity, center Position)
-        + NewMockCamera() Utils.Factory[MockCamera]
-    }
-    note left of MockCamera : Transformが表す座標をそのまま画面座標として表示\nあとでもっと高機能のものを実装予定
+    note right of HogeScene
+    PlayScene
+    TitleScene
+    PauseScene
+    TrainScene
+    ResultScene
+    end note
 
-    MockCamera -up-|> Drawer
-    MockCamera .> Entity
+
+    class Camera {
+        - center Utils.Position
+        - layers map[string]int
+        + Draw(screen *ebiten.Image, objects []Entity)
+        + SetCenter(center Utils.Position)
+    }
+
+    class UICamera {
+        + Draw(screen *ebiten.Image, objects []Element)
+    }
 }
 
 package gameObject {
     class GameObject {
         - name string
+        - tf Transform
+        - rd Render
+        - cmps []Component
         + Scene *scene.PlayScene
-        - transform() Transform
-        - render() Render
-        - components() []Component
         + Name() string
-        + Update(active bool) (err error)
-        + Draw() (image *ebiten.Image)
+        + Update(active bool) error
+        + Draw() (image *ebiten.Image, Layer string)
         + Position() Utils.Position
-        + NewHogeObject(NewTransform Utils.Factory[Transform], NewRender Utils.Factory[Render]) Utils.Factory[HogeObject]
-        + AddComponent(c Component)
-        + GetComponent[T | Component]() T, error
+        + AddComponent(component Component) error
+        + GetComponent(target reflect.Type) (Component, error)
     }
-    note right of GameObject : 標準的なゲームオブジェクト\n原則これのインスタンスを使う\n違うタイプのゲームオブジェクトが欲しければ手書き実装\nDraw(sc) は render.Draw(g, sc) を呼ぶ\nUpdate() は components の Update() を呼ぶ
-
-    GameObject -up-|> scene.Entity
-    GameObject ...> scene.PlayScene
-    GameObject *-- Transform
-    GameObject *-- Render
-
-    GameObject "1" *-- "0..*" Component
 
     interface Transform {
-        + Position() Position
+        + Position() Utils.Position
+        + SetPosition(position Utils.Position)
     }
 
     interface Render {
-        + Draw() (image *ebiten.Image)
+        + Draw() (image *ebiten.Image, Layer string)
     }
 
     interface Component {
-        + Update(active bool) (err error)
+        + Update(active bool) error
     }
 }
 
-package Component {
-    class FugaComponent {
-        + GameObject *gameObject.GameObject
-        + NewFugaComponent(obj GameObject) Utils.Factory[FugaComponent]
-        + Update(active bool) (err error)
+package component {
+    class "コンポーネント実装" as CompImpl {
+        + Update(active bool) error
     }
-
-    FugaComponent -up-|> gameObject.Component
-    FugaComponent ...> gameObject.GameObject
-
-    class StdTransform {
-        + Position() Position
-        + NewStdTransform() Utils.Factory[StdTransform]
-    }
-
-    StdTransform -up-|> gameObject.Transform
-
-    class StdRender {
-        - image 型未定
-        + NewStdRender(obj GameObject) Utils.Factory[StdRender]
-        + Draw() (image *ebiten.Image)
-    }
-
-    StdRender -up-|> gameObject.Render
 }
+
+package ui {
+    class "UI実装" as UIImpl
+}
+
+scene.HogeScene .up.|> game.Scene
+
+scene.HogeScene "1" *-down- "0..*" scene.Entity
+scene.HogeScene "1" *-down- "0..*" scene.Element
+scene.HogeScene -down-> scene.WorldDrawer
+scene.HogeScene -down-> scene.UIDrawer
+
+scene.Camera .up.|> scene.WorldDrawer
+scene.UICamera .up.|> scene.UIDrawer
+
+gameObject.GameObject ..up..|> scene.Entity
+gameObject.GameObject *-down- gameObject.Transform
+gameObject.GameObject *-down- gameObject.Render
+gameObject.GameObject "1" *-down- "0..*" gameObject.Component
+
+component.CompImpl .up.|> gameObject.Component
+
+ui.UIImpl ..up..|> scene.Element
+
 @enduml
