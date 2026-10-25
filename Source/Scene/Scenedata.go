@@ -5,8 +5,9 @@ import (
 )
 
 type InitializedScenes struct {
-	InitTitleScene Utils.Factory[*TitleScene]
-	InitPlayScene  Utils.Factory[*PlayScene]
-	InitPauseScene Utils.Factory[*PauseScene]
-	InitTrainScene Utils.Factory[*TrainScene]
+	InitTitleScene  Utils.Factory[*TitleScene]
+	InitPlayScene   Utils.Factory[*PlayScene]
+	InitPauseScene  Utils.Factory[*PauseScene]
+	InitTrainScene  Utils.Factory[*TrainScene]
+	InitResultScene Utils.Factory[*ResultScene]
 }

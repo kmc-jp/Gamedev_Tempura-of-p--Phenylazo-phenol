@@ -8,7 +8,6 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	input "github.com/quasilyte/ebitengine-input"
 )
 
@@ -88,16 +87,16 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 		}, transition.Push(), nil
 	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 		return func() (game.Scene, error) {
-			playScene, err := s.initScenes.InitPlayScene()
+			resultScene, err := s.initScenes.InitResultScene()
 			if err != nil {
 				return nil, err
 			}
-			playScene.gamedata = s.gamedata
-			playScene.gamedata.ForNewScene(game.Play_Explore)
-			playScene.initScenes = s.initScenes
-			return playScene, nil
+			resultScene.gamedata = s.gamedata
+			resultScene.gamedata.ForNewScene(game.Result_Default)
+			resultScene.initScenes = s.initScenes
+			return resultScene, nil
 		}, transition.NewScene(), nil
 	}
 
