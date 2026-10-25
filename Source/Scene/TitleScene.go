@@ -4,9 +4,7 @@ import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
-	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
-	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -14,34 +12,44 @@ import (
 )
 
 type TitleScene struct {
-	entities   []Entity
-	drawer     WorldDrawer
-	text       *ui.Text
+	entities    []Entity
+	worldDrawer WorldDrawer
+
+	elements []Element
+	uiDrawer UIDrawer
+
+	// text       *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
 }
 
-func NewTitleScene(NewDrawer Utils.Factory[WorldDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TitleScene] {
+func NewTitleScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory[UIDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TitleScene] {
 	return func() (*TitleScene, error) {
-		camera, err := NewDrawer()
+		camera, err := worldDrawer()
 		if err != nil {
 
 			return &TitleScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-		text, err := ui.NewText(
-			Utils.Position{},
-			color.Orange(),
-			"Title\nPress Space Key to Start",
-			ui.FontFace(gdata.Font, 15),
-		)
+		uiCamera, err := uiDrawer()
 		if err != nil {
-			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
+			return &TitleScene{}, fmt.Errorf("uiDrawer() でエラーが発生しました。 \n%w", err)
 		}
+		// text, err := ui.NewText(
+		// 	Utils.Position{},
+		// 	color.Orange(),
+		// 	"Title\nPress Space Key to Start",
+		// 	ui.FontFace(gdata.Font, 15),
+		// )
+		// if err != nil {
+		// 	return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
+		// }
 		ts := TitleScene{
-			entities:   []Entity{},
-			drawer:     camera,
-			text:       text,
+			entities:    []Entity{},
+			worldDrawer: camera,
+			elements:    []Element{},
+			uiDrawer:    uiCamera,
+			// text:       text,
 			Input:      Input,
 			gamedata:   gdata,
 			initScenes: initScenes,
@@ -56,8 +64,8 @@ func (s TitleScene) Name() string {
 }
 
 func (s *TitleScene) Draw(screen *ebiten.Image) {
-	s.drawer.Draw(screen, s.entities)
-	s.text.Draw(screen)
+	s.worldDrawer.Draw(screen, s.entities)
+	s.uiDrawer.Draw(screen, s.elements)
 }
 
 func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
@@ -92,10 +100,14 @@ func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 	return
 }
 
-func (s TitleScene) AddEntity(e Entity) {
+func (s *TitleScene) AddEntity(e Entity) {
 	s.entities = append(s.entities, e)
 }
 
+func (s *TitleScene) AddUIElement(e Element) {
+	s.elements = append(s.elements, e)
+}
+
 func (s TitleScene) SetCameraCenter(center Utils.Position) {
-	s.drawer.SetCenter(center)
+	s.worldDrawer.SetCenter(center)
 }
