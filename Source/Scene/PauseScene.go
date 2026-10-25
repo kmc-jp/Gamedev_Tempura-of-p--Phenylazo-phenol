@@ -35,15 +35,6 @@ func NewPauseScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factor
 			return &PauseScene{}, fmt.Errorf("uiDrawer() でエラーが発生しました。 \n%w", err)
 		}
 
-		// text, err := ui.NewText(
-		// 	Utils.Position{X: 0, Y: 50},
-		// 	color.Orange(),
-		// 	"Pause\nPress ESC Key to Return the Game",
-		// 	ui.FontFace(gdata.Font, 15),
-		// )
-		// if err != nil {
-		// 	return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
-		// }
 		ps := PauseScene{
 			entities:    []Entity{},
 			worldDrawer: camera,

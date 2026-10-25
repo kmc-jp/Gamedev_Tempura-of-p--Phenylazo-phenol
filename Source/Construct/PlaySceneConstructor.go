@@ -9,7 +9,9 @@ import (
 	component "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject/Component"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	tilemap "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/TileMap"
+	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
 	"reflect"
 
@@ -37,6 +39,18 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 		if err != nil {
 			return nil, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
 		}
+
+		// UI
+		text, err := ui.NewText(
+			Utils.Position{X: 0, Y: 0},
+			color.Red(),
+			"",
+			ui.FontFace(gdata.Font, 15),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
+		}
+		playscene.AddUIElement(text)
 
 		// タイルマップ
 		tilemapobj, err := MakeTileMapObj(assetsManager, playscene)

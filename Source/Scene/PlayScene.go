@@ -39,15 +39,6 @@ func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory
 		if err != nil {
 			return &PlayScene{}, fmt.Errorf("uiDrawer() でエラーが発生しました。 \n%w", err)
 		}
-		// text, err := ui.NewText(
-		// 	Utils.Position{X: 0, Y: 0},
-		// 	color.Red(),
-		// 	"",
-		// 	ui.FontFace(gdata.Font, 15),
-		// )
-		// if err != nil {
-		// 	return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
-		// }
 		ps := PlayScene{
 			entities:    []Entity{},
 			worldDrawer: camera,

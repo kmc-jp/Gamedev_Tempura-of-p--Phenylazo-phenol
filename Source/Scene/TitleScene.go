@@ -35,15 +35,6 @@ func NewTitleScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factor
 		if err != nil {
 			return &TitleScene{}, fmt.Errorf("uiDrawer() でエラーが発生しました。 \n%w", err)
 		}
-		// text, err := ui.NewText(
-		// 	Utils.Position{},
-		// 	color.Orange(),
-		// 	"Title\nPress Space Key to Start",
-		// 	ui.FontFace(gdata.Font, 15),
-		// )
-		// if err != nil {
-		// 	return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
-		// }
 		ts := TitleScene{
 			entities:    []Entity{},
 			worldDrawer: camera,

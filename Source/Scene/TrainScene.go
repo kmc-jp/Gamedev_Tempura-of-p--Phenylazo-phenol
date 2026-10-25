@@ -35,15 +35,6 @@ func NewTrainScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factor
 		if err != nil {
 			return &TrainScene{}, fmt.Errorf("uiDrawer() でエラーが発生しました。 \n%w", err)
 		}
-		// text, err := ui.NewText(
-		// 	Utils.Position{},
-		// 	color.Orange(),
-		// 	"Train\nESC to Open Pause Menu\nEnter to Return to PlayScene",
-		// 	ui.FontFace(gdata.Font, 15),
-		// )
-		// if err != nil {
-		// 	return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
-		// }
 		trs := TrainScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
