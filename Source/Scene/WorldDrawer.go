@@ -6,7 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-type Drawer interface {
+type WorldDrawer interface {
 	Draw(screen *ebiten.Image, objects []Entity)
 	SetCenter(Utils.Position)
 }

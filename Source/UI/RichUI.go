@@ -1,6 +1,7 @@
 package ui
 
 import (
+	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 	"image"
@@ -75,4 +76,4 @@ func (r *RichUI) SetPosition(position utils.Position) {
 	r.position = position
 }
 
-var _ Element = (*RichUI)(nil)
+var _ scene.Element = (*RichUI)(nil)

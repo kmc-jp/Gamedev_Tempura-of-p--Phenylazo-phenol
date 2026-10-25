@@ -4,9 +4,7 @@ import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
-	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
-	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
 	"strconv"
@@ -17,9 +15,13 @@ import (
 
 // メインの遊べるシーン
 type PlayScene struct {
-	entities   []Entity
-	drawer     Drawer
-	text       *ui.Text
+	entities    []Entity
+	worldDrawer WorldDrawer
+
+	elements []Element
+	uiDrawer UIDrawer
+
+	// text       *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
@@ -27,25 +29,22 @@ type PlayScene struct {
 	cameraCenter Utils.Position
 }
 
-func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PlayScene] {
+func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory[UIDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PlayScene] {
 	return func() (*PlayScene, error) {
-		camera, err := NewDrawer()
+		camera, err := worldDrawer()
 		if err != nil {
 			return &PlayScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-		text, err := ui.NewText(
-			Utils.Position{X: 0, Y: 0},
-			color.Red(),
-			"",
-			ui.FontFace(gdata.Font, 15),
-		)
+		uiCamera, err := uiDrawer()
 		if err != nil {
-			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
+			return &PlayScene{}, fmt.Errorf("uiDrawer() でエラーが発生しました。 \n%w", err)
 		}
 		ps := PlayScene{
-			entities:   []Entity{},
-			drawer:     camera,
-			text:       text,
+			entities:    []Entity{},
+			worldDrawer: camera,
+			elements:    []Element{},
+			uiDrawer:    uiCamera,
+			// text:       text,
 			Input:      Input,
 			gamedata:   gdata,
 			initScenes: initScenes,
@@ -61,8 +60,8 @@ func (s PlayScene) Name() string {
 
 // Draw implements [Scene].
 func (s PlayScene) Draw(screen *ebiten.Image) {
-	s.drawer.Draw(screen, s.entities)
-	s.text.Draw(screen)
+	s.worldDrawer.Draw(screen, s.entities)
+	s.uiDrawer.Draw(screen, s.elements)
 }
 
 // Update implements [Scene].
@@ -74,7 +73,7 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 	if s.gamedata.InitialProcess {
 		s.gamedata.InitialProcess = false
 		s.gamedata.Text = "10"
-		s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
+		// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
 
 		s.gamedata.Timer = tick.NewTimer()
 
@@ -125,10 +124,10 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 				s.gamedata.State = game.Play_Timeup
 
 				s.gamedata.Text = "0\nTimeUp 次の店に移動します"
-				s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
+				// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
 			}
 		}
-		s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
+		// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
 
 		// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
@@ -152,6 +151,10 @@ func (s *PlayScene) AddEntity(e Entity) {
 	s.entities = append(s.entities, e)
 }
 
+func (s *PlayScene) AddUIElement(e Element) {
+	s.elements = append(s.elements, e)
+}
+
 func (s PlayScene) SetCameraCenter(center Utils.Position) {
-	s.drawer.SetCenter(center)
+	s.worldDrawer.SetCenter(center)
 }

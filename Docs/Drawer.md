@@ -1,4 +1,4 @@
-# 描画系(案)
+# 描画系
 
 ## game.Game.Draw(screen *ebiten.Image)
 
@@ -8,19 +8,30 @@
 ### Scene.Draw(screen *ebiten.Image) に期待すること
 そのシーン全体 (裏に何かあるならそれの処理も含む) をいい感じに描画すること
 
-## scene.PlayScene.Draw(screen *ebiten.Image)
+## scene.PlayScene.Draw(screen *ebiten.Image) (ほかのシーンも概ね同様 : 不要なら片方だけになる)
 
 ### やること
-Render.Draw() を呼ぶ
+シーンが保持するワールド要素とUI要素を描画する。
 
-## scene.MockCamera.Draw(screen *ebiten.Image, objects []Entity, center Position)
+- WorldDrawer に Entity の描画を委譲する
+- UIDrawer に Element の描画を委譲する
+
+## scene.Camera.Draw(screen *ebiten.Image, objects []Entity, center Position) : WorldRender
 
 ### やること
-受け取った objects の中身のすべてについて、そのワールド座標をそのまま描画する
-カメラ位置の調整周りは後から考える
+受け取った objects の中身を描画する
+画面中心は center に合わせる
 
 ### Entity.Render.Draw() (image *ebiten.Image) に期待すること
 適切なサイズの画像を描いて返してくること
 
 ## GameObject.Draw() (image *ebiten.Image)
 自分の画像を返す
+
+## scene.UICamera.Draw(screen *ebiten.Image, elements []Element) : WorldRender
+
+### やること
+受け取った elements の中身の .Draw() を呼ぶ
+
+### Element.Render.Draw(image *ebiten.Image) に期待すること
+いい感じの場所に自分のUIを設置すること
