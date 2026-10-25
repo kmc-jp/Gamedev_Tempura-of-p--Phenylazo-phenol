@@ -12,12 +12,17 @@ import (
 
 func TitleSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata, initScenes *scene.InitializedScenes) Utils.Factory[*scene.TitleScene] {
 	return func() (*scene.TitleScene, error) {
-		DrawerFactory, err := MakeDrawerFactory(assetsManager)
+		DrawerFactory, err := MakeWorldDrawerFactory(assetsManager)
 		if err != nil {
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		titlescene, err := scene.NewTitleScene(DrawerFactory, inputHandler, gdata, initScenes)()
+		UIDrawerFactory, err := MakeUIDrawerFactory()
+		if err != nil {
+			return nil, fmt.Errorf("MakeUIDrawerFactory() でエラーが発生しました。\n%w", err)
+		}
+
+		titlescene, err := scene.NewTitleScene(DrawerFactory, UIDrawerFactory, inputHandler, gdata, initScenes)()
 		if err != nil {
 			return nil, fmt.Errorf("NewTitleScene() でエラーが発生しました。\n%w", err)
 		}

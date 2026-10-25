@@ -12,12 +12,17 @@ import (
 
 func TrainSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata, initScenes *scene.InitializedScenes) Utils.Factory[*scene.TrainScene] {
 	return func() (*scene.TrainScene, error) {
-		DrawerFactory, err := MakeDrawerFactory(assetsManager)
+		worldDrawerFactory, err := MakeWorldDrawerFactory(assetsManager)
 		if err != nil {
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		trainscene, err := scene.NewTrainScene(DrawerFactory, inputHandler, gdata, initScenes)()
+		UIDrawerFactory, err := MakeUIDrawerFactory()
+		if err != nil {
+			return nil, fmt.Errorf("MakeUIDrawerFactory() でエラーが発生しました。\n%w", err)
+		}
+
+		trainscene, err := scene.NewTrainScene(worldDrawerFactory, UIDrawerFactory, inputHandler, gdata, initScenes)()
 		if err != nil {
 			return nil, fmt.Errorf("NewTrainScene() でエラーが発生しました。\n%w", err)
 		}

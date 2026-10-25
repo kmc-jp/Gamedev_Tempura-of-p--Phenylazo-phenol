@@ -12,12 +12,17 @@ import (
 
 func PauseSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata, initScenes *scene.InitializedScenes) Utils.Factory[*scene.PauseScene] {
 	return func() (*scene.PauseScene, error) {
-		DrawerFactory, err := MakeDrawerFactory(assetsManager)
+		DrawerFactory, err := MakeWorldDrawerFactory(assetsManager)
 		if err != nil {
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		pausescene, err := scene.NewPauseScene(DrawerFactory, inputHandler, gdata, initScenes)()
+		UIDrawerFactory, err := MakeUIDrawerFactory()
+		if err != nil {
+			return nil, fmt.Errorf("MakeUIDrawerFactory() でエラーが発生しました。\n%w", err)
+		}
+
+		pausescene, err := scene.NewPauseScene(DrawerFactory, UIDrawerFactory, inputHandler, gdata, initScenes)()
 		if err != nil {
 			return nil, fmt.Errorf("NewPauseScene() でエラーが発生しました。\n%w", err)
 		}
