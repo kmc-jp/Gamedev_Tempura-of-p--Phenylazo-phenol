@@ -6,14 +6,13 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// カメラの本実装
-// 場所を指定したらその場所を中心として映す
+// UI用カメラ
 type UICamera struct {
 }
 
 // Draw implements [WorldDrawer].
-func (c UICamera) Draw(screen *ebiten.Image, objects []Element) {
-	for _, elm := range objects {
+func (c UICamera) Draw(screen *ebiten.Image, elements []Element) {
+	for _, elm := range elements {
 		elm.Draw(screen)
 	}
 }
