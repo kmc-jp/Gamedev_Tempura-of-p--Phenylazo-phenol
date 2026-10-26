@@ -91,6 +91,10 @@ func NewPart() *Part {
 	return &Part{}
 }
 
+func (g *Gamedata) AddPart(p *Part) {
+	g.Parts = append(g.Parts, p)
+}
+
 func (g *Gamedata) TotalWeight() int {
 	var wg int
 	for _, p := range g.Parts {

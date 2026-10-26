@@ -23,7 +23,7 @@ type PlayScene struct {
 
 	// text       *ui.Text
 	Input      *input.Handler
-	gamedata   *game.Gamedata
+	Gamedata   *game.Gamedata
 	initScenes *InitializedScenes
 	// テスト用
 	cameraCenter Utils.Position
@@ -46,7 +46,7 @@ func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory
 			uiDrawer:    uiCamera,
 			// text:       text,
 			Input:      Input,
-			gamedata:   gdata,
+			Gamedata:   gdata,
 			initScenes: initScenes,
 		}
 		return &ps, nil
@@ -70,28 +70,28 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		return
 	}
 
-	if s.gamedata.InitialProcess {
-		s.gamedata.InitialProcess = false
-		s.gamedata.Text = "10"
+	if s.Gamedata.InitialProcess {
+		s.Gamedata.InitialProcess = false
+		s.Gamedata.Text = "10"
 		// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
 
-		s.gamedata.Timer = tick.NewTimer()
+		s.Gamedata.Timer = tick.NewTimer()
 
-		fmt.Println(s.gamedata.Timer)
+		fmt.Println(s.Gamedata.Timer)
 	}
 
 	//TimeUp後の処理
-	if s.gamedata.State == game.Play_Timeup {
-		s.gamedata.Timer.Set(50)
-		if s.gamedata.Timer.Count() {
-			s.gamedata.Timer.Set(0)
+	if s.Gamedata.State == game.Play_Timeup {
+		s.Gamedata.Timer.Set(50)
+		if s.Gamedata.Timer.Count() {
+			s.Gamedata.Timer.Set(0)
 
 			return func() (game.Scene, error) {
 				trainScene, err := s.initScenes.InitTrainScene()
 				if err != nil {
 					return nil, err
 				}
-				trainScene.gamedata = s.gamedata
+				trainScene.gamedata = s.Gamedata
 				trainScene.gamedata.ForNewScene(game.Train_Default)
 				trainScene.initScenes = s.initScenes
 				return trainScene, nil
@@ -100,7 +100,7 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		return
 	}
 
-	if s.gamedata.State == game.Play_Explore {
+	if s.Gamedata.State == game.Play_Explore {
 
 		for _, entity := range s.entities {
 			err := entity.Update(active)
@@ -111,19 +111,19 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 
 		// 何か軽いテストはここでやりましょう
 
-		s.gamedata.Timer.Set(10)
+		s.Gamedata.Timer.Set(10)
 
 		//制限時間内プレイ中の制御
-		if cnt := s.gamedata.Timer.Count(); cnt {
-			num, _ := strconv.Atoi(s.gamedata.Text)
+		if cnt := s.Gamedata.Timer.Count(); cnt {
+			num, _ := strconv.Atoi(s.Gamedata.Text)
 			num--
-			s.gamedata.Text = strconv.Itoa(num)
+			s.Gamedata.Text = strconv.Itoa(num)
 
 			if num <= 0 {
-				s.gamedata.Timer.Set(0)
-				s.gamedata.State = game.Play_Timeup
+				s.Gamedata.Timer.Set(0)
+				s.Gamedata.State = game.Play_Timeup
 
-				s.gamedata.Text = "0\nTimeUp 次の店に移動します"
+				s.Gamedata.Text = "0\nTimeUp 次の店に移動します"
 				// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
 			}
 		}
@@ -136,7 +136,7 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 				if err != nil {
 					return nil, err
 				}
-				pauseScene.gamedata = s.gamedata
+				pauseScene.gamedata = s.Gamedata
 				//pauseScene.gamedata.ForNewScene(0)
 				pauseScene.initScenes = s.initScenes
 				return pauseScene, nil
