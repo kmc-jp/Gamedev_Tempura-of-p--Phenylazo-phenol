@@ -75,10 +75,10 @@ func (g *Gamedata) BuyPart() purchase {
 		return Lack_weight
 	}
 
-	g.Parts = append(g.Parts, p)
+	g.AddPartToPartsList(p)
 	g.Money -= p.Val
 	g.Weight -= p.Weight
-	g.Found = g.Found[1:]
+	g.Found = g.Found[1:] //Foundの先頭を削除
 	return Buy
 }
 
