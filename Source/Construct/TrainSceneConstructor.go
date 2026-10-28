@@ -36,12 +36,6 @@ func TrainSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inpu
 			ui.FontFace(gdata.Font, 15),
 		)
 
-		// text, err := ui.NewText(
-		// 	Utils.Position{},
-		// 	color.Orange(),
-		// 	"Train\nESC to Open Pause Menu\nEnter to Return to PlayScene",
-		// 	ui.FontFace(gdata.Font, 15),
-		// )
 		if err != nil {
 			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
 		}
