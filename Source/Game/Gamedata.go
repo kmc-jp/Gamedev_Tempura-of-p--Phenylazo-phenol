@@ -81,6 +81,6 @@ func (g *Gamedata) ForNewScene(state state) {
 func (g *Gamedata) ResetGame() {
 	g.Parts = []*Part{}
 	g.Found = []*Part{}
-	g.weight = InitialWeight
-	g.money = InitialMoney
+	g.Weight = InitialWeight
+	g.Money = InitialMoney
 }
