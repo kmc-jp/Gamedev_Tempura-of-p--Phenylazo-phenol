@@ -14,6 +14,17 @@ var (
 		}
 	})
 
+	Trash = register(func() *game.Part {
+		return &game.Part{
+			Name:        "Part",
+			Kind:        game.Trash,
+			Weight:      0,
+			Val:         0,
+			Rank:        game.D,
+			Performance: 0,
+		}
+	})
+
 	CPUExample = register(func() *game.Part {
 		return &game.Part{
 			Name:        "CPU_Example",

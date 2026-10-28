@@ -62,6 +62,7 @@ const (
 	RAM
 
 	Others
+	Trash
 )
 
 type kinds uint
@@ -91,8 +92,12 @@ func NewPart() *Part {
 	return &Part{}
 }
 
-func (g *Gamedata) AddPart(p *Part) {
+func (g *Gamedata) AddPart(p *Part) string {
+	if p == nil {
+		return "ごみを見つけた"
+	}
 	g.Parts = append(g.Parts, p)
+	return p.Name + "を見つけた"
 }
 
 func (g *Gamedata) TotalWeight() int {

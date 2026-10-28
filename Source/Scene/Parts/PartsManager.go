@@ -2,6 +2,7 @@ package parts
 
 import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
+	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"math/rand"
 )
 
@@ -14,7 +15,17 @@ func register(builder func() *game.Part) func() *game.Part {
 
 func RandomPartsFromAll() *game.Part {
 	if len(registry) == 0 {
-		return &game.Part{}
+		return nil
 	}
-	return registry[rand.Intn(len(registry))]()
+
+	//重みづけ抽選をしない場合はここで抽選
+	if !Utils.Percent(60) {
+		return nil
+	}
+
+	p := registry[rand.Intn(len(registry))]()
+	if p.Kind == game.Trash {
+		return nil
+	}
+	return p
 }
