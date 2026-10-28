@@ -9,7 +9,9 @@ import (
 	component "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject/Component"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	tilemap "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/TileMap"
+	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
 	"reflect"
 
@@ -22,15 +24,36 @@ import (
 func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata, initScenes *scene.InitializedScenes) Utils.Factory[*scene.PlayScene] {
 	return func() (*scene.PlayScene, error) {
 		// カメラ設定
-		DrawerFactory, err := MakeDrawerFactory(assetsManager)
+		WorldDrawerFactory, err := MakeWorldDrawerFactory(assetsManager)
 		if err != nil {
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		playscene, err := scene.NewPlayScene(DrawerFactory, inputHandler, gdata, initScenes)()
+		// UIカメラ
+		UIDrawerFactory, err := MakeUIDrawerFactory()
+		if err != nil {
+			return nil, fmt.Errorf("MakeUIDrawerFactory() でエラーが発生しました。\n%w", err)
+		}
+
+		playscene, err := scene.NewPlayScene(WorldDrawerFactory, UIDrawerFactory, inputHandler, gdata, initScenes)()
 		if err != nil {
 			return nil, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
 		}
+
+		// UI
+		text, err := ui.NewGameDataText(
+			Utils.Position{X: 0, Y: 0},
+			color.Red(),
+			gdata,
+			func(g game.Gamedata) string {
+				return fmt.Sprintf("探索フェーズ 残り時間: %s", g.Text)
+			},
+			ui.FontFace(gdata.Font, 15),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
+		}
+		playscene.AddUIElement(text)
 
 		// タイルマップ
 		tilemapobj, err := MakeTileMapObj(assetsManager, playscene)
@@ -56,7 +79,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 }
 
 // カメラ設定
-func MakeDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[scene.Drawer], error) {
+func MakeWorldDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[scene.WorldDrawer], error) {
 	cameraConfigData, err := serialize.NewSerializeData("CameraConfig", reflect.TypeFor[serializetarget.CameraConfig](), "CameraConfig.toml", assetsManager.Serialize)
 	if err != nil {
 		return nil, fmt.Errorf("serialize.NewSerializeData(\"CameraConfig\", reflect.TypeFor[serializetarget.CameraConfig](), \"CameraConfig.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
@@ -72,7 +95,12 @@ func MakeDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[scene
 		return nil, fmt.Errorf("cameraConfig.Construct() でエラーが発生しました。\n%w", err)
 	}
 
-	DrawerFactory := Utils.CastFactory[*scene.Camera, scene.Drawer](cameraFactory.(Utils.Factory[*scene.Camera]))
+	DrawerFactory := Utils.CastFactory[*scene.Camera, scene.WorldDrawer](cameraFactory.(Utils.Factory[*scene.Camera]))
+	return DrawerFactory, nil
+}
+
+func MakeUIDrawerFactory() (Utils.Factory[scene.UIDrawer], error) {
+	DrawerFactory := Utils.CastFactory[*scene.UICamera, scene.UIDrawer](scene.NewUICamera())
 	return DrawerFactory, nil
 }
 

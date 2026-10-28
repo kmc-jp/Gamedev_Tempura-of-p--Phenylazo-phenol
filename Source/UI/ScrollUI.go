@@ -1,6 +1,7 @@
 package ui
 
 import (
+	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	"fmt"
 	"image"
 
@@ -20,7 +21,7 @@ type ScrollUI struct {
 	content  image.Point
 	mode     ScrollMode
 	offset   int
-	children []Element
+	children []scene.Element
 	buffer   *ebiten.Image
 }
 
@@ -45,11 +46,11 @@ func NewScrollUI(
 		viewport: viewport,
 		content:  content,
 		mode:     mode,
-		children: []Element{},
+		children: []scene.Element{},
 	}, nil
 }
 
-func (s *ScrollUI) AddChild(child Element) error {
+func (s *ScrollUI) AddChild(child scene.Element) error {
 	if child == nil {
 		return fmt.Errorf("child が nil です")
 	}
@@ -124,4 +125,4 @@ func (s *ScrollUI) maxOffset() int {
 	return s.content.X - s.viewport.X
 }
 
-var _ Element = (*ScrollUI)(nil)
+var _ scene.Element = (*ScrollUI)(nil)

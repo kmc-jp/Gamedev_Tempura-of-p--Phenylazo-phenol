@@ -22,7 +22,7 @@ type drawImage struct {
 	option *ebiten.DrawImageOptions
 }
 
-// Draw implements [Drawer].
+// Draw implements [WorldDrawer].
 func (c Camera) Draw(screen *ebiten.Image, objects []Entity) {
 	scSize := screen.Bounds().Size()
 	images := make([][]drawImage, c.layerCount)
@@ -61,7 +61,7 @@ func (c *Camera) SetCenter(center Utils.Position) {
 	c.center = center
 }
 
-var _ Drawer = &Camera{}
+var _ WorldDrawer = &Camera{}
 
 type kvp struct {
 	key   string

@@ -4,9 +4,7 @@ import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
-	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
-	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -14,34 +12,28 @@ import (
 )
 
 type ResultScene struct {
-	entities   []Entity
-	drawer     Drawer
-	text       *ui.Text
+	entities    []Entity
+	worldDrawer WorldDrawer
+
+	elements []Element
+	uiDrawer UIDrawer
+	// text       *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
 }
 
-func NewResultScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*ResultScene] {
+func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory[UIDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*ResultScene] {
 	return func() (*ResultScene, error) {
-		camera, err := NewDrawer()
+		camera, err := NewWorldDrawer()
 		if err != nil {
 
 			return &ResultScene{}, fmt.Errorf("NewDrawer() でエラーが発生しました。 \n%w", err)
 		}
-		text, err := ui.NewText(
-			Utils.Position{},
-			color.Orange(),
-			"Result\nEnter キーでタイトルに戻る",
-			ui.FontFace(gdata.Font, 15),
-		)
-		if err != nil {
-			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
-		}
 		ts := ResultScene{
-			entities:   []Entity{},
-			drawer:     camera,
-			text:       text,
+			entities:    []Entity{},
+			worldDrawer: camera,
+			// text:        text,
 			Input:      Input,
 			gamedata:   gdata,
 			initScenes: initScenes,
@@ -56,8 +48,9 @@ func (s ResultScene) Name() string {
 }
 
 func (s *ResultScene) Draw(screen *ebiten.Image) {
-	s.drawer.Draw(screen, s.entities)
-	s.text.Draw(screen)
+	s.worldDrawer.Draw(screen, s.entities)
+	s.uiDrawer.Draw(screen, s.elements)
+	// s.text.Draw(screen)
 }
 
 func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
@@ -91,10 +84,14 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 	return
 }
 
-func (s ResultScene) AddEntity(e Entity) {
+func (s *ResultScene) AddEntity(e Entity) {
 	s.entities = append(s.entities, e)
 }
 
+func (s *ResultScene) AddUIElement(e Element) {
+	s.elements = append(s.elements, e)
+}
+
 func (s ResultScene) SetCameraCenter(center Utils.Position) {
-	s.drawer.SetCenter(center)
+	s.worldDrawer.SetCenter(center)
 }

@@ -1,5 +1,11 @@
 @startuml game_class_diagram
 
+top to bottom direction
+
+class "エントリーポイント" as Main {
+    - {static} main() <<entrypoint>>
+}
+
 package ebiten {
     interface Game {
         + Update() error
@@ -8,43 +14,71 @@ package ebiten {
     }
 }
 
-class "エントリーポイント" {
-    - {static} main() <<entrypoint>>
-}
-
-"エントリーポイント" ..right..> game.Game
-"エントリーポイント" ..right..> scene.Hoge
-
 package game {
     class Game {
         - ActiveScene Scene
-        - BackScene Stack[Scene]
+        - BackScenes Utils.Stack[Scene]
+        - bufferScreen *ebiten.Image
+        - InputHandler *input.Handler
         + Update() error
         + Draw(screen *ebiten.Image)
-        + Layout(outsideWidth, outsideHeight int)
-    } 
-    note right of Game : シーンの管理が主な役割\nUpdate() は ActiveScene.Update(true) と BackScene.Update(false) を呼ぶ\nその他は BackScene -> ActiveScene の順で\nStack は Utils パッケージ
+        + Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int)
+    }
 
     interface Scene {
         + Name() string
         + Update(active bool) (nextScene Utils.Factory[Scene], transitionType transition.Type, err error)
         + Draw(screen *ebiten.Image)
     }
-
-    Game -up--|> ebiten.Game
-    Game "1" o-- "1..*" Scene
 }
+
+    package transition {
+        class Type {
+            + None() Type
+            + NewScene() Type
+            + Push() Type
+            + Pop() Type
+        }
+    }
+
 
 package scene {
-    class Hoge {
-        + Init()
-        + Name() string
-        + Update(active bool) (nextScene Utils.Factory[Scene], transitionType transition.Type, err error)
-        + Draw(screen *ebiten.Image)
-    }
-    note right of Hoge : 具体的なシーン
+    class TitleScene
+    class PlayScene
+    class PauseScene
+    class TrainScene
+    class ResultScene
 
-    Hoge -up-|> game.Scene
+    TitleScene .up.|> game.Scene
+    PlayScene .up.|> game.Scene
+    PauseScene .up.|> game.Scene
+    TrainScene .up.|> game.Scene
+    ResultScene .up.|> game.Scene
 }
+
+package constructor {}
+
+Main -down-> constructor
+
+constructor -left-> game
+constructor -down-> scene
+
+game.Game .up.|> ebiten.Game
+game.Game o-down- Scene : ActiveScene
+game.Game "1" o-down- "0..*" Scene : BackScenes
+game.Game -up-> transition.Type
+
+
+
+note right of game.Game
+ActiveScene.Update(true) を呼び出す。
+BackScenes の各Sceneは Update(false) を呼び出す。
+
+遷移種別に応じて処理する。
+- None: 現在のSceneを維持
+- NewScene: BackScenesを破棄してSceneを置換
+- Push: 現在のSceneをBackScenesへ積んでSceneを置換
+- Pop: BackScenesからSceneを復帰
+end note
 
 @enduml

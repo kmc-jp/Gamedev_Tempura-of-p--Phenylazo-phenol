@@ -4,9 +4,7 @@ import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
-	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
-	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -14,33 +12,35 @@ import (
 )
 
 type PauseScene struct {
-	entities   []Entity
-	drawer     Drawer
-	text       *ui.Text
+	entities    []Entity
+	worldDrawer WorldDrawer
+
+	elements []Element
+	uiDrawer UIDrawer
+
+	// text        *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
 }
 
-func NewPauseScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PauseScene] {
+func NewPauseScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory[UIDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PauseScene] {
 	return func() (*PauseScene, error) {
-		camera, err := NewDrawer()
+		camera, err := worldDrawer()
 		if err != nil {
 			return &PauseScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-		text, err := ui.NewText(
-			Utils.Position{X: 0, Y: 50},
-			color.Orange(),
-			"Pause\nPress ESC Key to Return the Game",
-			ui.FontFace(gdata.Font, 15),
-		)
+		uiCamera, err := uiDrawer()
 		if err != nil {
-			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
+			return &PauseScene{}, fmt.Errorf("uiDrawer() でエラーが発生しました。 \n%w", err)
 		}
+
 		ps := PauseScene{
-			entities:   []Entity{},
-			drawer:     camera,
-			text:       text,
+			entities:    []Entity{},
+			worldDrawer: camera,
+			elements:    []Element{},
+			uiDrawer:    uiCamera,
+			// text:        text,
 			Input:      Input,
 			gamedata:   gdata,
 			initScenes: initScenes,
@@ -54,8 +54,8 @@ func (s PauseScene) Name() string {
 }
 
 func (s *PauseScene) Draw(screen *ebiten.Image) {
-	s.drawer.Draw(screen, s.entities)
-	s.text.Draw(screen)
+	s.worldDrawer.Draw(screen, s.entities)
+	s.uiDrawer.Draw(screen, s.elements)
 }
 
 func (s *PauseScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
@@ -81,10 +81,14 @@ func (s *PauseScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 	return
 }
 
-func (s PauseScene) AddEntity(e Entity) {
+func (s *PauseScene) AddEntity(e Entity) {
 	s.entities = append(s.entities, e)
 }
 
+func (s *PauseScene) AddUIElement(e Element) {
+	s.elements = append(s.elements, e)
+}
+
 func (s PauseScene) SetCameraCenter(center Utils.Position) {
-	s.drawer.SetCenter(center)
+	s.worldDrawer.SetCenter(center)
 }

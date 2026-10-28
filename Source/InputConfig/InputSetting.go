@@ -19,7 +19,9 @@ const (
 	ActionEnter
 )
 
-var actionConstList [9]input.Action = [9]input.Action{
+const actions = 9
+
+var actionConstList [actions]input.Action = [actions]input.Action{
 	ActionUnknown,
 	ActionMoveLeft,
 	ActionMoveRight,
@@ -27,8 +29,8 @@ var actionConstList [9]input.Action = [9]input.Action{
 	ActionMoveDown,
 	ActionSpace,
 	ActionEscape,
-	ActionInteract,
 	ActionEnter,
+	ActionInteract,
 }
 
 func ActionConst(name string) (input.Action, error) {
@@ -56,7 +58,7 @@ func ActionConst(name string) (input.Action, error) {
 	}
 }
 
-func ActionConstList() *[9]input.Action {
+func ActionConstList() *[actions]input.Action {
 	return &actionConstList
 }
 

@@ -4,6 +4,7 @@ import (
 	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
+	parts "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Parts"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 	"reflect"
@@ -12,9 +13,10 @@ import (
 )
 
 type Player struct {
-	ipt *input.Handler
-	tw  *TileWalker
-	dir Utils.Vec2Int
+	ipt   *input.Handler
+	tw    *TileWalker
+	dir   Utils.Vec2Int
+	scene *scene.PlayScene
 }
 
 func (p *Player) Update(active bool) (err error) {
@@ -60,15 +62,16 @@ func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject) Utils.Factory
 		}
 
 		pl := &Player{
-			tw:  tw.(*TileWalker),
-			ipt: scene.Input,
+			tw:    tw.(*TileWalker),
+			ipt:   scene.Input,
+			scene: scene,
 		}
 
 		return pl, nil
 	}
 }
 
-func (p Player) interact() error {
+func (p *Player) interact() error {
 	mypos := p.tw.Position.Position
 	targetpos := mypos.Add(p.dir)
 
@@ -77,6 +80,12 @@ func (p Player) interact() error {
 		if err != nil {
 			return fmt.Errorf("target.Interact() でエラーが発生しました。\ntergetpos = %d\n%w", targetpos, err)
 		}
+		p.scene.Gamedata.AddPart(parts.RandomPartsFromAll())
+		var item []string
+		for _, p := range p.scene.Gamedata.Parts {
+			item = append(item, p.Name+"\n")
+		}
+		fmt.Print(item)
 	}
 
 	return nil
