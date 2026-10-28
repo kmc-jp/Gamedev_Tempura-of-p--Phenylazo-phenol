@@ -17,7 +17,7 @@ var (
 	Trash = register(func() *game.Part {
 		return &game.Part{
 			Name:        "Part",
-			Kind:        game.Others,
+			Kind:        game.Trash,
 			Weight:      0,
 			Val:         0,
 			Rank:        game.D,

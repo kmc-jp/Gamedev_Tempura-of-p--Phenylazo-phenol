@@ -14,7 +14,11 @@ func register(builder func() *game.Part) func() *game.Part {
 
 func RandomPartsFromAll() *game.Part {
 	if len(registry) == 0 {
-		return &game.Part{}
+		return nil
 	}
-	return registry[rand.Intn(len(registry))]()
+	p := registry[rand.Intn(len(registry))]()
+	if p.Kind == game.Trash {
+		return nil
+	}
+	return p
 }
