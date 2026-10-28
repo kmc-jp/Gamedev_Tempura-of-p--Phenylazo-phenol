@@ -40,7 +40,8 @@ type Gamedata struct {
 
 // Gamedata初期値
 const (
-	InitialMoney = 10000
+	InitialWeight = 1000
+	InitialMoney  = 10000
 )
 
 // Flag 識別名
@@ -135,6 +136,7 @@ func (g *Gamedata) ForNewScene(state state) {
 // ゲームサイクル終了時のゲームデータ初期化
 func (g *Gamedata) ResetGame() {
 	g.Parts = []*Part{}
-	g.weight = 0
+	g.Found = []*Part{}
+	g.weight = InitialWeight
 	g.money = InitialMoney
 }
