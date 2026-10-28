@@ -71,12 +71,12 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 		return func() (game.Scene, error) {
 			nextScene, err := s.initScenes.InitTitleScene()
-			nextScene.gamedata = s.gamedata
-			nextScene.gamedata.ForNewScene(game.Title_Default)
-			nextScene.initScenes = s.initScenes
 			if err != nil {
 				return nil, err
 			}
+			nextScene.gamedata = s.gamedata
+			nextScene.gamedata.ForNewScene(game.Title_Default)
+			nextScene.initScenes = s.initScenes
 			return nextScene, nil
 		}, transition.NewScene(), nil
 	}
