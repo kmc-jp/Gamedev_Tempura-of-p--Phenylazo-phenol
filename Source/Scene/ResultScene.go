@@ -30,9 +30,14 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Fa
 
 			return &ResultScene{}, fmt.Errorf("NewDrawer() でエラーが発生しました。 \n%w", err)
 		}
+		uiCamera, err := uiDrawer()
+		if err != nil {
+			return &ResultScene{}, fmt.Errorf("NewDrawer() でエラーが発生しました。\n%w", err)
+		}
 		ts := ResultScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
+			uiDrawer:    uiCamera,
 			// text:        text,
 			Input:      Input,
 			gamedata:   gdata,
