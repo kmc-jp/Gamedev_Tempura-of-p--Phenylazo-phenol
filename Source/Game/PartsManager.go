@@ -15,10 +15,10 @@ type kinds uint
 // パーツの状態ランク
 // Value倍率を定義
 const (
-	A rank = 2
-	B rank = 1.5
-	C rank = 1
-	D rank = 0.5
+	A rank = 4
+	B rank = 3
+	C rank = 2
+	D rank = 1
 )
 
 type rank float32
@@ -37,12 +37,49 @@ func NewPart() *Part {
 	return &Part{}
 }
 
-func (g *Gamedata) AddPart(p *Part) string {
+func (g *Gamedata) AddPartToFoundList(p *Part) string {
 	if p == nil {
 		return "ごみを見つけた"
 	}
-	g.Parts = append(g.Parts, p)
+	g.Found = append(g.Found, p)
 	return p.Name + "を見つけた"
+}
+
+func (g *Gamedata) AddPartToPartsList(p *Part) {
+	g.Parts = append(g.Parts, p)
+}
+
+//購入処理結果
+const (
+	Buy purchase = iota
+
+	Lack_money
+	Lack_weight
+
+	NoItem
+)
+
+type purchase uint
+
+func (g *Gamedata) BuyPart() purchase {
+	if len(g.Found) == 0 {
+		return NoItem
+	}
+
+	p := g.Found[0]
+
+	if g.Money < p.Val {
+		return Lack_money
+	}
+	if g.Weight < p.Weight {
+		return Lack_weight
+	}
+
+	g.Parts = append(g.Parts, p)
+	g.Money -= p.Val
+	g.Weight -= p.Weight
+	g.Found = g.Found[1:]
+	return Buy
 }
 
 func (g *Gamedata) TotalWeight() int {

@@ -28,11 +28,11 @@ type Gamedata struct {
 
 	//以下ゲーム用データ
 
-	//荷物重量
-	weight int
+	//持ち運び可能な残り荷物重量
+	Weight int
 
 	//所持金
-	money int
+	Money int
 
 	//所持品
 	Parts []*Part
