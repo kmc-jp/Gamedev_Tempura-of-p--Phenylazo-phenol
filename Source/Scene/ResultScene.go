@@ -30,9 +30,14 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Fa
 
 			return &ResultScene{}, fmt.Errorf("NewDrawer() でエラーが発生しました。 \n%w", err)
 		}
+		uiCamera, err := uiDrawer()
+		if err != nil {
+			return &ResultScene{}, fmt.Errorf("NewDrawer() でエラーが発生しました。\n%w", err)
+		}
 		ts := ResultScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
+			uiDrawer:    uiCamera,
 			// text:        text,
 			Input:      Input,
 			gamedata:   gdata,
@@ -68,16 +73,15 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 		entity.Update(active)
 	}
 
-	// if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 		return func() (game.Scene, error) {
 			nextScene, err := s.initScenes.InitTitleScene()
-			nextScene.gamedata = s.gamedata
-			nextScene.gamedata.ForNewScene(game.Title_Default)
-			nextScene.initScenes = s.initScenes
 			if err != nil {
 				return nil, err
 			}
+			nextScene.gamedata = s.gamedata
+			nextScene.gamedata.ForNewScene(game.Title_Default)
+			nextScene.initScenes = s.initScenes
 			return nextScene, nil
 		}, transition.NewScene(), nil
 	}
