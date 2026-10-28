@@ -75,7 +75,6 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 		entity.Update(active)
 	}
 
-	// if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 		return func() (game.Scene, error) {
 			nextScene, err := s.initScenes.InitTitleScene()
