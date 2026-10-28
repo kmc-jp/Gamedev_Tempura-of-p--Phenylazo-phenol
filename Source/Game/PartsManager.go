@@ -101,3 +101,11 @@ func (g *Gamedata) TotalValue() int {
 	}
 	return v
 }
+
+func (g *Gamedata) ExtractFoundPartsName() []string {
+	var names []string
+	for _, p := range g.Found {
+		names = append(names, p.Name)
+	}
+	return names
+}

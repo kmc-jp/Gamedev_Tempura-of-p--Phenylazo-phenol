@@ -80,26 +80,6 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		fmt.Println(s.Gamedata.Timer)
 	}
 
-	//TimeUp後の処理
-	if s.Gamedata.State == game.Play_Timeup {
-		s.Gamedata.Timer.Set(50)
-		if s.Gamedata.Timer.Count() {
-			s.Gamedata.Timer.Set(0)
-
-			return func() (game.Scene, error) {
-				trainScene, err := s.initScenes.InitTrainScene()
-				if err != nil {
-					return nil, err
-				}
-				trainScene.gamedata = s.Gamedata
-				trainScene.gamedata.ForNewScene(game.Train_Default)
-				trainScene.initScenes = s.initScenes
-				return trainScene, nil
-			}, transition.NewScene(), nil
-		}
-		return
-	}
-
 	if s.Gamedata.State == game.Play_Explore {
 
 		for _, entity := range s.entities {
@@ -125,7 +105,7 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 
 				s.Gamedata.Text = "0\nTimeUp 次の店に移動します"
 				// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
-				fmt.Print("みつけたもの\n", s.Gamedata.Found)
+				fmt.Print("みつけたもの\n", s.Gamedata.ExtractFoundPartsName())
 			}
 		}
 		// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
@@ -143,6 +123,29 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 				return pauseScene, nil
 			}, transition.Push(), nil
 		}
+	}
+
+	//TimeUp後の処理
+	if s.Gamedata.State == game.Play_Timeup {
+		s.Gamedata.Timer.Set(50)
+		if s.Gamedata.Timer.Count() {
+			s.Gamedata.Timer.Set(0)
+			s.Gamedata.State = game.Play_Select
+		}
+		return
+	}
+
+	if s.Gamedata.State == game.Play_Select {
+		return func() (game.Scene, error) {
+			trainScene, err := s.initScenes.InitTrainScene()
+			if err != nil {
+				return nil, err
+			}
+			trainScene.gamedata = s.Gamedata
+			trainScene.gamedata.ForNewScene(game.Train_Default)
+			trainScene.initScenes = s.initScenes
+			return trainScene, nil
+		}, transition.NewScene(), nil
 	}
 
 	return
