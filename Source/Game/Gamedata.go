@@ -36,6 +36,9 @@ type Gamedata struct {
 
 	//所持品
 	Parts []*Part
+
+	//発見した品
+	Found []*Part
 }
 
 // Flag 識別名
@@ -47,6 +50,7 @@ const (
 
 	Play_Explore
 	Play_Timeup
+	Play_Select
 
 	Train_Default
 
