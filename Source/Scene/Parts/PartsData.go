@@ -3,17 +3,6 @@ package parts
 import game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 
 var (
-	Example = register(func() *game.Part {
-		return &game.Part{
-			Name:        "example",
-			Kind:        game.Others,
-			Weight:      500,
-			Val:         1000,
-			Rank:        game.B,
-			Performance: 1000,
-		}
-	})
-
 	Trash = register(func() *game.Part {
 		return &game.Part{
 			Name:        "Part",
@@ -55,6 +44,40 @@ var (
 			Val:         5000,
 			Rank:        game.B,
 			Performance: 1000,
+		}
+	})
+
+	MBExample = register(func() *game.Part {
+		return &game.Part{
+			Name:        "MB_Example",
+			Kind:        game.MB,
+			Weight:      500,
+			Val:         2000,
+			Rank:        game.C,
+			Performance: 1000,
+		}
+	})
+
+	CaseExample = register(func() *game.Part {
+		return &game.Part{
+			Name:        "Case_Example",
+			Kind:        game.Case,
+			Weight:      2000,
+			Val:         2000,
+			Rank:        game.B,
+			Performance: 1000,
+		}
+	})
+
+	// 以下、任意パーツ
+	LED = register(func() *game.Part {
+		return &game.Part{
+			Name:        "LED_Tape",
+			Kind:        game.LED,
+			Weight:      100,
+			Val:         100,
+			Rank:        game.A,
+			Performance: 0,
 		}
 	})
 )
