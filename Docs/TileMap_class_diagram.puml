@@ -93,17 +93,17 @@ component.ShelfTile .up.|> component.InteractableTile
 component.StdTransform .up.|> gameObject.Transform
 
 ' Composition and references
-component.TileMap "1" *-- "0..*" component.Tile
+component.TileMap "1" o-- "0..*" component.Tile
 component.TileMap "0..*" o-right- "0..*" component.InteractableTile
 component.TileWalker -right-> component.TileMap
 component.TileWalker --> gameObject.Transform
-tilemap.TileMapData "1" *-- "0..*" tilemap.TilePosition
-tilemap.TileMapData "1" *-up- "0..*" tilemap.TileData
+tilemap.TileMapData "1" --> "0..*" tilemap.TilePosition
+tilemap.TileMapData "1" -up-> "0..*" tilemap.TileData
 tilemap.TileData --> tilemap.InteractType
 component.Tile --> tilemap.TileData
 component.TileMap --> tilemap.TileMapData
 component.TileWalker --> tilemap.TileData
-component.TileWalker *-- tilemap.TilePosition
+component.TileWalker --> tilemap.TilePosition
 ' component.ShelfTile .up.> gameObject.Component
 
 @enduml
