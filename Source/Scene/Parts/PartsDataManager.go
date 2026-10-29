@@ -19,7 +19,7 @@ func RandomPartsFromAll() *game.Part {
 	}
 
 	//重みづけ抽選をしない場合はここで抽選
-	if !Utils.Percent(60) {
+	if !Utils.WithProbability(0.6) {
 		return nil
 	}
 
