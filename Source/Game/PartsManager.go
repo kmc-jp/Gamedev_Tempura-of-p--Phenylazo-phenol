@@ -1,5 +1,7 @@
 package game
 
+import "math/rand"
+
 // パーツ種別
 const (
 	CPU kinds = iota
@@ -108,4 +110,9 @@ func (g *Gamedata) ExtractFoundPartsName() []string {
 		names = append(names, p.Name)
 	}
 	return names
+}
+
+func (p *Part) Score() float32 {
+	s := float32(p.Performance) + float32(p.Performance)*(rand.Float32()-0.5)*0.1
+	return s
 }

@@ -76,6 +76,7 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 	if s.gamedata.State == game.Result_SelectParts {
 		//組み立てに使うパーツを選択
 
+		s.gamedata.Assemble = append(s.gamedata.Assemble, s.gamedata.Found...) //本来はs.gamedata.Partsを追加
 		s.gamedata.State = game.Result_Assembled
 	}
 
@@ -90,6 +91,14 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 	// ベンチマークフェーズ
 	if s.gamedata.State == game.Result_Benchmark {
 
+		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+			var score float32
+			for _, v := range s.gamedata.Assemble {
+				score += v.Score()
+			}
+			fmt.Print("ベンチマーク計測結果", int(score), "\n")
+			s.gamedata.State = game.Result_QuitGame
+		}
 	}
 
 	if s.gamedata.State == game.Result_QuitGame {
