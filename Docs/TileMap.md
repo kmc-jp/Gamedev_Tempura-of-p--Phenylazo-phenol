@@ -4,7 +4,7 @@
 
 タイルの初期配置情報
 要はどこに何のタイルがあるか
-- map[TilePosition]Tile
+- map[TilePosition]*TileData
 
 ## tilemap.TilePosition
 
@@ -13,7 +13,7 @@
     Position Utils.Vec2Int
     Layer    string
     // 標準座標からずらしたい場合
-    Offset   Utils.Vec2Int
+    Offset   Utils.Vec2
 }
 
 ## tilemap.TileData
@@ -26,7 +26,8 @@
 タイルの配置位置に関する情報
 初期配置・進入可否についても担当
 
-### New(mapdata tilemap.TileData)
+### NewTileMap(mapdata tilemap.TileMapData)
+
 - Tileを大量生成する
 
 ## Component.Tile

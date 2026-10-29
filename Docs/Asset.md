@@ -11,7 +11,7 @@
 
 ## 実装
 
-### AssetManager
+### AssetsManager
 - 利用側末端
 - キーとパスの接続をやる
 
