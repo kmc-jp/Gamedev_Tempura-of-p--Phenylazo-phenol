@@ -61,6 +61,8 @@ const (
 	Train_Default
 
 	Result_Default
+	Result_Assembled
+	Result_Benchmark
 )
 
 type state uint
