@@ -41,6 +41,12 @@ winget install GoLang.Go
 #### ebitengine
 https://ebitengine.org/en/documents/install.html?os=windows
 
+### 実行方法
+
+ルートディレクトリで
+```
+go run .
+```
 
 ### フォルダ構成
 
