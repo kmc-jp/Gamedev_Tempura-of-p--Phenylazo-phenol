@@ -22,7 +22,12 @@
 
 - Golang
 - ebitengine : ゲームエンジン
-- asepriteをどうにかして読むパッケージ
+- goaseprite : asepriteを読むパッケージ
+  - https://github.com/solarlune/goaseprite
+- toml : tomlを読むパッケージ
+  - https://github.com/BurntSushi/toml
+- ebitengine-input : Godotライクな入力システム
+  - https://github.com/quasilyte/ebitengine-input
 
 ### 環境構築
 
