@@ -127,6 +127,14 @@ func (g *Gamedata) ExtractFoundPartsName() []string {
 	return names
 }
 
+func (g *Gamedata) ExtractAssemblePartsName() []string {
+	var names []string
+	for _, p := range g.Assemble {
+		names = append(names, p.Name)
+	}
+	return names
+}
+
 func (p *Part) Score() float32 {
 	s := float32(p.Performance) + float32(p.Performance)*(rand.Float32()-0.5)*0.1
 	return s
