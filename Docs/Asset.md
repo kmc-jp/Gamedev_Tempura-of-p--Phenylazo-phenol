@@ -1,10 +1,10 @@
 # アセット読み込み周り
 
 ## 規約
-- アセットは /Asset 配下に入れる
-  - 絵は /Asset/Images
-  - 音は /Asset/Sounds
-  - シリアライズは /Asset/Serialize
+- アセットは /Assets 配下に入れる
+  - 絵は /Assets/Images
+  - 音は /Assets/Sounds
+  - シリアライズは /Assets/Serialize
   - 設定ファイルは場所未定
 - アセットは不変であることを前提とする
   - 要するに実行中に増えたり減ったりしない
