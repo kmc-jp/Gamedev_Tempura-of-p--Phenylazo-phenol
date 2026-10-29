@@ -8,8 +8,10 @@ const (
 	GPU
 	RAM
 
-	//ここより上に定義、const hogePartsKind も要更新 ↓ .
+	//ここより上に定義、const hogePartsKind と AvailableParts も要更新 ↓ .
 	Others
+
+	//ここより上に任意パーツの定義
 	Trash
 )
 
@@ -17,6 +19,8 @@ const (
 	AvailablePartsKind = 3 // 有効なパーツ種の数
 	ArbitraryPartsKind = 0 // 任意のパーツ種の数
 )
+
+var AvailableParts = [AvailablePartsKind]kinds{CPU, GPU, RAM}
 
 type kinds uint
 
