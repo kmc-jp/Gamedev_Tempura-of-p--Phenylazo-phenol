@@ -7,20 +7,23 @@ const (
 	CPU kinds = iota
 	GPU
 	RAM
+	MB
+	Case
 
-	//ここより上に定義、const hogePartsKind と AvailableParts も要更新 ↓ .
-	Others
+	//ここより上に必須パーツの定義、const hogePartsKind と AvailableParts も要更新 ↓ .
+	LED
 
 	//ここより上に任意パーツの定義
 	Trash
+	Others
 )
 
 const (
-	AvailablePartsKind = 3 // 有効なパーツ種の数
-	ArbitraryPartsKind = 0 // 任意のパーツ種の数
+	AvailablePartsKind = 5 // 有効なパーツ種の数
+	ArbitraryPartsKind = 1 // 任意のパーツ種の数
 )
 
-var AvailableParts = [AvailablePartsKind]kinds{CPU, GPU, RAM}
+var AvailableParts = [AvailablePartsKind]kinds{CPU, GPU, RAM, MB, Case}
 
 type kinds uint
 
