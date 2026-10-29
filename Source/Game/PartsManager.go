@@ -138,3 +138,25 @@ func (pts Parts) Contain(k kinds) (int, bool) {
 	}
 	return -1, false
 }
+
+func (pts Parts) Enough() ([]uint, bool) {
+	l := AvailableParts
+	var lack []uint
+	var enough bool = true
+	for _, p := range pts {
+		if p.Kind >= AvailablePartsKind {
+			continue
+		} else {
+			l[p.Kind] = AvailablePartsKind + ArbitraryPartsKind + 1
+		}
+	}
+	for i, v := range l {
+		if v == AvailablePartsKind+ArbitraryPartsKind+1 {
+			continue
+		} else {
+			lack = append(lack, uint(i))
+			enough = false
+		}
+	}
+	return lack, enough
+}
