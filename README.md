@@ -43,41 +43,62 @@ https://ebitengine.org/en/documents/install.html?os=windows
 全ファイル書く必要はないけど何してるディレクトリか分かるようにすべし
 
 ```
-/
-├── Assets
-│   ├── Images
-│   ├── Serialize
-│   └── Sounds
-├── Docs
-├── Source
-│   ├── Assets
-│   │   ├── アセット読み込み周り
-│   │   ├── Image
-│   │   |    └── 画像読み込み
-│   │   └── Serialize
-│   │   　   ├── シリアライズ系読み込み
-│   │   　   └── SerializeTarget : シリアライズ対象 struct が書いてある
-│   ├── Construct
-│   │   └── 諸々の初期構築周りをやる
-│   ├── Game
-│   │   └── ebiten.Game とシーン管理
-│   ├── GameObject
-│   │   ├── PlayScene の GameObject 周り
-│   │   └── Component
-│   │   　   └── 各種コンポーネント
-│   ├── Scene
-│   │   ├── シーン内の管理諸々
-│   │   └── SceneTransitionType
-│   │   　   └── シーン遷移パターンを定義
-│   ├── TileMap
-│   │   └── PlayScene の TileMap 周りの定義
-│   └── Utils
-│   　   ├──Color
-│   　   │   └── 色関係の定義
-│   　   └── ユーティリティ
+.
+├── Assets/
+│   ├── Fonts/
+│   │   └── Noto_Sans_JP/
+│   ├── Images/
+│   │   └── 主にAsepriteのpngとjson
+│   ├── Serialize/
+│   │   └── 設定ファイル群
+│   └── Sounds/
+│       └── snd
+├── Docs/
+│   └── 各種ドキュメント
+├── Source/
+│   ├── Assets/
+│   │   ├── Image/
+│   │   │   └── 画像インポート系
+│   │   ├── Serialize/
+│   │   │   ├── SerializeTarget/
+│   │   │   │   └── 直接シリアライズされる struct たち
+│   │   │   └── Tomlのデシリアライズ系
+│   │   └── AssetsManager.go
+│   ├── Construct/
+│   │   └── 構築系
+│   ├── Game/
+│   │   ├── Game.go
+│   │   ├── Gamedata.go
+│   │   ├── PartsManager.go
+│   │   └── Scene.go
+│   ├── GameObject/
+│   │   ├── Component/
+│   │   │   └── 各種コンポーネント実装
+│   │   ├── Component.go
+│   │   ├── GameObject.go
+│   │   ├── Render.go
+│   │   └── Transform.go
+│   ├── InputConfig/
+│   │   └── 入力系
+│   ├── Scene/
+│   │   ├── Parts/
+│   │   │   └── パーツ類
+│   │   ├── SceneTransitionType/
+│   │   │   └── シーン遷移スタイル
+│   │   └── シーン実装 + Component向け定義
+│   ├── TileMap/
+│   │   └── タイルマップ汎用実装
+│   ├── UI/
+│   │   └── UI汎用実装
+│   └── Utils/
+│       ├── Color/
+│       │   └── 色
+│       ├── Tick/
+│       │   └── タイマー
+│       └── その他ユーティリティ
 ├── go.mod
 ├── go.sum
-├── LISENCE
+├── LICENCE
 ├── main.go
 └── README.md
 ```
