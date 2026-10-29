@@ -81,6 +81,7 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 			}
 			nextScene.gamedata = s.gamedata
 			nextScene.gamedata.ForNewScene(game.Title_Default)
+			nextScene.gamedata.ResetGame()
 			nextScene.initScenes = s.initScenes
 			return nextScene, nil
 		}, transition.NewScene(), nil
