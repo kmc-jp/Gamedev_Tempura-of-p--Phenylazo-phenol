@@ -35,6 +35,8 @@ type Part struct {
 	Performance int
 }
 
+type Parts []*Part
+
 func NewPart() *Part {
 	return &Part{}
 }

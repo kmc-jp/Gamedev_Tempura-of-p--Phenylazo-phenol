@@ -35,13 +35,13 @@ type Gamedata struct {
 	Money int
 
 	//所持品
-	Parts []*Part
+	Parts Parts
 
 	//発見した品
-	Found []*Part
+	Found Parts
 
 	// 組み立てに使うパーツ
-	Assemble []*Part
+	Assemble Parts
 }
 
 // Gamedata初期値
