@@ -35,10 +35,13 @@ type Gamedata struct {
 	Money int
 
 	//所持品
-	Parts []*Part
+	Parts Parts
 
 	//発見した品
-	Found []*Part
+	Found Parts
+
+	// 組み立てに使うパーツ
+	Assemble Parts
 }
 
 // Gamedata初期値
@@ -60,7 +63,10 @@ const (
 
 	Train_Default
 
-	Result_Default
+	Result_SelectParts
+	Result_Assembled
+	Result_Benchmark
+	Result_QuitGame
 )
 
 type state uint
@@ -81,6 +87,7 @@ func (g *Gamedata) ForNewScene(state state) {
 func (g *Gamedata) ResetGame() {
 	g.Parts = []*Part{}
 	g.Found = []*Part{}
+	g.Assemble = []*Part{}
 	g.Weight = InitialWeight
 	g.Money = InitialMoney
 }

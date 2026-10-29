@@ -1,14 +1,29 @@
 package game
 
+import "math/rand"
+
 // パーツ種別
 const (
 	CPU kinds = iota
 	GPU
 	RAM
+	MB
+	Case
 
-	Others
+	//ここより上に必須パーツの定義、const hogePartsKind と AvailableParts も要更新 ↓ .
+	LED
+
+	//ここより上に任意パーツの定義
 	Trash
+	Others
 )
+
+const (
+	AvailablePartsKind = 5 // 有効なパーツ種の数
+	ArbitraryPartsKind = 1 // 任意のパーツ種の数
+)
+
+var AvailableParts = [AvailablePartsKind]kinds{CPU, GPU, RAM, MB, Case}
 
 type kinds uint
 
@@ -32,6 +47,8 @@ type Part struct {
 	Rank        rank
 	Performance int
 }
+
+type Parts []*Part
 
 func NewPart() *Part {
 	return &Part{}
@@ -108,4 +125,49 @@ func (g *Gamedata) ExtractFoundPartsName() []string {
 		names = append(names, p.Name)
 	}
 	return names
+}
+
+func (g *Gamedata) ExtractAssemblePartsName() []string {
+	var names []string
+	for _, p := range g.Assemble {
+		names = append(names, p.Name)
+	}
+	return names
+}
+
+func (p *Part) Score() float32 {
+	s := float32(p.Performance) + float32(p.Performance)*(rand.Float32()-0.5)*0.1
+	return s
+}
+
+// 種類kのパーツを含むならindexとtrue, 含まないなら-1とfalseを返す
+func (pts Parts) Contain(k kinds) (int, bool) {
+	for i, p := range pts {
+		if p.Kind == k {
+			return i, true
+		}
+	}
+	return -1, false
+}
+
+func (pts Parts) Enough() ([]uint, bool) {
+	l := AvailableParts
+	var lack []uint
+	var enough bool = true
+	for _, p := range pts {
+		if p.Kind >= AvailablePartsKind {
+			continue
+		} else {
+			l[p.Kind] = AvailablePartsKind + ArbitraryPartsKind + 1
+		}
+	}
+	for i, v := range l {
+		if v == AvailablePartsKind+ArbitraryPartsKind+1 {
+			continue
+		} else {
+			lack = append(lack, uint(i))
+			enough = false
+		}
+	}
+	return lack, enough
 }
