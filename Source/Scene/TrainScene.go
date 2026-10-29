@@ -94,7 +94,7 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 				return nil, err
 			}
 			resultScene.gamedata = s.gamedata
-			resultScene.gamedata.ForNewScene(game.Result_Default)
+			resultScene.gamedata.ForNewScene(game.Result_SelectParts)
 			resultScene.initScenes = s.initScenes
 			return resultScene, nil
 		}, transition.NewScene(), nil

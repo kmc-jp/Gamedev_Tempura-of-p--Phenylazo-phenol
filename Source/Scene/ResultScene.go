@@ -73,18 +73,49 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 		entity.Update(active)
 	}
 
-	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
-		return func() (game.Scene, error) {
-			nextScene, err := s.initScenes.InitTitleScene()
-			if err != nil {
-				return nil, err
+	if s.gamedata.State == game.Result_SelectParts {
+		//組み立てに使うパーツを選択
+
+		s.gamedata.Assemble = append(s.gamedata.Assemble, s.gamedata.Found...) //本来はs.gamedata.Partsを追加
+		s.gamedata.State = game.Result_Assembled
+	}
+
+	// 組み立てPC観察フェーズ
+	if s.gamedata.State == game.Result_Assembled {
+		//所持パーツをもとに利用する絵を決定
+		//完成PCを表示
+
+		s.gamedata.State = game.Result_Benchmark
+	}
+
+	// ベンチマークフェーズ
+	if s.gamedata.State == game.Result_Benchmark {
+
+		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+			var score float32
+			for _, v := range s.gamedata.Assemble {
+				score += v.Score()
 			}
-			nextScene.gamedata = s.gamedata
-			nextScene.gamedata.ForNewScene(game.Title_Default)
-			nextScene.gamedata.ResetGame()
-			nextScene.initScenes = s.initScenes
-			return nextScene, nil
-		}, transition.NewScene(), nil
+			fmt.Print("ベンチマーク計測結果", int(score), "\n")
+			s.gamedata.State = game.Result_QuitGame
+		}
+	}
+
+	if s.gamedata.State == game.Result_QuitGame {
+
+		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+			return func() (game.Scene, error) {
+				nextScene, err := s.initScenes.InitTitleScene()
+				if err != nil {
+					return nil, err
+				}
+				nextScene.gamedata = s.gamedata
+				nextScene.gamedata.ForNewScene(game.Title_Default)
+				nextScene.gamedata.ResetGame()
+				nextScene.initScenes = s.initScenes
+				return nextScene, nil
+			}, transition.NewScene(), nil
+		}
 	}
 
 	return
