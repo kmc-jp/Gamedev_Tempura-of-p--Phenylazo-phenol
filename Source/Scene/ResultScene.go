@@ -98,6 +98,7 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 			}
 			fmt.Print("ベンチマーク計測結果", int(score), "\n")
 			s.gamedata.State = game.Result_QuitGame
+			return
 		}
 	}
 
