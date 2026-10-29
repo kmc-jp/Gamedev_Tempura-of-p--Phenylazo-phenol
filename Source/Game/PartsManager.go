@@ -118,3 +118,13 @@ func (p *Part) Score() float32 {
 	s := float32(p.Performance) + float32(p.Performance)*(rand.Float32()-0.5)*0.1
 	return s
 }
+
+// 種類kのパーツを含むならindexとtrue, 含まないなら-1とfalseを返す
+func (pts Parts) Contain(k kinds) (int, bool) {
+	for i, p := range pts {
+		if p.Kind == k {
+			return i, true
+		}
+	}
+	return -1, false
+}
