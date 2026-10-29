@@ -22,7 +22,7 @@
 受け取った objects の中身を描画する
 画面中心は center に合わせる
 
-### Entity.Render.Draw() (image *ebiten.Image) に期待すること
+### Entity.Draw() (image *ebiten.Image) に期待すること
 適切なサイズの画像を描いて返してくること
 
 ## scene.Camera.SetCenter(center)
@@ -31,11 +31,12 @@
 
 ## GameObject.Draw() (image *ebiten.Image)
 自分の画像を返す
+(実装はRenderが持っている)
 
 ## scene.UICamera.Draw(screen *ebiten.Image, elements []Element) : WorldRender
 
 ### やること
 受け取った elements の中身の .Draw() を呼ぶ
 
-### Element.Render.Draw(image *ebiten.Image) に期待すること
+### Element.Draw(image *ebiten.Image) に期待すること
 いい感じの場所に自分のUIを設置すること
