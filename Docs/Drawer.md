@@ -16,7 +16,7 @@
 - WorldDrawer に Entity の描画を委譲する
 - UIDrawer に Element の描画を委譲する
 
-## scene.Camera.Draw(screen *ebiten.Image, objects []Entity) : WorldRender
+## scene.Camera.Draw(screen *ebiten.Image, objects []Entity) : WorldDrawer
 
 ### やること
 受け取った objects の中身を描画する
@@ -33,7 +33,7 @@
 自分の画像を返す
 (実装はRenderが持っている)
 
-## scene.UICamera.Draw(screen *ebiten.Image, elements []Element) : WorldRender
+## scene.UICamera.Draw(screen *ebiten.Image, elements []Element) : UIDrawer
 
 ### やること
 受け取った elements の中身の .Draw() を呼ぶ
