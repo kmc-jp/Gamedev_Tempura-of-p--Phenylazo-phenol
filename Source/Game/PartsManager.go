@@ -8,8 +8,14 @@ const (
 	GPU
 	RAM
 
+	//ここより上に定義、const hogePartsKind も要更新 ↓ .
 	Others
 	Trash
+)
+
+const (
+	AvailablePartsKind = 3 // 有効なパーツ種の数
+	ArbitraryPartsKind = 0 // 任意のパーツ種の数
 )
 
 type kinds uint
