@@ -1,116 +1,109 @@
 @startuml TileMap_class_diagram
-package scene {
-    class PlayScene {
-        - objects []Entity
-        - drawer Drawer
-        + NewPlayScene() Utils.Factory[PlayScene]
-        + Name() string
-        + Update(active bool) (nextScene Utils.Factory[Scene], transitionType transition.Type, err error)
-        + Draw(screen *ebiten.Image)
-    }
 
-    PlayScene "1" *-- "0..*" Entity
-
-    interface Entity {
-        + Name() string
-        + Update(active bool) (err error)
-        + Draw() (image *ebiten.Image)
-        + Position() Utils.Position
-    }
-}
+top to bottom direction
 
 package gameObject {
-    class HogeTile {
-        + Update(active bool) (err error)
-    }
-
-    HogeTile -up-|> scene.Entity
-    
-    HogeTile *-- Transform
-    HogeTile *-- Render
-    HogeTile "1" *-- "0..*" Component1
-
-    class TileMapManager {
-        + Update(active bool) (err error)
-    }
-
-    TileMapManager -up-|> scene.Entity
-    
-    TileMapManager *-- Transform
-    TileMapManager *-- Render
-    TileMapManager "1" *-- "0..*" Component2
-
-    class TileMapWalkPlayer {
-        + Update(active bool) (err error)
-    }
-
-    TileMapWalkPlayer -up-|> scene.Entity
-    
-    TileMapWalkPlayer *-- Transform
-    TileMapWalkPlayer *-- Render
-    TileMapWalkPlayer "1" *-- "0..*" Component3
-
-
     interface Transform {
+        + Position() Utils.Position
+        + SetPosition(Utils.Position)
     }
 
-    interface Render {
-    }
-
-    interface "Component" as Component1 {
-        + Update(obj GameObject, active bool) (err error)
-    }
-
-    interface "Component" as Component2 {
-        + Update(obj GameObject, active bool) (err error)
-    }
-
-    interface "Component" as Component3 {
-        + Update(obj GameObject, active bool) (err error)
+    interface Component {
+        + Update(active bool) error
     }
 }
 
-package Component {
-    class Tile {
-        - Position TileTransform // タイルの位置
-        + GameObject *gameObject.GameObject
-        + NewTileComponent(obj GameObject) Utils.Factory[Tile]
-        + Update(obj GameObject, active bool) (err error)
+package tilemap {
+    class TileData {
+        + Name string
+        + ImageData imageassets.ImageData
+        + Layer string
+        + Size Utils.Vec2Int
+        + Interact InteractType
     }
-    note bottom of Tile : タイル一つの情報を保持
 
+    enum InteractType {
+        None
+        Shelf
+    }
 
-    Tile -up-|> gameObject.Component1
+    class TileMapData {
+        + MapData map[TilePosition]*TileData
+        + TileSize Utils.Vec2Int
+        + Enterable map[Utils.Vec2Int]bool
+    }
+
+    class TilePosition {
+        + Position Utils.Vec2Int
+        + Layer string
+        + Offset Utils.Vec2
+        + Move(Direction Utils.Vec2Int)
+    }
+}
+
+package component {
+    class Tile {
+        + Data tilemap.TileData
+        + Update(active bool) error
+    }
 
     class TileMap {
-        - Tiles []*Tile // タイルの一覧を保持
-        - TileSize Vector // タイルの大きさを保持
-        + GameObject *gameObject.GameObject
-        + NewTileComponent(obj GameObject) Utils.Factory[Tile]
-        + Update(obj GameObject, active bool) (err error)
+        + Tiles map[tilemap.TilePosition]*Tile
+        + TileSize Utils.Vec2Int
+        + Enterable map[Utils.Vec2Int]bool
+        + Interact map[Utils.Vec2Int]InteractableTile
+        + Update(active bool) error
+        + SetGameObject(...)
+        + TilePositionToWorldPosition(pos tilemap.TilePosition, data tilemap.TileData) Utils.Position
     }
-    note bottom of TileMap : タイルマップ全体の設定を保持
 
-    TileMap -up-|> gameObject.Component2
-
-    class TileMapWalker {
-        + GameObject *gameObject.GameObject
-        + NewTileComponent(obj GameObject) Utils.Factory[Tile]
-        + Update(obj GameObject, active bool) (err error)
+    class TileWalker {
+        + Data tilemap.TileData
+        + Position tilemap.TilePosition
+        - tf gameobject.Transform
+        - tm *TileMap
+        + Update(active bool) error
+        + Move(Direction Utils.Vec2Int)
     }
-    note bottom of TileMapWalker : タイルマップ上を動くエンティティの情報を保持
 
-    TileMapWalker -up-|> gameObject.Component3
+    interface InteractableTile {
+        + Interact() error
+        + Update(active bool) error
+    }
+
+    class ShelfTile {
+        + Interact() error
+        + Update(active bool) error
+    }
 
     class StdTransform {
+        - position Utils.Position
+        + Position() Utils.Position
+        + SetPosition(pos Utils.Position)
     }
 
-    StdTransform -up-|> gameObject.Transform
-
-    class StdRender {
-    }
-
-    StdRender -up-|> gameObject.Render
 }
+
+' Inheritance and implementation
+component.Tile .up.|> gameObject.Component
+component.TileMap .up.|> gameObject.Component
+component.TileWalker .up.|> gameObject.Component
+component.InteractableTile .up.|> gameObject.Component
+component.ShelfTile .up.|> component.InteractableTile
+component.StdTransform .up.|> gameObject.Transform
+
+' Composition and references
+component.TileMap "1" *-- "0..*" component.Tile
+component.TileMap "0..*" o-right- "0..*" component.InteractableTile
+component.TileWalker -right-> component.TileMap
+component.TileWalker --> gameObject.Transform
+tilemap.TileMapData "1" *-- "0..*" tilemap.TilePosition
+tilemap.TileMapData "1" *-up- "0..*" tilemap.TileData
+tilemap.TileData --> tilemap.InteractType
+component.Tile --> tilemap.TileData
+component.TileMap --> tilemap.TileMapData
+component.TileWalker --> tilemap.TileData
+component.TileWalker *-- tilemap.TilePosition
+' component.ShelfTile .up.> gameObject.Component
 
 @enduml
