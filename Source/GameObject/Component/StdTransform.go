@@ -25,5 +25,4 @@ func NewStdTransform(position Utils.Position) Utils.Factory[*StdTransform] {
 }
 
 // test
-var _ Utils.Factory[*StdTransform] = NewStdTransform(Utils.Position{})
 var _ gameobject.Transform = &StdTransform{}

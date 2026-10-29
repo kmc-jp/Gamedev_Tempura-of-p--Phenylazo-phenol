@@ -9,7 +9,9 @@ import (
 	component "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject/Component"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	tilemap "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/TileMap"
+	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
 	"reflect"
 
@@ -19,71 +21,61 @@ import (
 )
 
 // とりあえず PlayScene を組み立てる
-func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata) Utils.Factory[*scene.PlayScene] {
-	// カメラ設定
-	DrawerFactory, err := MakeDrawerFactory(assetsManager)
-	if err != nil {
-		return func() (*scene.PlayScene, error) {
+func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata, initScenes *scene.InitializedScenes) Utils.Factory[*scene.PlayScene] {
+	return func() (*scene.PlayScene, error) {
+		// カメラ設定
+		WorldDrawerFactory, err := MakeWorldDrawerFactory(assetsManager)
+		if err != nil {
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
-	}
 
-	playscene, err := scene.NewPlayScene(DrawerFactory, inputHandler, gdata)()
-	if err != nil {
-		return func() (*scene.PlayScene, error) {
+		// UIカメラ
+		UIDrawerFactory, err := MakeUIDrawerFactory()
+		if err != nil {
+			return nil, fmt.Errorf("MakeUIDrawerFactory() でエラーが発生しました。\n%w", err)
+		}
+
+		playscene, err := scene.NewPlayScene(WorldDrawerFactory, UIDrawerFactory, inputHandler, gdata, initScenes)()
+		if err != nil {
 			return nil, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
 		}
-	}
 
-	// タイルマップ
-	tilemapobj, err := MakeTileMapObj(assetsManager, playscene)
-	if err != nil {
-		return func() (*scene.PlayScene, error) {
+		// UI
+		text, err := ui.NewGameDataText(
+			Utils.Position{X: 0, Y: 0},
+			color.Red(),
+			gdata,
+			func(g game.Gamedata) string {
+				return fmt.Sprintf("探索フェーズ 残り時間: %s", g.Text)
+			},
+			ui.FontFace(gdata.Font, 15),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
+		}
+		playscene.AddUIElement(text)
+
+		// タイルマップ
+		tilemapobj, err := MakeTileMapObj(assetsManager, playscene)
+		if err != nil {
 			return nil, fmt.Errorf("MakeTileMapObj(assetsManager, playscene) でエラーが発生しました。\n%w", err)
 		}
-	}
-	playscene.AddEntity(tilemapobj)
+		playscene.AddEntity(tilemapobj)
 
-	// Player を設置 (タイルマップ情報が必要)
-	TMC, err := tilemapobj.GetComponent(reflect.TypeFor[*component.TileMap]())
-	if err != nil {
-		return func() (*scene.PlayScene, error) {
+		// Player を設置 (タイルマップ情報が必要)
+		TMC, err := tilemapobj.GetComponent(reflect.TypeFor[*component.TileMap]())
+		if err != nil {
 			return nil, fmt.Errorf("tilemapobj.GetComponent(reflect.TypeFor[*component.TileMap]()) でエラーが発生しました。\n%w", err)
 		}
-	}
-	TM := TMC.(*component.TileMap)
-	plobj, err := MakePlayer(assetsManager, playscene, TM)
-	if err != nil {
-		return func() (*scene.PlayScene, error) {
+		TM := TMC.(*component.TileMap)
+		plobj, err := MakePlayer(assetsManager, playscene, TM)
+		if err != nil {
 			return nil, fmt.Errorf("MakePlayer(assetsManager, playscene) でエラーが発生しました。\n%w", err)
 		}
-	}
-	playscene.AddEntity(plobj)
+		playscene.AddEntity(plobj)
 
-	return func() (*scene.PlayScene, error) {
 		return playscene, nil
 	}
-}
-
-// カメラ設定
-func MakeDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[scene.Drawer], error) {
-	cameraConfigData, err := serialize.NewSerializeData("CameraConfig", reflect.TypeFor[serializetarget.CameraConfig](), "CameraConfig.toml", assetsManager.Serialize)
-	if err != nil {
-		return nil, fmt.Errorf("serialize.NewSerializeData(\"CameraConfig\", reflect.TypeFor[serializetarget.CameraConfig](), \"CameraConfig.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
-	}
-	cameraConfigAny, err := assetsManager.Serialize.Load(*cameraConfigData)
-	if err != nil {
-		return nil, fmt.Errorf("assetsManager.Serialize.Load(*cameraConfigData) でエラーが発生しました。\n%w", err)
-	}
-
-	cameraConfig := cameraConfigAny.(serializetarget.CameraConfig)
-	cameraFactory, err := cameraConfig.Construct()
-	if err != nil {
-		return nil, fmt.Errorf("cameraConfig.Construct() でエラーが発生しました。\n%w", err)
-	}
-
-	DrawerFactory := Utils.CastFactory[*scene.Camera, scene.Drawer](cameraFactory.(Utils.Factory[*scene.Camera]))
-	return DrawerFactory, nil
 }
 
 // タイルマップ設定

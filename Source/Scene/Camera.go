@@ -22,7 +22,7 @@ type drawImage struct {
 	option *ebiten.DrawImageOptions
 }
 
-// Draw implements [Drawer].
+// Draw implements [WorldDrawer].
 func (c Camera) Draw(screen *ebiten.Image, objects []Entity) {
 	scSize := screen.Bounds().Size()
 	images := make([][]drawImage, c.layerCount)
@@ -61,7 +61,7 @@ func (c *Camera) SetCenter(center Utils.Position) {
 	c.center = center
 }
 
-var _ Drawer = &Camera{}
+var _ WorldDrawer = &Camera{}
 
 type kvp struct {
 	key   string
@@ -69,13 +69,11 @@ type kvp struct {
 }
 
 func NewCamera(layers map[string]int) Utils.Factory[*Camera] {
-	layers, err := compressValues(layers)
-	if err != nil {
-		return func() (*Camera, error) {
+	return func() (*Camera, error) {
+		layers, err := compressValues(layers)
+		if err != nil {
 			return nil, fmt.Errorf("compressValues(layers) でエラーが発生しました。,%w", err)
 		}
-	}
-	return func() (*Camera, error) {
 		return &Camera{
 			center:     Utils.Position{},
 			layers:     layers,

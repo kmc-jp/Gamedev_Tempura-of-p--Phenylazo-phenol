@@ -9,8 +9,10 @@ import (
 )
 
 type TileMap struct {
-	Tiles    map[tilemap.TilePosition]*Tile
-	TileSize Utils.Vec2
+	Tiles     map[tilemap.TilePosition]*Tile
+	TileSize  Utils.Vec2Int
+	Enterable map[Utils.Vec2Int]bool // 何も入ってなければ進入可能
+	Interact  map[Utils.Vec2Int]InteractableTile
 }
 
 // test
@@ -22,30 +24,30 @@ func (h TileMap) Update(active bool) (err error) {
 }
 
 func NewTileMap(mapdata tilemap.TileMapData) Utils.Factory[*TileMap] {
-	c := len(mapdata.MapData)
-	tilelist := make(map[tilemap.TilePosition]*Tile, c)
+	return func() (*TileMap, error) {
+		c := len(mapdata.MapData)
+		tilelist := make(map[tilemap.TilePosition]*Tile, c)
 
-	for pos, tile := range mapdata.MapData {
-		t, err := NewTile(*tile)()
-		if err != nil {
-			return func() (*TileMap, error) {
+		for pos, tile := range mapdata.MapData {
+			t, err := NewTile(*tile)()
+			if err != nil {
 				return nil, fmt.Errorf("NewTile() でエラーが発生しました。\n%w", err)
 			}
-		}
 
-		// tilelist に登録
-		tilelist[pos] = t
-	}
-	t := TileMap{
-		Tiles:    tilelist,
-		TileSize: mapdata.TileSize,
-	}
-	return func() (*TileMap, error) {
+			// tilelist に登録
+			tilelist[pos] = t
+		}
+		t := TileMap{
+			Tiles:     tilelist,
+			TileSize:  mapdata.TileSize,
+			Enterable: mapdata.Enterable,
+			Interact:  map[Utils.Vec2Int]InteractableTile{},
+		}
 		return &t, nil
 	}
 }
 
-func (tm TileMap) SetGameObject(
+func (tm *TileMap) SetGameObject(
 	scene *scene.PlayScene,
 	NewTileObj func(
 		name string,
@@ -69,7 +71,7 @@ func (tm TileMap) SetGameObject(
 		name := fmt.Sprintf("%s%d", data.Name, i+1)
 
 		// 位置
-		position := tm.TilePositionToWorldPosition(pos)
+		position := tm.TilePositionToWorldPosition(pos, data)
 		transformFactry := NewTransform(position)
 
 		// レイヤー
@@ -83,11 +85,31 @@ func (tm TileMap) SetGameObject(
 
 		scene.AddEntity(obj)
 
+		// 干渉可能タイル設定
+		Interact, err := InteractiveTiles(data.Interact)
+		if err != nil {
+			return fmt.Errorf("InteractiveTiles(data.Interact) でエラーが発生しました。\ndata.Interact = %d\n%w", data.Interact, err)
+		}
+		if Interact != nil {
+			ic, err := Interact()
+			if err != nil {
+				return fmt.Errorf("Interact() でエラーが発生しました。\ndata.Interact = %d\n%w", data.Interact, err)
+			}
+			obj.AddComponent(ic)
+			tm.Interact[pos.Position] = ic
+		}
+
 		// fmt.Printf("Tile %s が追加されました。\n", obj.Name())
 	}
 	return nil
 }
 
-func (tm TileMap) TilePositionToWorldPosition(pos tilemap.TilePosition) Utils.Position {
-	return pos.ToPosition().PtoV().HadamardProd(tm.TileSize).VtoP()
+func (tm TileMap) TilePositionToWorldPosition(pos tilemap.TilePosition, data tilemap.TileData) Utils.Position {
+	tileposf := pos.Position.ToVec2()
+	sizeoffset := data.Size.Sub(Utils.NewVecIntOne()).ToVec2().HadamardDiv(data.Size.ToVec2())
+	to := tileposf.Add(sizeoffset).HadamardProd(tm.TileSize.ToVec2()).Add(pos.Offset)
+	// if data.Size != Utils.NewVecIntOne() {
+	// 	fmt.Printf("TilePositionToWorldPosition\npos %d -> size %d -> %f\ntileposf = %f, pos.Offset = %f, sizeoffset = %f", pos.Position, data.Size, to.HadamardDiv(tm.TileSize.ToVec2()), tileposf, pos.Offset, sizeoffset)
+	// }
+	return to.VtoP()
 }

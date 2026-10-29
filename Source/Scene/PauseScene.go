@@ -1,0 +1,94 @@
+package scene
+
+import (
+	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
+	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
+	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
+	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+	"fmt"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	input "github.com/quasilyte/ebitengine-input"
+)
+
+type PauseScene struct {
+	entities    []Entity
+	worldDrawer WorldDrawer
+
+	elements []Element
+	uiDrawer UIDrawer
+
+	// text        *ui.Text
+	Input      *input.Handler
+	gamedata   *game.Gamedata
+	initScenes *InitializedScenes
+}
+
+func NewPauseScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory[UIDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PauseScene] {
+	return func() (*PauseScene, error) {
+		camera, err := worldDrawer()
+		if err != nil {
+			return &PauseScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
+		}
+		uiCamera, err := uiDrawer()
+		if err != nil {
+			return &PauseScene{}, fmt.Errorf("uiDrawer() でエラーが発生しました。 \n%w", err)
+		}
+
+		ps := PauseScene{
+			entities:    []Entity{},
+			worldDrawer: camera,
+			elements:    []Element{},
+			uiDrawer:    uiCamera,
+			// text:        text,
+			Input:      Input,
+			gamedata:   gdata,
+			initScenes: initScenes,
+		}
+		return &ps, nil
+	}
+}
+
+func (s PauseScene) Name() string {
+	return fmt.Sprintf("%T", s)
+}
+
+func (s *PauseScene) Draw(screen *ebiten.Image) {
+	s.worldDrawer.Draw(screen, s.entities)
+	s.uiDrawer.Draw(screen, s.elements)
+}
+
+func (s *PauseScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
+	if !active {
+		return
+	}
+
+	if s.gamedata.InitialProcess {
+		//シーン起動時処理
+		s.gamedata.InitialProcess = false
+
+	}
+
+	for _, entity := range s.entities {
+		entity.Update(active)
+	}
+
+	// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+	if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
+		return nil, transition.Pop(), nil
+	}
+
+	return
+}
+
+func (s *PauseScene) AddEntity(e Entity) {
+	s.entities = append(s.entities, e)
+}
+
+func (s *PauseScene) AddUIElement(e Element) {
+	s.elements = append(s.elements, e)
+}
+
+func (s PauseScene) SetCameraCenter(center Utils.Position) {
+	s.worldDrawer.SetCenter(center)
+}

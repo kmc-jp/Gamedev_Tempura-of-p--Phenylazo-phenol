@@ -2,9 +2,12 @@ package scene
 
 import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
+	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
+	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	input "github.com/quasilyte/ebitengine-input"
@@ -12,29 +15,40 @@ import (
 
 // メインの遊べるシーン
 type PlayScene struct {
-	entities []Entity
-	drawer   Drawer
-	Input    *input.Handler
-	gamedata *game.Gamedata
+	entities    []Entity
+	worldDrawer WorldDrawer
+
+	elements []Element
+	uiDrawer UIDrawer
+
+	// text       *ui.Text
+	Input      *input.Handler
+	Gamedata   *game.Gamedata
+	initScenes *InitializedScenes
 	// テスト用
 	cameraCenter Utils.Position
 }
 
-func NewPlayScene(NewDrawer Utils.Factory[Drawer], Input *input.Handler, gdata *game.Gamedata) Utils.Factory[*PlayScene] {
-	camera, err := NewDrawer()
-	if err != nil {
-		return func() (*PlayScene, error) {
+func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory[UIDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PlayScene] {
+	return func() (*PlayScene, error) {
+		camera, err := worldDrawer()
+		if err != nil {
 			return &PlayScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-	}
-	ps := PlayScene{
-		entities: []Entity{},
-		drawer:   camera,
-		Input:    Input,
-		gamedata: gdata,
-	}
-	// なにもしない
-	return func() (*PlayScene, error) {
+		uiCamera, err := uiDrawer()
+		if err != nil {
+			return &PlayScene{}, fmt.Errorf("uiDrawer() でエラーが発生しました。 \n%w", err)
+		}
+		ps := PlayScene{
+			entities:    []Entity{},
+			worldDrawer: camera,
+			elements:    []Element{},
+			uiDrawer:    uiCamera,
+			// text:       text,
+			Input:      Input,
+			Gamedata:   gdata,
+			initScenes: initScenes,
+		}
 		return &ps, nil
 	}
 }
@@ -46,16 +60,94 @@ func (s PlayScene) Name() string {
 
 // Draw implements [Scene].
 func (s PlayScene) Draw(screen *ebiten.Image) {
-	s.drawer.Draw(screen, s.entities)
+	s.worldDrawer.Draw(screen, s.entities)
+	s.uiDrawer.Draw(screen, s.elements)
 }
 
 // Update implements [Scene].
 func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
-	for _, entity := range s.entities {
-		entity.Update(active)
+	if !active {
+		return
 	}
 
-	// 何か軽いテストはここでやりましょう
+	if s.Gamedata.InitialProcess {
+		s.Gamedata.InitialProcess = false
+		s.Gamedata.Text = "10"
+		// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
+
+		s.Gamedata.Timer = tick.NewTimer()
+
+		fmt.Println(s.Gamedata.Timer)
+	}
+
+	if s.Gamedata.State == game.Play_Explore {
+
+		for _, entity := range s.entities {
+			err := entity.Update(active)
+			if err != nil {
+				return nil, transition.None(), fmt.Errorf("%s.Update(%s) でエラーが発生しました。\n%w", entity.Name(), strconv.FormatBool(active), err)
+			}
+		}
+
+		// 何か軽いテストはここでやりましょう
+
+		s.Gamedata.Timer.Set(10)
+
+		//制限時間内プレイ中の制御
+		if cnt := s.Gamedata.Timer.Count(); cnt {
+			num, _ := strconv.Atoi(s.Gamedata.Text)
+			num--
+			s.Gamedata.Text = strconv.Itoa(num)
+
+			if num <= 0 {
+				s.Gamedata.Timer.Set(0)
+				s.Gamedata.State = game.Play_Timeup
+
+				s.Gamedata.Text = "0\nTimeUp 次の店に移動します"
+				// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
+				fmt.Print("みつけたもの\n", s.Gamedata.ExtractFoundPartsName(), "\n")
+			}
+		}
+		// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
+
+		// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+		if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
+			return func() (game.Scene, error) {
+				pauseScene, err := s.initScenes.InitPauseScene()
+				if err != nil {
+					return nil, err
+				}
+				pauseScene.gamedata = s.Gamedata
+				//pauseScene.gamedata.ForNewScene(0)
+				pauseScene.initScenes = s.initScenes
+				return pauseScene, nil
+			}, transition.Push(), nil
+		}
+	}
+
+	//TimeUp後の処理
+	if s.Gamedata.State == game.Play_Timeup {
+		s.Gamedata.Timer.Set(50)
+		if s.Gamedata.Timer.Count() {
+			s.Gamedata.Timer.Set(0)
+			s.Gamedata.State = game.Play_Select
+		}
+		return
+	}
+
+	if s.Gamedata.State == game.Play_Select {
+		return func() (game.Scene, error) {
+			trainScene, err := s.initScenes.InitTrainScene()
+			if err != nil {
+				return nil, err
+			}
+			trainScene.gamedata = s.Gamedata
+			trainScene.gamedata.ForNewScene(game.Train_Default)
+			trainScene.initScenes = s.initScenes
+			return trainScene, nil
+		}, transition.NewScene(), nil
+	}
+
 	return
 }
 
@@ -63,6 +155,10 @@ func (s *PlayScene) AddEntity(e Entity) {
 	s.entities = append(s.entities, e)
 }
 
+func (s *PlayScene) AddUIElement(e Element) {
+	s.elements = append(s.elements, e)
+}
+
 func (s PlayScene) SetCameraCenter(center Utils.Position) {
-	s.drawer.SetCenter(center)
+	s.worldDrawer.SetCenter(center)
 }

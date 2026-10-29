@@ -9,7 +9,7 @@ import (
 
 type TileMapData struct {
 	// タイルサイズ
-	TileSize Utils.Vec2
+	TileSize Utils.Vec2Int
 	// 床のデータ
 	Floor FloorData
 	// 床のレイヤー
@@ -37,20 +37,45 @@ type TileData struct {
 	Name     string
 	JsonPath string
 	PngPath  string
+	Size     Utils.Vec2Int
+	Offset   Utils.Vec2
+	Type     tileType
+}
+
+type tileType int
+
+const (
+	object tileType = iota
+	shelf
+)
+
+// tileTypeのデシリアライズに使えるようにする
+func (tt *tileType) UnmarshalText(text []byte) error {
+	switch string(text) {
+	case "object":
+		*tt = object
+	case "shelf":
+		*tt = shelf
+	case "":
+		*tt = object
+	default:
+		return fmt.Errorf("invalid Hoge value: %s", text)
+	}
+	return nil
 }
 
 type ObjectData struct {
-	Tile  string
-	Layer string
+	Tilekey string `toml:"Tile"`
+	Layer   string
 }
 
 type FloorData struct {
 	// 敷き詰めるデフォルトのタイル
 	Tile string
 	// 敷き詰め領域の左上角
-	UpLeft tilemap.TilePosition
+	UpLeft Utils.Vec2Int
 	// 敷き詰め領域の右下角
-	DownRight tilemap.TilePosition
+	DownRight Utils.Vec2Int
 }
 
 func (tmd *TileMapData) Init(filePath string, imageManager *imageassets.ImageManager) {
@@ -68,17 +93,34 @@ func (tmd TileMapData) Construct() (any, error) {
 	// タイル種別の一覧
 	// レイヤーを入れればタイルがデータが返ってくるようになってる
 	Tiles := map[string](func(layer string) (*tilemap.TileData, error)){}
+	// タイル毎のOffsetの一覧
+	Offsets := map[string]Utils.Vec2{}
 	for tilekey, tiledata := range tmd.TileData {
 		imagedata, err := imageassets.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath, tmd.imageManager)
 		if err != nil {
 			return nil, fmt.Errorf("imageassets.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath, &tmd.imageManager) でエラーが発生しました。\nfilePath: %s, tiledata.Name: %s, tiledata.PngPath: %s, tiledata.JsonPath: %s\n%w", tmd.filePath, tiledata.Name, tiledata.PngPath, tiledata.JsonPath, err)
 		}
-		tile := makeTileData(tiledata.Name, imagedata)
+
+		// タイルサイズのデフォルト値設定
+		tileSize := tiledata.Size
+		if tileSize == Utils.NewVecIntZero() {
+			tileSize = Utils.NewVecIntOne()
+		}
+
+		// 干渉可能設定
+		interactivity, err := Interactivity(tiledata.Type)
+		if err != nil {
+			return nil, fmt.Errorf("Interactivity(tiledata.Type) で失敗しました。\n%w", err)
+		}
+
+		tile := makeTileData(tiledata.Name, imagedata, tileSize, interactivity)
 		Tiles[tilekey] = tile
+		Offsets[tilekey] = tiledata.Offset
 	}
 
 	// マップを組み立てる
 	mapdata := map[tilemap.TilePosition]*tilemap.TileData{}
+	enterabledata := map[Utils.Vec2Int]bool{}
 
 	// 床
 	up := tmd.Floor.UpLeft.Y
@@ -95,7 +137,7 @@ func (tmd TileMapData) Construct() (any, error) {
 			}
 
 			// posを指定
-			pos := tilemap.TilePosition{X: i, Y: j, Layer: tmd.FloorLayer}
+			pos := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: j}, Layer: tmd.FloorLayer, Offset: Offsets[floorKey]}
 
 			// 実際のタイルのデータを生成
 			tileFactory, ok := Tiles[floorKey]
@@ -112,38 +154,57 @@ func (tmd TileMapData) Construct() (any, error) {
 		}
 	}
 
+	// 床以外のオブジェクト
 	for posstr, ObjectData := range tmd.ObjectMap {
 		//　pos の指定
-		pos := tilemap.TilePosition{Layer: ObjectData.Layer}
-		_, err := fmt.Sscanf(posstr, "%d,%d", &pos.X, &pos.Y)
+		posvec := Utils.Vec2Int{}
+		_, err := fmt.Sscanf(posstr, "%d,%d", &posvec.X, &posvec.Y)
 		if err != nil {
 			return nil, fmt.Errorf("MapData のキーが不正です。 \"x,y\" の形式で入力してください。\nfilePath: %s, key: %s\n%w", tmd.filePath, posstr, err)
 		}
+		pos := tilemap.TilePosition{Position: posvec, Layer: ObjectData.Layer, Offset: Offsets[ObjectData.Tilekey]}
 
 		// 実際のタイルのデータを生成
-		tileFactory, ok := Tiles[ObjectData.Tile]
+		tileFactory, ok := Tiles[ObjectData.Tilekey]
 		if !ok {
-			return nil, fmt.Errorf("FloorLayer のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, ObjectData.Tile)
+			return nil, fmt.Errorf("FloorLayer のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, ObjectData.Tilekey)
 		}
 
 		realtiledata, err := tileFactory(ObjectData.Layer)
 		if err != nil {
-			return nil, fmt.Errorf("Object %s の生成に失敗しました。\n%w\n", ObjectData.Tile, err)
+			return nil, fmt.Errorf("Object %s の生成に失敗しました。\n%w\n", ObjectData.Tilekey, err)
 		}
 		mapdata[pos] = realtiledata
+		Size := realtiledata.Size
+		for offset := range Size.Range() {
+			enterabledata[pos.Position.Add(offset)] = false
+		}
 	}
 
 	result := &tilemap.TileMapData{
-		MapData:  mapdata,
-		TileSize: tmd.TileSize,
+		MapData:   mapdata,
+		TileSize:  tmd.TileSize,
+		Enterable: enterabledata,
 	}
 
 	return result, nil
 }
 
 // 部分適用
-func makeTileData(name string, imgData *imageassets.ImageData) func(layer string) (*tilemap.TileData, error) {
+func makeTileData(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType) func(layer string) (*tilemap.TileData, error) {
 	return func(layer string) (*tilemap.TileData, error) {
-		return tilemap.NewTileData(name, imgData, "hogehoge")
+		return tilemap.NewTileData(name, imgData, layer, tileSize, Interact)
+	}
+}
+
+// tileType から干渉可能設定を取り出す関数
+func Interactivity(Type tileType) (tilemap.InteractType, error) {
+	switch Type {
+	case object:
+		return tilemap.None, nil
+	case shelf:
+		return tilemap.Shelf, nil
+	default:
+		return tilemap.None, fmt.Errorf("未設定の tileType です。\ntileType = %d", Type)
 	}
 }
