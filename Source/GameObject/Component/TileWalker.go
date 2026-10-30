@@ -11,6 +11,7 @@ type TileWalker struct {
 	Position tilemap.TilePosition
 	tf       gameobject.Transform
 	tm       *TileMap
+	anim     *AnimRender
 }
 
 // test
@@ -33,13 +34,14 @@ func (w *TileWalker) Move(Direction Utils.Vec2Int) {
 	}
 }
 
-func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition, tf gameobject.Transform, Map *TileMap) Utils.Factory[*TileWalker] {
+func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition, tf gameobject.Transform, Map *TileMap, anim *AnimRender) Utils.Factory[*TileWalker] {
 	return func() (*TileWalker, error) {
 		t := TileWalker{
 			Data:     tiledata,
 			Position: pos,
 			tf:       tf,
 			tm:       Map,
+			anim:     anim,
 		}
 		return &t, nil
 	}
