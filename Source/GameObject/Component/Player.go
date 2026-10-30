@@ -27,7 +27,7 @@ func (p *Player) Update(active bool) (err error) {
 	}
 
 	for _, action := range inputconfig.ActionConstList() {
-		if p.ipt.ActionIsJustPressed(action) {
+		if p.ipt.ActionIsPressed(action) {
 			switch action {
 			case inputconfig.ActionMoveLeft:
 				p.tw.MoveStart(Utils.NewVecIntLeft())
