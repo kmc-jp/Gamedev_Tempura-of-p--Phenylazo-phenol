@@ -119,7 +119,7 @@ func NewCharactor(
 		}
 
 		// TileWalker
-		TW, err := component.NewTileWalker(TileData, position, o.Transform(), TileMap, o.Render().(*component.AnimRender))()
+		TW, err := component.NewTileTeleporter(TileData, position, o.Transform(), TileMap, o.Render().(*component.AnimRender))()
 		if err != nil {
 			return nil, fmt.Errorf("component.NewTileWalker(TileData, position)() でエラーが発生しました。\n%w", err)
 		}

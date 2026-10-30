@@ -14,7 +14,7 @@ import (
 
 type Player struct {
 	ipt   *input.Handler
-	tw    *TileWalker
+	tw    *TileTeleporter
 	dir   Utils.Vec2Int
 	scene *scene.PlayScene
 	anim  *AnimRender
@@ -57,13 +57,13 @@ func (p *Player) Update(active bool) (err error) {
 func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject, anim *AnimRender) Utils.Factory[*Player] {
 	return func() (*Player, error) {
 		// TileWalker を取得
-		tw, err := obj.GetComponent(reflect.TypeFor[*TileWalker]())
+		tw, err := obj.GetComponent(reflect.TypeFor[*TileTeleporter]())
 		if err != nil {
 			return nil, fmt.Errorf("obj.GetComponent(reflect.TypeFor[*TileWalker]()) で失敗しました。\n%w", err)
 		}
 
 		pl := &Player{
-			tw:    tw.(*TileWalker),
+			tw:    tw.(*TileTeleporter),
 			ipt:   scene.Input,
 			scene: scene,
 			anim:  anim,
