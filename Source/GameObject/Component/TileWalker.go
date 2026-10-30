@@ -46,7 +46,8 @@ func (w *TileWalker) Update(active bool) (err error) {
 }
 
 func (w *TileWalker) MoveStart(Direction Utils.Vec2Int) {
-	if !w.isWalking {
+	moveto := w.Position.Position.Add(Direction)
+	if enterable, ok := w.tm.Enterable[moveto]; (enterable || !ok) && !w.isWalking {
 		w.isWalking = true
 		w.direction = Direction
 	}
