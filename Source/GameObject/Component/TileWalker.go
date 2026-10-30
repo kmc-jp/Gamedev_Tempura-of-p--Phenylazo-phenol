@@ -34,10 +34,10 @@ func (w *TileWalker) Update(active bool) (err error) {
 			w.isWalking = false
 			w.elapsed = 0
 			w.Position.Offset = Utils.NewZeroVec2()
-			w.Position.Position.Add(w.direction)
+			w.Position.Position = w.Position.Position.Add(w.direction)
 		} else {
-			var diff Utils.Vec2 = w.Data.TileSize.ToVec2().HadamardProd(w.direction.ToVec2()).ScalarProd(1 / float64(w.walktime.Value()))
-			w.Position.Offset.Add(diff)
+			diff := w.tm.TileSize.ToVec2().HadamardProd(w.direction.ToVec2()).ScalarProd(1 / float64(w.walktime.Value()))
+			w.Position.Offset = w.Position.Offset.Add(diff)
 		}
 	}
 
