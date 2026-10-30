@@ -106,7 +106,7 @@ func (tm *TileMap) SetGameObject(
 
 func (tm TileMap) TilePositionToWorldPosition(pos tilemap.TilePosition, data tilemap.TileData) Utils.Position {
 	tileposf := pos.Position.ToVec2()
-	sizeoffset := data.Size.Sub(Utils.NewVecIntOne()).ToVec2().HadamardDiv(data.Size.ToVec2())
+	sizeoffset := data.TileSize.Sub(Utils.NewVecIntOne()).ToVec2().HadamardDiv(data.TileSize.ToVec2())
 	to := tileposf.Add(sizeoffset).HadamardProd(tm.TileSize.ToVec2()).Add(pos.Offset)
 	// if data.Size != Utils.NewVecIntOne() {
 	// 	fmt.Printf("TilePositionToWorldPosition\npos %d -> size %d -> %f\ntileposf = %f, pos.Offset = %f, sizeoffset = %f", pos.Position, data.Size, to.HadamardDiv(tm.TileSize.ToVec2()), tileposf, pos.Offset, sizeoffset)
