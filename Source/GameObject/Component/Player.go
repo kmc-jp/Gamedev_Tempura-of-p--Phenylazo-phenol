@@ -17,6 +17,7 @@ type Player struct {
 	tw    *TileWalker
 	dir   Utils.Vec2Int
 	scene *scene.PlayScene
+	anim  *AnimRender
 }
 
 func (p *Player) Update(active bool) (err error) {
@@ -53,7 +54,7 @@ func (p *Player) Update(active bool) (err error) {
 	return nil
 }
 
-func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject) Utils.Factory[*Player] {
+func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject, anim *AnimRender) Utils.Factory[*Player] {
 	return func() (*Player, error) {
 		// TileWalker を取得
 		tw, err := obj.GetComponent(reflect.TypeFor[*TileWalker]())
@@ -65,6 +66,7 @@ func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject) Utils.Factory
 			tw:    tw.(*TileWalker),
 			ipt:   scene.Input,
 			scene: scene,
+			anim:  anim,
 		}
 
 		return pl, nil
