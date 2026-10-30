@@ -46,8 +46,10 @@ func (w *TileWalker) Update(active bool) (err error) {
 }
 
 func (w *TileWalker) MoveStart(Direction Utils.Vec2Int) {
-	w.isWalking = true
-	w.direction = Direction
+	if !w.isWalking {
+		w.isWalking = true
+		w.direction = Direction
+	}
 }
 
 func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition, tf gameobject.Transform, Map *TileMap, anim *AnimRender, walktime int) Utils.Factory[*TileWalker] {
