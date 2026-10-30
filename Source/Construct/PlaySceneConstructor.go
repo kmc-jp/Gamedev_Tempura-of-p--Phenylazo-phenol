@@ -120,6 +120,7 @@ func MakeTileMapObj(assetsManager *assets.AssetsManager, PlScene *scene.PlayScen
 
 // プレイヤー設定
 func MakePlayer(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene, TileMap *component.TileMap) (*gameobject.GameObject, error) {
+	// PlayerConfig
 	SerializeData, err := serialize.NewSerializeData("Player", reflect.TypeFor[serializetarget.PlayerConfig](), "Player.toml", assetsManager.Serialize)
 	if err != nil {
 		return nil, fmt.Errorf("serialize.NewSerializeData(\"Player\", reflect.TypeFor[serializetarget.PlayerConfig](), \"Player.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
@@ -143,6 +144,7 @@ func MakePlayer(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene, T
 	}
 	constructData := constructDataAny.(serializetarget.PlayerConstructData)
 
+	// Transform / AnimRender
 	NewTransform := func(position Utils.Position) Utils.Factory[gameobject.Transform] {
 		return Utils.CastFactory[*component.StdTransform, gameobject.Transform](component.NewStdTransform(position))
 	}
@@ -150,6 +152,7 @@ func MakePlayer(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene, T
 		return component.NewAnimRender(asp, img, layer, "")
 	}
 
+	// オブジェクト生成
 	plobj, err := NewPlayer("Player", constructData.Position, *constructData.TileData, TileMap, PlScene, NewTransform, NewRenderer, assetsManager)()
 	if err != nil {
 		return nil, fmt.Errorf("NewPlayer() でエラーが発生しました。\n%w", err)
