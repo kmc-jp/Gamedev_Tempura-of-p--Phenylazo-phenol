@@ -153,7 +153,7 @@ func MakePlayer(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene, T
 	}
 
 	// オブジェクト生成
-	plobj, err := NewPlayer("Player", constructData.Position, *constructData.TileData, TileMap, PlScene, NewTransform, NewRenderer, assetsManager)()
+	plobj, err := NewPlayer("Player", constructData.Position, *constructData.TileData, TileMap, PlScene, NewTransform, NewRenderer, assetsManager, constructData.Walktime)()
 	if err != nil {
 		return nil, fmt.Errorf("NewPlayer() でエラーが発生しました。\n%w", err)
 	}

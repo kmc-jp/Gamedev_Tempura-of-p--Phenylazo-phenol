@@ -1,4 +1,7 @@
 Name = "Player"
+
+WalkTime = 12
+
 [Position]
 X = 0
 Y = 0
