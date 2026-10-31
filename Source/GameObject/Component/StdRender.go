@@ -55,4 +55,8 @@ func (r StdRender) Draw() (image *ebiten.Image, Layer string) {
 	return r.img, r.layer
 }
 
+func (r StdRender) Update() error {
+	return nil
+}
+
 var _ gameobject.Render = StdRender{}

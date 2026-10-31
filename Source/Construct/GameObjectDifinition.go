@@ -101,8 +101,9 @@ func NewCharactor(
 	TileMap *component.TileMap,
 	PlScene *scene.PlayScene,
 	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
-	NewRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render],
+	NewAnimRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[*component.AnimRender],
 	assetsManager *assets.AssetsManager,
+	walktime int,
 ) Utils.Factory[*gameobject.GameObject] {
 	return func() (*gameobject.GameObject, error) {
 		// キャラクター画像設定
@@ -111,13 +112,15 @@ func NewCharactor(
 			return nil, fmt.Errorf("assetsManager.Image.Load(TileData.ImageData) でエラーが発生しました。\n%w", err)
 		}
 
-		o, err := gameobject.NewGameObject(name, PlScene, NewTransform(position.Position.ToVec2().VtoP()), NewRender(asp, img, TileData.Layer))()
+		NewRender := Utils.CastFactory[*component.AnimRender, gameobject.Render](NewAnimRender(asp, img, TileData.Layer))
+
+		o, err := gameobject.NewGameObject(name, PlScene, NewTransform(position.Position.ToVec2().VtoP()), NewRender)()
 		if err != nil {
 			return o, fmt.Errorf("newStdObject() でエラーが発生しました。\n%w", err)
 		}
 
 		// TileWalker
-		TW, err := component.NewTileWalker(TileData, position, o.Transform(), TileMap)()
+		TW, err := component.NewTileWalker(TileData, position, o.Transform(), TileMap, o.Render().(*component.AnimRender), walktime)()
 		if err != nil {
 			return nil, fmt.Errorf("component.NewTileWalker(TileData, position)() でエラーが発生しました。\n%w", err)
 		}
@@ -137,17 +140,18 @@ func NewPlayer(
 	TileMap *component.TileMap,
 	PlScene *scene.PlayScene,
 	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
-	NewRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render],
+	NewAnimRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[*component.AnimRender],
 	assetsManager *assets.AssetsManager,
+	walktime int,
 ) Utils.Factory[*gameobject.GameObject] {
 	return func() (*gameobject.GameObject, error) {
-		plobj, err := NewCharactor(name, position, TileData, TileMap, PlScene, NewTransform, NewRender, assetsManager)()
+		plobj, err := NewCharactor(name, position, TileData, TileMap, PlScene, NewTransform, NewAnimRender, assetsManager, walktime)()
 		if err != nil {
 			return nil, fmt.Errorf("NewCharactor() でエラーが発生しました。\n%w", err)
 		}
 
 		// player (Component)
-		plc, err := component.NewPlayer(PlScene, plobj)()
+		plc, err := component.NewPlayer(PlScene, plobj, plobj.Render().(*component.AnimRender))()
 		if err != nil {
 			return nil, fmt.Errorf("component.NewPlayer(PlScene, pl)() でエラーが発生しました。\n%w", err)
 		}
