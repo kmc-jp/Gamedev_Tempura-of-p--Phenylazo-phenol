@@ -78,6 +78,15 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 		entity.Update(active)
 	}
 
+	if s.partsList.Visible() {
+		if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
+			s.partsList.MoveSelection(-1)
+		}
+		if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
+			s.partsList.MoveSelection(1)
+		}
+	}
+
 	// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
 		return func() (game.Scene, error) {
