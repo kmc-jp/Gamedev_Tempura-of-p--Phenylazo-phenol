@@ -95,7 +95,7 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		}
 
 		if s.partsList != nil && s.partsList.Visible() {
-			if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
+			if s.Input.ActionIsJustPressed(inputconfig.ActionPartsList) {
 				s.partsList.SetVisible(false)
 			}
 			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
