@@ -73,7 +73,9 @@ type state uint
 
 func NewGamedata() *Gamedata {
 	return &Gamedata{
-		Timer: tick.NewTimer(),
+		Timer:  tick.NewTimer(),
+		Weight: InitialWeight,
+		Money:  InitialMoney,
 	}
 }
 

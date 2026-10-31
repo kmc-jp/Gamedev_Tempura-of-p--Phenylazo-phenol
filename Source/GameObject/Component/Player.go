@@ -6,6 +6,7 @@ import (
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	parts "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Parts"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
 	"reflect"
 
@@ -18,13 +19,21 @@ type Player struct {
 	dir   Utils.Vec2Int
 	scene *scene.PlayScene
 	anim  *AnimRender
+
+	timerInteractInterval *tick.Timer
 }
+
+const (
+	interactInterval = 1 //unit: 0.1 sec
+)
 
 func (p *Player) Update(active bool) (err error) {
 	// なにもしない
 	if !active {
 		return nil
 	}
+
+	p.timerInteractInterval.Set(interactInterval)
 
 	if p.ipt.ActionIsPressed(inputconfig.ActionMoveLeft) {
 		p.tw.MoveStart(Utils.NewVecIntLeft())
@@ -43,9 +52,11 @@ func (p *Player) Update(active bool) (err error) {
 		p.dir = Utils.NewVecIntDown()
 	}
 	if p.ipt.ActionIsJustPressed(inputconfig.ActionInteract) {
-		err := p.interact()
-		if err != nil {
-			return fmt.Errorf("p.interact() でエラーが発生しました。\n%w", err)
+		if p.timerInteractInterval.Expired() {
+			err := p.interact()
+			if err != nil {
+				return fmt.Errorf("p.interact() でエラーが発生しました。\n%w", err)
+			}
 		}
 	}
 
@@ -60,11 +71,14 @@ func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject, anim *AnimRen
 			return nil, fmt.Errorf("obj.GetComponent(reflect.TypeFor[*TileWalker]()) で失敗しました。\n%w", err)
 		}
 
+		timer := tick.NewTimer()
+
 		pl := &Player{
-			tw:    tw.(*TileWalker),
-			ipt:   scene.Input,
-			scene: scene,
-			anim:  anim,
+			tw:                    tw.(*TileWalker),
+			ipt:                   scene.Input,
+			scene:                 scene,
+			anim:                  anim,
+			timerInteractInterval: timer,
 		}
 
 		return pl, nil

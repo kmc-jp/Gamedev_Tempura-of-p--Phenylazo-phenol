@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"math/rand"
+	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -99,12 +100,12 @@ const (
 
 type purchase uint
 
-func (g *Gamedata) BuyPart() purchase {
+func (g *Gamedata) BuyPart(index int) purchase {
 	if len(g.Found) == 0 {
 		return NoItem
 	}
 
-	p := g.Found[0]
+	p := g.Found[index]
 
 	if g.Money < p.Val {
 		return Lack_money
@@ -116,7 +117,7 @@ func (g *Gamedata) BuyPart() purchase {
 	g.AddPartToPartsList(p)
 	g.Money -= p.Val
 	g.Weight -= p.Weight
-	g.Found = g.Found[1:] //Foundの先頭を削除
+	g.Found = slices.Delete(g.Found, index, index)
 	return Buy
 }
 
@@ -128,10 +129,12 @@ func (g *Gamedata) TotalWeight() int {
 	return wg
 }
 
+// 所持品としての価値
 func (p *Part) Value() int {
 	return p.Val * int(p.Rank)
 }
 
+// 所持品としての価値
 func (g *Gamedata) TotalValue() int {
 	var v int
 	for _, p := range g.Parts {
