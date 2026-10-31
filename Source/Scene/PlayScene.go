@@ -15,6 +15,7 @@ import (
 
 // メインの遊べるシーン
 type PlayScene struct {
+	Stage       Stage
 	entities    []Entity
 	worldDrawer WorldDrawer
 
@@ -29,7 +30,7 @@ type PlayScene struct {
 	cameraCenter Utils.Position
 }
 
-func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory[UIDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*PlayScene] {
+func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory[UIDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes, stage Stage) Utils.Factory[*PlayScene] {
 	return func() (*PlayScene, error) {
 		camera, err := worldDrawer()
 		if err != nil {
@@ -48,6 +49,7 @@ func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory
 			Input:      Input,
 			Gamedata:   gdata,
 			initScenes: initScenes,
+			Stage:      stage,
 		}
 		return &ps, nil
 	}
@@ -55,7 +57,7 @@ func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory
 
 // Name implements [Scene].
 func (s PlayScene) Name() string {
-	return fmt.Sprintf("%T", s)
+	return fmt.Sprintf("%T(Stage : %s)", s, Stage2String[s.Stage])
 }
 
 // Draw implements [Scene].

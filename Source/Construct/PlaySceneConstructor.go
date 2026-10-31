@@ -35,7 +35,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 			return nil, fmt.Errorf("MakeUIDrawerFactory() でエラーが発生しました。\n%w", err)
 		}
 
-		playscene, err := scene.NewPlayScene(WorldDrawerFactory, UIDrawerFactory, inputHandler, gdata, initScenes)()
+		playscene, err := scene.NewPlayScene(WorldDrawerFactory, UIDrawerFactory, inputHandler, gdata, initScenes, scene.Stage1)()
 		if err != nil {
 			return nil, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
 		}
