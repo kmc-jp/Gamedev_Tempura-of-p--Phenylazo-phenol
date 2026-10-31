@@ -38,7 +38,7 @@ var (
 			Rank:        game.C,
 			Performance: 1000,
 			Detail:      "GPU の仮パーツデータ",
-			ImgName:     "みんげーグラボ1",
+			ImgName:     "みんげー_グラボ",
 		}
 	})
 
