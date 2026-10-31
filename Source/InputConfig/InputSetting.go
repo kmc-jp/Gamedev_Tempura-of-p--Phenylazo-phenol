@@ -17,6 +17,7 @@ const (
 	ActionEscape
 	ActionInteract
 	ActionEnter
+	ActionPartsList
 )
 
 func ActionConst(name string) (input.Action, error) {
@@ -39,6 +40,8 @@ func ActionConst(name string) (input.Action, error) {
 		return ActionEnter, nil
 	case "ActionInteract":
 		return ActionInteract, nil
+	case "ActionPartsList":
+		return ActionPartsList, nil
 	default:
 		return ActionUnknown, fmt.Errorf("%s というアクションは見つかりませんでした。", name)
 	}

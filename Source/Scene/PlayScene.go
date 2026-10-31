@@ -13,13 +13,23 @@ import (
 	input "github.com/quasilyte/ebitengine-input"
 )
 
+type partsListUI interface {
+	Element
+	SetParts(game.Parts) error
+	SetVisible(bool)
+	Visible() bool
+	MoveSelection(int)
+	SelectedPart() *game.Part
+}
+
 // メインの遊べるシーン
 type PlayScene struct {
 	entities    []Entity
 	worldDrawer WorldDrawer
 
-	elements []Element
-	uiDrawer UIDrawer
+	elements  []Element
+	uiDrawer  UIDrawer
+	partsList partsListUI
 
 	// text       *ui.Text
 	Input      *input.Handler
@@ -81,6 +91,25 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 	}
 
 	if s.Gamedata.State == game.Play_Explore {
+		if s.partsList != nil && s.Input.ActionIsJustPressed(inputconfig.ActionPartsList) {
+			if err := s.partsList.SetParts(s.Gamedata.Found); err != nil {
+				return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
+			}
+			s.partsList.SetVisible(true)
+		}
+
+		if s.partsList != nil && s.partsList.Visible() {
+			if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
+				s.partsList.SetVisible(false)
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
+				s.partsList.MoveSelection(-1)
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
+				s.partsList.MoveSelection(1)
+			}
+			return
+		}
 
 		for _, entity := range s.entities {
 			err := entity.Update(active)
@@ -131,21 +160,39 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		if s.Gamedata.Timer.Count() {
 			s.Gamedata.Timer.Set(0)
 			s.Gamedata.State = game.Play_Select
+
+			if err := s.partsList.SetParts(s.Gamedata.Found); err != nil {
+				return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
+			}
+			s.partsList.SetVisible(true)
 		}
+
 		return
 	}
 
 	if s.Gamedata.State == game.Play_Select {
-		return func() (game.Scene, error) {
-			trainScene, err := s.initScenes.InitTrainScene()
-			if err != nil {
-				return nil, err
+
+		if s.partsList != nil && s.partsList.Visible() {
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
+				s.partsList.MoveSelection(-1)
 			}
-			trainScene.gamedata = s.Gamedata
-			trainScene.gamedata.ForNewScene(game.Train_Default)
-			trainScene.initScenes = s.initScenes
-			return trainScene, nil
-		}, transition.NewScene(), nil
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
+				s.partsList.MoveSelection(1)
+			}
+		}
+
+		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+			return func() (game.Scene, error) {
+				trainScene, err := s.initScenes.InitTrainScene()
+				if err != nil {
+					return nil, err
+				}
+				trainScene.gamedata = s.Gamedata
+				trainScene.gamedata.ForNewScene(game.Train_Default)
+				trainScene.initScenes = s.initScenes
+				return trainScene, nil
+			}, transition.NewScene(), nil
+		}
 	}
 
 	return
@@ -157,6 +204,11 @@ func (s *PlayScene) AddEntity(e Entity) {
 
 func (s *PlayScene) AddUIElement(e Element) {
 	s.elements = append(s.elements, e)
+}
+
+func (s *PlayScene) SetPartsList(partsList partsListUI) {
+	s.partsList = partsList
+	s.AddUIElement(partsList)
 }
 
 func (s PlayScene) SetCameraCenter(center Utils.Position) {

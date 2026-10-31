@@ -55,6 +55,16 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 		}
 		playscene.AddUIElement(text)
 
+		partsList, err := ui.NewPartsListUI(
+			Utils.Position{X: 20, Y: 30},
+			ui.FontFace(gdata.Font, 16),
+			ui.FontFace(gdata.Font, 12),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("ui.NewPartsListUI() でエラーが発生しました。\n%w", err)
+		}
+		playscene.SetPartsList(partsList)
+
 		// タイルマップ
 		tilemapobj, err := MakeTileMapObj(assetsManager, playscene)
 		if err != nil {
