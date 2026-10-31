@@ -5,7 +5,6 @@ import (
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
-	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
 	"strconv"
 
@@ -85,9 +84,6 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		s.Gamedata.Text = "10"
 		// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
 
-		s.Gamedata.Timer = tick.NewTimer()
-
-		fmt.Println(s.Gamedata.Timer)
 	}
 
 	if s.Gamedata.State == game.Play_Explore {
@@ -118,12 +114,10 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 			}
 		}
 
-		// 何か軽いテストはここでやりましょう
-
 		s.Gamedata.Timer.Set(10)
 
 		//制限時間内プレイ中の制御
-		if cnt := s.Gamedata.Timer.Count(); cnt {
+		if s.Gamedata.Timer.Expired() {
 			num, _ := strconv.Atoi(s.Gamedata.Text)
 			num--
 			s.Gamedata.Text = strconv.Itoa(num)
@@ -157,7 +151,7 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 	//TimeUp後の処理
 	if s.Gamedata.State == game.Play_Timeup {
 		s.Gamedata.Timer.Set(50)
-		if s.Gamedata.Timer.Count() {
+		if s.Gamedata.Timer.Expired() {
 			s.Gamedata.Timer.Set(0)
 			s.Gamedata.State = game.Play_Select
 
