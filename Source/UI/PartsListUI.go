@@ -18,17 +18,19 @@ const (
 	partsListHeight = 300
 	partCardHeight  = 100
 	partCardGap     = 10
+	scrollBarWidth  = 8
 )
 
 type PartsListUI struct {
-	position    utils.Position
-	font        *text.GoTextFace
-	captionFont *text.GoTextFace
-	scroll      *ScrollUI
-	cards       []*PartCard
-	selected    int
-	visible     bool
-	empty       *Text
+	position      utils.Position
+	font          *text.GoTextFace
+	captionFont   *text.GoTextFace
+	scroll        *ScrollUI
+	cards         []*PartCard
+	contentHeight int
+	selected      int
+	visible       bool
+	empty         *Text
 }
 
 func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont *text.GoTextFace) (*PartsListUI, error) {
@@ -46,7 +48,14 @@ func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont 
 		return nil, fmt.Errorf("NewScrollUI() でエラーが発生しました: %w", err)
 	}
 
-	return &PartsListUI{position: position, font: font, captionFont: captionFont, scroll: scroll, selected: -1}, nil
+	return &PartsListUI{
+		position:      position,
+		font:          font,
+		captionFont:   captionFont,
+		scroll:        scroll,
+		contentHeight: partsListHeight - 60,
+		selected:      -1,
+	}, nil
 }
 
 func (p *PartsListUI) SetParts(parts game.Parts) error {
@@ -69,6 +78,7 @@ func (p *PartsListUI) SetParts(parts game.Parts) error {
 	}
 
 	p.cards = nil
+	p.contentHeight = contentHeight
 	for i, part := range parts {
 		card := NewPartCard(
 			image.Point{X: 0, Y: i * (partCardHeight + partCardGap)},
@@ -194,6 +204,37 @@ func (p *PartsListUI) Draw(screen *ebiten.Image) {
 		return
 	}
 	p.scroll.Draw(screen)
+	p.drawScrollBar(screen)
+}
+
+func (p *PartsListUI) drawScrollBar(screen *ebiten.Image) {
+	viewportHeight := partsListHeight - 60
+	maxOffset := p.contentHeight - viewportHeight
+	if maxOffset <= 0 {
+		return
+	}
+
+	trackHeight := viewportHeight
+	thumbHeight := trackHeight * viewportHeight / p.contentHeight
+	if thumbHeight < 20 {
+		thumbHeight = 20
+	}
+	thumbTravel := trackHeight - thumbHeight
+	thumbOffset := thumbTravel * p.scroll.Offset() / maxOffset
+	x := int(p.position.X) + partsListWidth - 20
+	y := int(p.position.Y) + 40
+
+	track := ebiten.NewImage(scrollBarWidth, trackHeight)
+	track.Fill(stdcolor.RGBA{R: 190, G: 190, B: 190, A: 255})
+	trackOp := &ebiten.DrawImageOptions{}
+	trackOp.GeoM.Translate(float64(x), float64(y))
+	screen.DrawImage(track, trackOp)
+
+	thumb := ebiten.NewImage(scrollBarWidth, thumbHeight)
+	thumb.Fill(stdcolor.RGBA{R: 60, G: 60, B: 60, A: 255})
+	thumbOp := &ebiten.DrawImageOptions{}
+	thumbOp.GeoM.Translate(float64(x), float64(y+thumbOffset))
+	screen.DrawImage(thumb, thumbOp)
 }
 
 type PartCard struct {
