@@ -22,6 +22,8 @@ var (
 			Val:         10000,
 			Rank:        game.A,
 			Performance: 1000,
+			Detail:      "CPU の仮パーツデータ",
+			ImgName:     "みんげー_CPU",
 		}
 	})
 
