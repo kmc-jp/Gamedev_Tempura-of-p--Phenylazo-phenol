@@ -55,6 +55,32 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 		}
 		playscene.AddUIElement(text)
 
+		gameDataUI, err := ui.NewGameDataUI(
+			gdata,
+			[]ui.GameDataUIItem{
+				{
+					Text: func(g game.Gamedata) string {
+						return fmt.Sprintf("空き重量: %d", g.Weight)
+					},
+					Font:  ui.FontFace(gdata.Font, 15),
+					Color: color.White(),
+				},
+				{
+					Text: func(g game.Gamedata) string {
+						return fmt.Sprintf("所持金: %d", g.Money)
+					},
+					Font:  ui.FontFace(gdata.Font, 15),
+					Color: color.White(),
+				},
+			},
+			10,
+			20,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("ui.NewGameDataUI() でエラーが発生しました。\n%w", err)
+		}
+		playscene.AddUIElement(gameDataUI)
+
 		partsList, err := ui.NewPartsListUI(
 			Utils.Position{X: 20, Y: 30},
 			ui.FontFace(gdata.Font, 16),
