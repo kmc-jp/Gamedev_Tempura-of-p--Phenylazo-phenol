@@ -1,6 +1,10 @@
 package game
 
-import "math/rand"
+import (
+	"math/rand"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 // パーツ種別
 const (
@@ -27,25 +31,41 @@ var AvailableParts = [AvailablePartsKind]kinds{CPU, GPU, RAM, MB, Case}
 
 type kinds uint
 
-// パーツの状態ランク
+// パーツの状態ランク, UI上でのアルファベット表記はしない
 // Value倍率を定義
 const (
-	A rank = 4
-	B rank = 3
-	C rank = 2
-	D rank = 1
+	A rank = 4 //新品
+	B rank = 3 //良
+	C rank = 2 //普通
+	D rank = 1 //ジャンク
 )
 
-type rank float32
+type rank uint
+
+// パーツのレアリティ(s : star)
+const (
+	S0 rarity = iota //原則使用しない
+	S1
+	S2
+	S3
+)
+
+type rarity uint
 
 // PCパーツ用の構造体
 type Part struct {
 	Name        string
 	Kind        kinds
+	Rarity      rarity
 	Weight      int
 	Val         int
 	Rank        rank
 	Performance int
+
+	Detail string
+
+	ImgName string
+	Img     *ebiten.Image
 }
 
 type Parts []*Part
@@ -66,7 +86,7 @@ func (g *Gamedata) AddPartToPartsList(p *Part) {
 	g.Parts = append(g.Parts, p)
 }
 
-//購入処理結果
+// 購入処理結果
 const (
 	Buy purchase = iota
 

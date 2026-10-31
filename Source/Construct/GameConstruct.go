@@ -7,6 +7,7 @@ import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
+	parts "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Parts"
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
@@ -42,6 +43,10 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 			return nil, fmt.Errorf("ui.LoadFont(\"Assets/Fonts/Noto_Sans_JP/static/NotoSansJP-Medium.ttf\")でエラーが発生しました \n%w", err)
 		}
 		gdata.AssetsManager = assetsManager
+
+		if err := parts.LoadRegistryImages(assetsManager.Image); err != nil {
+			return nil, fmt.Errorf("parts.LoadRegistryImages(assetsManager.Image) でエラーが発生しました。\n%w", err)
+		}
 
 		//各シーンの Constructor
 		initializedScenes := &scene.InitializedScenes{}
