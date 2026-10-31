@@ -31,13 +31,13 @@ var AvailableParts = [AvailablePartsKind]kinds{CPU, GPU, RAM, MB, Case}
 
 type kinds uint
 
-// パーツの状態ランク
+// パーツの状態ランク, UI上でのアルファベット表記はしない
 // Value倍率を定義
 const (
-	A rank = 4
-	B rank = 3
-	C rank = 2
-	D rank = 1
+	A rank = 4 //新品
+	B rank = 3 //良
+	C rank = 2 //普通
+	D rank = 1 //ジャンク
 )
 
 type rank uint
