@@ -63,14 +63,14 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 						return fmt.Sprintf("空き重量: %d", g.Weight)
 					},
 					Font:  ui.FontFace(gdata.Font, 15),
-					Color: color.White(),
+					Color: color.Black(),
 				},
 				{
 					Text: func(g game.Gamedata) string {
 						return fmt.Sprintf("所持金: %d", g.Money)
 					},
 					Font:  ui.FontFace(gdata.Font, 15),
-					Color: color.White(),
+					Color: color.Black(),
 				},
 			},
 			10,
