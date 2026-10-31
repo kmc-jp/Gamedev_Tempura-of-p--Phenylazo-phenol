@@ -19,20 +19,6 @@ const (
 	ActionEnter
 )
 
-const actions = 9
-
-var actionConstList [actions]input.Action = [actions]input.Action{
-	ActionUnknown,
-	ActionMoveLeft,
-	ActionMoveRight,
-	ActionMoveUp,
-	ActionMoveDown,
-	ActionSpace,
-	ActionEscape,
-	ActionEnter,
-	ActionInteract,
-}
-
 func ActionConst(name string) (input.Action, error) {
 	switch name {
 	case "ActionUnknown":
@@ -56,10 +42,6 @@ func ActionConst(name string) (input.Action, error) {
 	default:
 		return ActionUnknown, fmt.Errorf("%s というアクションは見つかりませんでした。", name)
 	}
-}
-
-func ActionConstList() *[actions]input.Action {
-	return &actionConstList
 }
 
 type InputConfig struct {
