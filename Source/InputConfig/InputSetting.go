@@ -17,9 +17,10 @@ const (
 	ActionEscape
 	ActionInteract
 	ActionEnter
+	ActionPartsList
 )
 
-const actions = 9
+const actions = 10
 
 var actionConstList [actions]input.Action = [actions]input.Action{
 	ActionUnknown,
@@ -31,6 +32,7 @@ var actionConstList [actions]input.Action = [actions]input.Action{
 	ActionEscape,
 	ActionEnter,
 	ActionInteract,
+	ActionPartsList,
 }
 
 func ActionConst(name string) (input.Action, error) {
@@ -53,6 +55,8 @@ func ActionConst(name string) (input.Action, error) {
 		return ActionEnter, nil
 	case "ActionInteract":
 		return ActionInteract, nil
+	case "ActionPartsList":
+		return ActionPartsList, nil
 	default:
 		return ActionUnknown, fmt.Errorf("%s というアクションは見つかりませんでした。", name)
 	}
