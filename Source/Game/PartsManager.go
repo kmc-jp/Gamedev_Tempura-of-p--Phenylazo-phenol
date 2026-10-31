@@ -53,7 +53,7 @@ type Part struct {
 
 	Detail string
 
-	img *ebiten.Image
+	Img *ebiten.Image
 }
 
 type Parts []*Part
