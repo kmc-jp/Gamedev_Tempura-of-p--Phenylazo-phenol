@@ -15,12 +15,13 @@ type TrainScene struct {
 	entities    []Entity
 	worldDrawer WorldDrawer
 
-	elements []Element
-	uiDrawer UIDrawer
+	elements  []Element
+	uiDrawer  UIDrawer
+	partsList partsListUI
 
 	// text       *ui.Text
 	Input      *input.Handler
-	gamedata   *game.Gamedata
+	Gamedata   *game.Gamedata
 	initScenes *InitializedScenes
 }
 
@@ -41,7 +42,7 @@ func NewTrainScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factor
 			uiDrawer:    uiCamera,
 			// text:       text,
 			Input:      Input,
-			gamedata:   gdata,
+			Gamedata:   gdata,
 			initScenes: initScenes,
 		}
 		// なにもしない
@@ -63,10 +64,14 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 		return
 	}
 
-	if s.gamedata.InitialProcess {
+	if s.Gamedata.InitialProcess {
 		//シーン起動時処理
-		s.gamedata.InitialProcess = false
+		s.Gamedata.InitialProcess = false
 
+		if err := s.partsList.SetParts(s.Gamedata.Parts); err != nil {
+			return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
+		}
+		s.partsList.SetVisible(true)
 	}
 
 	for _, entity := range s.entities {
@@ -80,7 +85,7 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 			if err != nil {
 				return nil, err
 			}
-			pauseScene.gamedata = s.gamedata
+			pauseScene.gamedata = s.Gamedata
 			pauseScene.gamedata.InitialProcess = true
 			pauseScene.initScenes = s.initScenes
 			return pauseScene, nil
@@ -93,7 +98,7 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 			if err != nil {
 				return nil, err
 			}
-			resultScene.gamedata = s.gamedata
+			resultScene.gamedata = s.Gamedata
 			resultScene.gamedata.ForNewScene(game.Result_SelectParts)
 			resultScene.initScenes = s.initScenes
 			return resultScene, nil
@@ -109,6 +114,11 @@ func (s *TrainScene) AddEntity(e Entity) {
 
 func (s *TrainScene) AddUIElement(e Element) {
 	s.elements = append(s.elements, e)
+}
+
+func (s *TrainScene) SetPartsList(partsList partsListUI) {
+	s.partsList = partsList
+	s.AddUIElement(partsList)
 }
 
 func (s TrainScene) SetCameraCenter(center Utils.Position) {

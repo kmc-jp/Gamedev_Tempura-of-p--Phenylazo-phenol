@@ -19,6 +19,7 @@ type partsListUI interface {
 	Visible() bool
 	MoveSelection(int)
 	SelectedPart() *game.Part
+	SelectedIndex() int
 }
 
 // メインの遊べるシーン
@@ -178,14 +179,35 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 			}
 		}
 
+		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
+			sel := s.partsList.SelectedIndex()
+			res := s.Gamedata.BuyPart(sel)
+			switch res {
+			case game.NoItem:
+				fmt.Print("購入可能な商品がありません")
+			case game.Lack_money:
+				fmt.Print("所持金が不足しています")
+			case game.Lack_weight:
+				fmt.Print("重量オーバーです")
+			case game.Buy:
+				fmt.Printf("%s を購入した", s.Gamedata.Parts[len(s.Gamedata.Parts)-1].Name)
+			default:
+				fmt.Print("不正な値がBuyPart()から渡されました")
+			}
+			if err := s.partsList.SetParts(s.Gamedata.Found); err != nil {
+				return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
+			}
+		}
+
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+			s.partsList.SetVisible(false)
 			return func() (game.Scene, error) {
 				trainScene, err := s.initScenes.InitTrainScene()
 				if err != nil {
 					return nil, err
 				}
-				trainScene.gamedata = s.Gamedata
-				trainScene.gamedata.ForNewScene(game.Train_Default)
+				trainScene.Gamedata = s.Gamedata
+				trainScene.Gamedata.ForNewScene(game.Train_Default)
 				trainScene.initScenes = s.initScenes
 				return trainScene, nil
 			}, transition.NewScene(), nil
