@@ -40,12 +40,23 @@ const (
 	D rank = 1
 )
 
-type rank float32
+type rank uint
+
+// パーツのレアリティ(s : star)
+const (
+	s0 rarity = iota //原則使用しない
+	s1
+	s2
+	s3
+)
+
+type rarity uint
 
 // PCパーツ用の構造体
 type Part struct {
 	Name        string
 	Kind        kinds
+	Rarity      rarity
 	Weight      int
 	Val         int
 	Rank        rank
