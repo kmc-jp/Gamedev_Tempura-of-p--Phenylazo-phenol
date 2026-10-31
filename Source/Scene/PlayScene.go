@@ -87,24 +87,27 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 	}
 
 	if s.Gamedata.State == game.Play_Explore {
-		if s.partsList != nil && s.Input.ActionIsJustPressed(inputconfig.ActionPartsList) {
-			if err := s.partsList.SetParts(s.Gamedata.Found); err != nil {
-				return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
-			}
-			s.partsList.SetVisible(true)
-		}
-
-		if s.partsList != nil && s.partsList.Visible() {
+		if s.partsList != nil {
 			if s.Input.ActionIsJustPressed(inputconfig.ActionPartsList) {
-				s.partsList.SetVisible(false)
+				if s.partsList.Visible() {
+					s.partsList.SetVisible(false)
+				} else {
+					if err := s.partsList.SetParts(s.Gamedata.Found); err != nil {
+						return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
+					}
+					s.partsList.SetVisible(true)
+				}
 			}
-			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
-				s.partsList.MoveSelection(-1)
+
+			if s.partsList.Visible() {
+				if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
+					s.partsList.MoveSelection(-1)
+				}
+				if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
+					s.partsList.MoveSelection(1)
+				}
+				return
 			}
-			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
-				s.partsList.MoveSelection(1)
-			}
-			return
 		}
 
 		for _, entity := range s.entities {
