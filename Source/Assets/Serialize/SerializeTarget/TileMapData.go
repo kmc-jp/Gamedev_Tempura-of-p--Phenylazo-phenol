@@ -175,7 +175,7 @@ func (tmd TileMapData) Construct() (any, error) {
 			return nil, fmt.Errorf("Object %s の生成に失敗しました。\n%w\n", ObjectData.Tilekey, err)
 		}
 		mapdata[pos] = realtiledata
-		Size := realtiledata.Size
+		Size := realtiledata.TileSize
 		for offset := range Size.Range() {
 			enterabledata[pos.Position.Add(offset)] = false
 		}

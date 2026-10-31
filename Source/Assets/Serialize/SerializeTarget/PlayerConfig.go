@@ -12,6 +12,7 @@ import (
 type PlayerConfig struct {
 	Name          string
 	Position      tilemap.TilePosition  // 座標とレイヤー
+	Walktime      int                   // 歩行にかかる時間
 	TileData      TileData              // Source\Assets\Serialize\SerializeTarget\TileMapData.go 参照
 	initialized   bool                  // シリアライズされない
 	assetsManager *assets.AssetsManager // シリアライズされない
@@ -48,6 +49,7 @@ type PlayerConstructData struct {
 	Name     string
 	Position tilemap.TilePosition
 	TileData *tilemap.TileData
+	Walktime int
 }
 
 // プレイヤーを生成するために必要な情報を生成して返す
@@ -70,7 +72,7 @@ func (pc PlayerConfig) Construct() (any, error) {
 		return nil, fmt.Errorf("tilemap.NewTileData でエラーが発生しました。\n%w", err)
 	}
 
-	return PlayerConstructData{Name: pc.Name, Position: pc.Position, TileData: td}, nil
+	return PlayerConstructData{Name: pc.Name, Position: pc.Position, TileData: td, Walktime: pc.Walktime}, nil
 }
 
 // test
