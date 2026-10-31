@@ -155,12 +155,13 @@ func (g *Gamedata) ExtractAssemblePartsName() []string {
 	return names
 }
 
+// performance に -0.05 ~ 0.05 の倍率
 func (p *Part) Score() float32 {
 	s := float32(p.Performance) + float32(p.Performance)*(rand.Float32()-0.5)*0.1
 	return s
 }
 
-// 種類kのパーツを含むならindexとtrue, 含まないなら-1とfalseを返す
+// 種類k kindsのパーツを含むならindexとtrue, 含まないなら-1とfalseを返す
 func (pts Parts) Contain(k kinds) (int, bool) {
 	for i, p := range pts {
 		if p.Kind == k {
@@ -170,6 +171,7 @@ func (pts Parts) Contain(k kinds) (int, bool) {
 	return -1, false
 }
 
+// 必須パーツがそろっているかの確認
 func (pts Parts) Enough() ([]uint, bool) {
 	l := AvailableParts
 	var lack []uint
