@@ -25,6 +25,8 @@ type PartsListUI struct {
 	font        *text.GoTextFace
 	captionFont *text.GoTextFace
 	scroll      *ScrollUI
+	cards       []*PartCard
+	selected    int
 	visible     bool
 	empty       *Text
 }
@@ -44,7 +46,7 @@ func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont 
 		return nil, fmt.Errorf("NewScrollUI() でエラーが発生しました: %w", err)
 	}
 
-	return &PartsListUI{position: position, font: font, captionFont: captionFont, scroll: scroll}, nil
+	return &PartsListUI{position: position, font: font, captionFont: captionFont, scroll: scroll, selected: -1}, nil
 }
 
 func (p *PartsListUI) SetParts(parts game.Parts) error {
@@ -66,6 +68,7 @@ func (p *PartsListUI) SetParts(parts game.Parts) error {
 		return fmt.Errorf("NewScrollUI() でエラーが発生しました: %w", err)
 	}
 
+	p.cards = nil
 	for i, part := range parts {
 		card := NewPartCard(
 			image.Point{X: 0, Y: i * (partCardHeight + partCardGap)},
@@ -75,8 +78,14 @@ func (p *PartsListUI) SetParts(parts game.Parts) error {
 			p.captionFont,
 		)
 		_ = scroll.AddChild(card)
+		p.cards = append(p.cards, card)
 	}
 	p.scroll = scroll
+	p.selected = -1
+	if len(p.cards) > 0 {
+		p.selected = 0
+		p.cards[0].SetSelected(true)
+	}
 	p.empty = nil
 	if len(parts) == 0 {
 		empty, err := NewText(
@@ -102,6 +111,53 @@ func (p *PartsListUI) Visible() bool {
 
 func (p *PartsListUI) Scroll(delta int) {
 	p.scroll.Scroll(delta)
+}
+
+func (p *PartsListUI) MoveSelection(delta int) {
+	if len(p.cards) == 0 || delta == 0 {
+		return
+	}
+
+	next := p.selected + delta
+	if next < 0 {
+		next = 0
+	}
+	if next >= len(p.cards) {
+		next = len(p.cards) - 1
+	}
+	if next == p.selected {
+		return
+	}
+
+	if p.selected >= 0 {
+		p.cards[p.selected].SetSelected(false)
+	}
+	p.selected = next
+	p.cards[p.selected].SetSelected(true)
+	p.ensureSelectedVisible()
+}
+
+func (p *PartsListUI) SelectedPart() *game.Part {
+	if p.selected < 0 || p.selected >= len(p.cards) {
+		return nil
+	}
+	return p.cards[p.selected].Part()
+}
+
+func (p *PartsListUI) SelectedIndex() int {
+	return p.selected
+}
+
+func (p *PartsListUI) ensureSelectedVisible() {
+	selectedTop := p.selected * (partCardHeight + partCardGap)
+	selectedBottom := selectedTop + partCardHeight
+	viewportHeight := partsListHeight - 60
+	offset := p.scroll.Offset()
+	if selectedTop < offset {
+		p.scroll.SetOffset(selectedTop)
+	} else if selectedBottom > offset+viewportHeight {
+		p.scroll.SetOffset(selectedBottom - viewportHeight)
+	}
 }
 
 func (p *PartsListUI) Update(active bool) error {
@@ -146,6 +202,7 @@ type PartCard struct {
 	part        *game.Part
 	font        *text.GoTextFace
 	captionFont *text.GoTextFace
+	selected    bool
 }
 
 func NewPartCard(position, size image.Point, part *game.Part, font *text.GoTextFace, captionFont *text.GoTextFace) *PartCard {
@@ -156,12 +213,37 @@ func (p *PartCard) Update(active bool) error {
 	return nil
 }
 
+func (p *PartCard) SetSelected(selected bool) {
+	p.selected = selected
+}
+
+func (p *PartCard) Selected() bool {
+	return p.selected
+}
+
+func (p *PartCard) Part() *game.Part {
+	return p.part
+}
+
 func (p *PartCard) Draw(screen *ebiten.Image) {
 	card := ebiten.NewImage(p.size.X, p.size.Y)
 	card.Fill(stdcolor.White)
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(p.position.X), float64(p.position.Y))
 	screen.DrawImage(card, op)
+
+	if p.selected {
+		border := ebiten.NewImage(p.size.X, p.size.Y)
+		border.Fill(stdcolor.RGBA{R: 255, G: 165, B: 0, A: 255})
+		inner := ebiten.NewImage(p.size.X-6, p.size.Y-6)
+		inner.Fill(stdcolor.White)
+		borderOp := &ebiten.DrawImageOptions{}
+		borderOp.GeoM.Translate(float64(p.position.X), float64(p.position.Y))
+		screen.DrawImage(border, borderOp)
+		innerOp := &ebiten.DrawImageOptions{}
+		innerOp.GeoM.Translate(float64(p.position.X+3), float64(p.position.Y+3))
+		screen.DrawImage(inner, innerOp)
+	}
 
 	if p.part.Img != nil {
 		imageOp := &ebiten.DrawImageOptions{}

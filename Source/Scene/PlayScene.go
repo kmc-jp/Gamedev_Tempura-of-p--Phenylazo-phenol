@@ -13,14 +13,13 @@ import (
 	input "github.com/quasilyte/ebitengine-input"
 )
 
-const partListScrollStep = 4
-
 type partsListUI interface {
 	Element
 	SetParts(game.Parts) error
 	SetVisible(bool)
 	Visible() bool
-	Scroll(int)
+	MoveSelection(int)
+	SelectedPart() *game.Part
 }
 
 // メインの遊べるシーン
@@ -103,11 +102,11 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 			if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
 				s.partsList.SetVisible(false)
 			}
-			if s.Input.ActionIsPressed(inputconfig.ActionMoveUp) {
-				s.partsList.Scroll(-partListScrollStep)
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
+				s.partsList.MoveSelection(-1)
 			}
-			if s.Input.ActionIsPressed(inputconfig.ActionMoveDown) {
-				s.partsList.Scroll(partListScrollStep)
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
+				s.partsList.MoveSelection(1)
 			}
 			return
 		}
@@ -174,11 +173,11 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 	if s.Gamedata.State == game.Play_Select {
 
 		if s.partsList != nil && s.partsList.Visible() {
-			if s.Input.ActionIsPressed(inputconfig.ActionMoveUp) {
-				s.partsList.Scroll(-partListScrollStep)
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
+				s.partsList.MoveSelection(-1)
 			}
-			if s.Input.ActionIsPressed(inputconfig.ActionMoveDown) {
-				s.partsList.Scroll(partListScrollStep)
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
+				s.partsList.MoveSelection(1)
 			}
 		}
 
