@@ -26,28 +26,26 @@ func (p *Player) Update(active bool) (err error) {
 		return nil
 	}
 
-	for _, action := range inputconfig.ActionConstList() {
-		if p.ipt.ActionIsPressed(action) {
-			switch action {
-			case inputconfig.ActionMoveLeft:
-				p.tw.MoveStart(Utils.NewVecIntLeft())
-				p.dir = Utils.NewVecIntLeft()
-			case inputconfig.ActionMoveRight:
-				p.tw.MoveStart(Utils.NewVecIntRight())
-				p.dir = Utils.NewVecIntRight()
-			case inputconfig.ActionMoveUp:
-				p.tw.MoveStart(Utils.NewVecIntUp())
-				p.dir = Utils.NewVecIntUp()
-			case inputconfig.ActionMoveDown:
-				p.tw.MoveStart(Utils.NewVecIntDown())
-				p.dir = Utils.NewVecIntDown()
-			case inputconfig.ActionInteract:
-				err := p.interact()
-				if err != nil {
-					return fmt.Errorf("p.interact() でエラーが発生しました。\n%w", err)
-				}
-			default: // 何もしない
-			}
+	if p.ipt.ActionIsPressed(inputconfig.ActionMoveLeft) {
+		p.tw.MoveStart(Utils.NewVecIntLeft())
+		p.dir = Utils.NewVecIntLeft()
+	}
+	if p.ipt.ActionIsPressed(inputconfig.ActionMoveRight) {
+		p.tw.MoveStart(Utils.NewVecIntRight())
+		p.dir = Utils.NewVecIntRight()
+	}
+	if p.ipt.ActionIsPressed(inputconfig.ActionMoveUp) {
+		p.tw.MoveStart(Utils.NewVecIntUp())
+		p.dir = Utils.NewVecIntUp()
+	}
+	if p.ipt.ActionIsPressed(inputconfig.ActionMoveDown) {
+		p.tw.MoveStart(Utils.NewVecIntDown())
+		p.dir = Utils.NewVecIntDown()
+	}
+	if p.ipt.ActionIsJustPressed(inputconfig.ActionInteract) {
+		err := p.interact()
+		if err != nil {
+			return fmt.Errorf("p.interact() でエラーが発生しました。\n%w", err)
 		}
 	}
 
