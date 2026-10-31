@@ -44,10 +44,10 @@ type rank uint
 
 // パーツのレアリティ(s : star)
 const (
-	s0 rarity = iota //原則使用しない
-	s1
-	s2
-	s3
+	S0 rarity = iota //原則使用しない
+	S1
+	S2
+	S3
 )
 
 type rarity uint

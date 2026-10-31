@@ -18,6 +18,7 @@ var (
 		return &game.Part{
 			Name:        "CPU_Example",
 			Kind:        game.CPU,
+			Rarity:      game.S2,
 			Weight:      100,
 			Val:         10000,
 			Rank:        game.A,
@@ -31,10 +32,13 @@ var (
 		return &game.Part{
 			Name:        "GPU_Example",
 			Kind:        game.GPU,
+			Rarity:      game.S2,
 			Weight:      1000,
 			Val:         20000,
 			Rank:        game.C,
 			Performance: 1000,
+			Detail:      "GPU の仮パーツデータ",
+			ImgName:     "みんげー_グラボ",
 		}
 	})
 
@@ -42,10 +46,13 @@ var (
 		return &game.Part{
 			Name:        "RAM_Example",
 			Kind:        game.RAM,
+			Rarity:      game.S2,
 			Weight:      100,
 			Val:         5000,
 			Rank:        game.B,
 			Performance: 1000,
+			Detail:      "RAM の仮パーツデータ",
+			ImgName:     "みんげー_メモリ",
 		}
 	})
 
