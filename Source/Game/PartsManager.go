@@ -1,6 +1,10 @@
 package game
 
-import "math/rand"
+import (
+	"math/rand"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 // パーツ種別
 const (
@@ -46,6 +50,10 @@ type Part struct {
 	Val         int
 	Rank        rank
 	Performance int
+
+	Detail string
+
+	img *ebiten.Image
 }
 
 type Parts []*Part
@@ -66,7 +74,7 @@ func (g *Gamedata) AddPartToPartsList(p *Part) {
 	g.Parts = append(g.Parts, p)
 }
 
-//購入処理結果
+// 購入処理結果
 const (
 	Buy purchase = iota
 
