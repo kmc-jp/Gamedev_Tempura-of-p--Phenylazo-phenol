@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -192,4 +193,22 @@ func (pts Parts) Enough() ([]uint, bool) {
 		}
 	}
 	return lack, enough
+}
+
+// 各状態ランクを任意の確率で設定。例: p.SetRandomRank(5, 20, 60, 15) A: 5%, B: 20%, C: 60%, D: 15%
+func (p *Part) SetRandomRank(a, b, c, d float32) error {
+	if a+b+c+d != 100 {
+		return fmt.Errorf("合計確率が100%になっていません")
+	}
+	r := rand.Float32() * 100
+	if 0 <= r && r < a {
+		p.Rank = A
+	} else if a <= r && r < a+b {
+		p.Rank = B
+	} else if a+b <= r && r < a+b+c {
+		p.Rank = C
+	} else if a+b+c <= r && r < 100 {
+		p.Rank = D
+	}
+	return nil
 }
