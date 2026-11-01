@@ -72,12 +72,15 @@ const (
 type state uint
 
 func NewGamedata() *Gamedata {
-	return &Gamedata{}
+	return &Gamedata{
+		Timer:  tick.NewTimer(),
+		Weight: InitialWeight,
+		Money:  InitialMoney,
+	}
 }
 
 func (g *Gamedata) ForNewScene(state state) {
 	g.InitialProcess = true
-	g.Timer = &tick.Timer{}
 	g.Flag = []bool{}
 	g.State = state
 	g.Text = ""

@@ -3,6 +3,7 @@ package game
 import (
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -58,6 +59,8 @@ func (g *Game) Layout(outsideWidth int, outsideHeight int) (screenWidth int, scr
 
 // Update implements [ebiten.Game].
 func (g *Game) Update() error {
+	tick.Tick()
+
 	nextScene, transitionType, err := g.ActiveScene.Update(true)
 	if err != nil {
 		return fmt.Errorf("ActiveScene %s でエラーが発生しました \n %w", g.ActiveScene.Name(), err)

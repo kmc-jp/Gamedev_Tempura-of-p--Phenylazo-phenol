@@ -5,7 +5,6 @@ import (
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
-	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
 	"strconv"
 
@@ -13,14 +12,25 @@ import (
 	input "github.com/quasilyte/ebitengine-input"
 )
 
+type partsListUI interface {
+	Element
+	SetParts(game.Parts) error
+	SetVisible(bool)
+	Visible() bool
+	MoveSelection(int)
+	SelectedPart() *game.Part
+	SelectedIndex() int
+}
+
 // メインの遊べるシーン
 type PlayScene struct {
 	Stage       Stage
 	entities    []Entity
 	worldDrawer WorldDrawer
 
-	elements []Element
-	uiDrawer UIDrawer
+	elements  []Element
+	uiDrawer  UIDrawer
+	partsList partsListUI
 
 	// text       *ui.Text
 	Input      *input.Handler
@@ -77,12 +87,31 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		s.Gamedata.Text = "10"
 		// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
 
-		s.Gamedata.Timer = tick.NewTimer()
-
-		fmt.Println(s.Gamedata.Timer)
 	}
 
 	if s.Gamedata.State == game.Play_Explore {
+		if s.partsList != nil {
+			if s.Input.ActionIsJustPressed(inputconfig.ActionPartsList) {
+				if s.partsList.Visible() {
+					s.partsList.SetVisible(false)
+				} else {
+					if err := s.partsList.SetParts(s.Gamedata.Found); err != nil {
+						return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
+					}
+					s.partsList.SetVisible(true)
+				}
+			}
+
+			if s.partsList.Visible() {
+				if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
+					s.partsList.MoveSelection(-1)
+				}
+				if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
+					s.partsList.MoveSelection(1)
+				}
+				return
+			}
+		}
 
 		for _, entity := range s.entities {
 			err := entity.Update(active)
@@ -91,12 +120,10 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 			}
 		}
 
-		// 何か軽いテストはここでやりましょう
-
 		s.Gamedata.Timer.Set(10)
 
 		//制限時間内プレイ中の制御
-		if cnt := s.Gamedata.Timer.Count(); cnt {
+		if s.Gamedata.Timer.Expired() {
 			num, _ := strconv.Atoi(s.Gamedata.Text)
 			num--
 			s.Gamedata.Text = strconv.Itoa(num)
@@ -130,24 +157,63 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 	//TimeUp後の処理
 	if s.Gamedata.State == game.Play_Timeup {
 		s.Gamedata.Timer.Set(50)
-		if s.Gamedata.Timer.Count() {
+		if s.Gamedata.Timer.Expired() {
 			s.Gamedata.Timer.Set(0)
 			s.Gamedata.State = game.Play_Select
+
+			if err := s.partsList.SetParts(s.Gamedata.Found); err != nil {
+				return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
+			}
+			s.partsList.SetVisible(true)
 		}
+
 		return
 	}
 
 	if s.Gamedata.State == game.Play_Select {
-		return func() (game.Scene, error) {
-			trainScene, err := s.initScenes.InitTrainScene()
-			if err != nil {
-				return nil, err
+
+		if s.partsList != nil && s.partsList.Visible() {
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
+				s.partsList.MoveSelection(-1)
 			}
-			trainScene.gamedata = s.Gamedata
-			trainScene.gamedata.ForNewScene(game.Train_Default)
-			trainScene.initScenes = s.initScenes
-			return trainScene, nil
-		}, transition.NewScene(), nil
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
+				s.partsList.MoveSelection(1)
+			}
+		}
+
+		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
+			sel := s.partsList.SelectedIndex()
+			res := s.Gamedata.BuyPart(sel)
+			switch res {
+			case game.NoItem:
+				fmt.Print("購入可能な商品がありません")
+			case game.Lack_money:
+				fmt.Print("所持金が不足しています")
+			case game.Lack_weight:
+				fmt.Print("重量オーバーです")
+			case game.Buy:
+				fmt.Printf("%s を購入した", s.Gamedata.Parts[len(s.Gamedata.Parts)-1].Name)
+			default:
+				fmt.Print("不正な値がBuyPart()から渡されました")
+			}
+			if err := s.partsList.SetParts(s.Gamedata.Found); err != nil {
+				return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
+			}
+		}
+
+		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+			s.partsList.SetVisible(false)
+			return func() (game.Scene, error) {
+				trainScene, err := s.initScenes.InitTrainScene()
+				if err != nil {
+					return nil, err
+				}
+				trainScene.Gamedata = s.Gamedata
+				trainScene.Gamedata.ForNewScene(game.Train_Default)
+				trainScene.initScenes = s.initScenes
+				return trainScene, nil
+			}, transition.NewScene(), nil
+		}
 	}
 
 	return
@@ -159,6 +225,11 @@ func (s *PlayScene) AddEntity(e Entity) {
 
 func (s *PlayScene) AddUIElement(e Element) {
 	s.elements = append(s.elements, e)
+}
+
+func (s *PlayScene) SetPartsList(partsList partsListUI) {
+	s.partsList = partsList
+	s.AddUIElement(partsList)
 }
 
 func (s PlayScene) SetCameraCenter(center Utils.Position) {
