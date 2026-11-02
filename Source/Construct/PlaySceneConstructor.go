@@ -144,7 +144,7 @@ func MakeTileMapData(assetsManager *assets.AssetsManager, URL string) (*tilemap.
 		return nil, fmt.Errorf("assetsManager.Serialize.Load(*shelfdata) でエラーが発生しました。\n%w", err)
 	}
 	mapdataDeserialized := mapdataAny.(serializetarget.TileMapData)
-	mapdataDeserialized.Init("TileMap.toml", assetsManager.Image)
+	mapdataDeserialized.Init(URL, assetsManager.Image)
 	mapdataConstructed, err := mapdataDeserialized.Construct()
 	if err != nil {
 		return nil, fmt.Errorf("mapdataDeserialized.Construct() でエラーが発生しました。\n%w", err)
