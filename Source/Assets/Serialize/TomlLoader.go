@@ -21,15 +21,15 @@ func NewTomlLoader() (*TomlLoader, error) {
 }
 
 func (tl TomlLoader) Load(data SerializeData, fs fs.FS) (Serializable, error) {
-	_, ok := tl.cacheToml[data.Name]
+	_, ok := tl.cacheToml[data.Path]
 	if !ok {
 		item, err := tl.fetch(data, fs)
 		if err != nil {
 			return nil, fmt.Errorf("TomlLoader.fetch() でエラーが発生しました。\n%w", err)
 		}
-		tl.cacheToml[data.Name] = item
+		tl.cacheToml[data.Path] = item
 	}
-	item, _ := tl.cacheToml[data.Name]
+	item, _ := tl.cacheToml[data.Path]
 	return item, nil
 }
 
