@@ -57,8 +57,9 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 		//各シーンの Constructor
 		initializedScenes := &scene.InitializedScenes{}
 		initializedScenes.InitTitleScene = TitleSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
-		initializedScenes.InitPlayScene = map[scene.Stage]Utils.Factory[*scene.PlayScene]{
-			scene.Stage1: PlaySceneConstruct(assetsManager, Handler, gdata, initializedScenes, Stage2URL, scene.Stage1),
+		initializedScenes.InitPlayScene = map[scene.Stage]Utils.Factory[*scene.PlayScene]{}
+		for s := range scene.Stage2String { // ステージだけ全部取り出す
+			initializedScenes.InitPlayScene[s] = PlaySceneConstruct(assetsManager, Handler, gdata, initializedScenes, Stage2URL, s)
 		}
 		initializedScenes.InitPauseScene = PauseSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
 		initializedScenes.InitTrainScene = TrainSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
