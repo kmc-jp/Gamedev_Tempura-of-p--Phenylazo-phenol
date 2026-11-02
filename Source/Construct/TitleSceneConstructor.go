@@ -32,7 +32,7 @@ func TitleSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inpu
 		text, err := ui.NewText(
 			Utils.Position{},
 			color.Orange(),
-			"Title\nPress Space Key to Start",
+			"Title\nPress Space Key to Start\nPress 1 Key to Start Stage1\nPress 2 Key to Start Stage2\nPress 3 Key to Start Stage3",
 			ui.FontFace(gdata.Font, 15),
 		)
 		if err != nil {

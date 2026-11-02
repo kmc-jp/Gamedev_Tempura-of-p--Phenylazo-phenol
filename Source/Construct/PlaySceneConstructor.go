@@ -21,7 +21,7 @@ import (
 )
 
 // とりあえず PlayScene を組み立てる
-func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata, initScenes *scene.InitializedScenes) Utils.Factory[*scene.PlayScene] {
+func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata, initScenes *scene.InitializedScenes, Stage2URL scene.Stage2URL, stage scene.Stage) Utils.Factory[*scene.PlayScene] {
 	return func() (*scene.PlayScene, error) {
 		// カメラ設定
 		WorldDrawerFactory, err := MakeWorldDrawerFactory(assetsManager)
@@ -35,7 +35,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 			return nil, fmt.Errorf("MakeUIDrawerFactory() でエラーが発生しました。\n%w", err)
 		}
 
-		playscene, err := scene.NewPlayScene(WorldDrawerFactory, UIDrawerFactory, inputHandler, gdata, initScenes)()
+		playscene, err := scene.NewPlayScene(WorldDrawerFactory, UIDrawerFactory, inputHandler, gdata, initScenes, stage)()
 		if err != nil {
 			return nil, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
 		}
@@ -92,7 +92,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 		playscene.SetPartsList(partsList)
 
 		// タイルマップ
-		tilemapobj, err := MakeTileMapObj(assetsManager, playscene)
+		tilemapobj, err := MakeTileMapObj(assetsManager, Stage2URL, stage, playscene)
 		if err != nil {
 			return nil, fmt.Errorf("MakeTileMapObj(assetsManager, playscene) でエラーが発生しました。\n%w", err)
 		}
@@ -114,18 +114,37 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 	}
 }
 
-// タイルマップ設定
-func MakeTileMapData(assetsManager *assets.AssetsManager) (*tilemap.TileMapData, error) {
-	TileMapSeriData, err := serialize.NewSerializeData("shelf", reflect.TypeFor[serializetarget.TileMapData](), "TileMap.toml", assetsManager.Serialize)
+// ステージ類設定
+func MakeStage2URL(assetsManager *assets.AssetsManager) (scene.Stage2URL, error) {
+	StagesSeriData, err := serialize.NewSerializeData("Stages", reflect.TypeFor[serializetarget.StagesConfig](), "StageConfig.toml", assetsManager.Serialize)
 	if err != nil {
-		return nil, fmt.Errorf("serialize.NewSerializeData(\"shelf\", reflect.TypeFor[serializetarget.TileMapData](), \"TileMap.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
+		return nil, fmt.Errorf("serialize.NewSerializeData(\"Stages\", reflect.TypeFor[serializetarget.TileMapData](), \"StageConfig.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
+	}
+	StagesDataAny, err := assetsManager.Serialize.Load(*StagesSeriData)
+	if err != nil {
+		return nil, fmt.Errorf("assetsManager.Serialize.Load(*shelfdata) でエラーが発生しました。\n%w", err)
+	}
+	StagesDataDeserialized := StagesDataAny.(serializetarget.StagesConfig)
+	StagesDataConstructed, err := StagesDataDeserialized.Construct()
+	if err != nil {
+		return nil, fmt.Errorf("mapdataDeserialized.Construct() でエラーが発生しました。\n%w", err)
+	}
+
+	return StagesDataConstructed.(scene.Stage2URL), nil
+}
+
+// タイルマップ設定
+func MakeTileMapData(assetsManager *assets.AssetsManager, URL string) (*tilemap.TileMapData, error) {
+	TileMapSeriData, err := serialize.NewSerializeData("shelf", reflect.TypeFor[serializetarget.TileMapData](), URL, assetsManager.Serialize)
+	if err != nil {
+		return nil, fmt.Errorf("serialize.NewSerializeData(\"shelf\", reflect.TypeFor[serializetarget.TileMapData](), \"%s\", assetsManager.Serialize) でエラーが発生しました。\n%w", URL, err)
 	}
 	mapdataAny, err := assetsManager.Serialize.Load(*TileMapSeriData)
 	if err != nil {
 		return nil, fmt.Errorf("assetsManager.Serialize.Load(*shelfdata) でエラーが発生しました。\n%w", err)
 	}
 	mapdataDeserialized := mapdataAny.(serializetarget.TileMapData)
-	mapdataDeserialized.Init("TileMap.toml", assetsManager.Image)
+	mapdataDeserialized.Init(URL, assetsManager.Image)
 	mapdataConstructed, err := mapdataDeserialized.Construct()
 	if err != nil {
 		return nil, fmt.Errorf("mapdataDeserialized.Construct() でエラーが発生しました。\n%w", err)
@@ -134,8 +153,8 @@ func MakeTileMapData(assetsManager *assets.AssetsManager) (*tilemap.TileMapData,
 	return mapdataConstructed.(*tilemap.TileMapData), nil
 }
 
-func MakeTileMapObj(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene) (*gameobject.GameObject, error) {
-	TileMapData, err := MakeTileMapData(assetsManager)
+func MakeTileMapObj(assetsManager *assets.AssetsManager, Stage2URL scene.Stage2URL, stage scene.Stage, PlScene *scene.PlayScene) (*gameobject.GameObject, error) {
+	TileMapData, err := MakeTileMapData(assetsManager, Stage2URL[stage])
 	if err != nil {
 		return nil, fmt.Errorf("MakeTileMap(assetsManager) でエラーが発生しました。\n%w", err)
 	}

@@ -1,0 +1,4 @@
+[Stages]
+Stage1 = "Stages/Stage1.toml"
+Stage2 = "Stages/Stage2.toml"
+Stage3 = "Stages/Stage3.toml"

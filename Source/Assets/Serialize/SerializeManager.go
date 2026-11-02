@@ -33,8 +33,8 @@ func (sm SerializeManager) CheckAndCleanPath(path string) (string, error) {
 		return path, fmt.Errorf("path が空です。")
 	}
 
-	cleanedpath := filepath.Clean(path)
-	if cleanedpath == "." {
+	cleanedpath := filepath.ToSlash(filepath.Clean(path))
+	if cleanedpath == "." || !fs.ValidPath(cleanedpath) {
 		return path, fmt.Errorf("path \"%s\" が不正です。", path)
 	}
 	cleanedpath = strings.TrimPrefix(cleanedpath, "/")
