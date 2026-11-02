@@ -2,3 +2,4 @@
 "Floor"     = -1
 "Object"    = 1
 "Human"     = 2
+"Popup"     = 3

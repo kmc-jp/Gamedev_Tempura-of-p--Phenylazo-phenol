@@ -117,6 +117,7 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 				return nil, transition.None(), fmt.Errorf("%s.Update(%s) でエラーが発生しました。\n%w", entity.Name(), strconv.FormatBool(active), err)
 			}
 		}
+		s.removeExpiredEntities()
 
 		s.Gamedata.Timer.Set(10)
 
@@ -219,6 +220,25 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 
 func (s *PlayScene) AddEntity(e Entity) {
 	s.entities = append(s.entities, e)
+}
+
+func (s *PlayScene) ShowPartPopup(part *game.Part, position Utils.Position) {
+	if part == nil || part.Img == nil {
+		return
+	}
+
+	s.AddEntity(NewPartPopup(part.Img, position))
+}
+
+func (s *PlayScene) removeExpiredEntities() {
+	active := s.entities[:0]
+	for _, entity := range s.entities {
+		if popup, ok := entity.(interface{ IsExpired() bool }); ok && popup.IsExpired() {
+			continue
+		}
+		active = append(active, entity)
+	}
+	s.entities = active
 }
 
 func (s *PlayScene) AddUIElement(e Element) {
