@@ -37,8 +37,8 @@ func MakeUIDrawerFactory() (Utils.Factory[scene.UIDrawer], error) {
 	return DrawerFactory, nil
 }
 
-func MakeBGDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[scene.BackGroundDrawer], error) {
-	imageData, err := imageassets.NewImageData("BackGround", "みんげー_電車内.png", "みんげー_電車内.json", assetsManager.Image)
+func MakeBGDrawerFactory(assetsManager *assets.AssetsManager, pngPath string, jsonPath string) (Utils.Factory[scene.BackGroundDrawer], error) {
+	imageData, err := imageassets.NewImageData("BackGround", pngPath, jsonPath, assetsManager.Image)
 	if err != nil {
 		return nil, fmt.Errorf("imageassets.NewImageData でエラーが発生しました。\n%w", err)
 	}
