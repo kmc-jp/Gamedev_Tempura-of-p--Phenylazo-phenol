@@ -114,6 +114,25 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 	}
 }
 
+// ステージ類設定
+func MakeStage2URL(assetsManager *assets.AssetsManager) (*scene.Stage2URL, error) {
+	StagesSeriData, err := serialize.NewSerializeData("Stages", reflect.TypeFor[serializetarget.StagesConfig](), "StageConfig.toml", assetsManager.Serialize)
+	if err != nil {
+		return nil, fmt.Errorf("serialize.NewSerializeData(\"Stages\", reflect.TypeFor[serializetarget.TileMapData](), \"StageConfig.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
+	}
+	StagesDataAny, err := assetsManager.Serialize.Load(*StagesSeriData)
+	if err != nil {
+		return nil, fmt.Errorf("assetsManager.Serialize.Load(*shelfdata) でエラーが発生しました。\n%w", err)
+	}
+	StagesDataDeserialized := StagesDataAny.(serializetarget.StagesConfig)
+	StagesDataConstructed, err := StagesDataDeserialized.Construct()
+	if err != nil {
+		return nil, fmt.Errorf("mapdataDeserialized.Construct() でエラーが発生しました。\n%w", err)
+	}
+
+	return StagesDataConstructed.(*scene.Stage2URL), nil
+}
+
 // タイルマップ設定
 func MakeTileMapData(assetsManager *assets.AssetsManager) (*tilemap.TileMapData, error) {
 	TileMapSeriData, err := serialize.NewSerializeData("shelf", reflect.TypeFor[serializetarget.TileMapData](), "TileMap.toml", assetsManager.Serialize)
