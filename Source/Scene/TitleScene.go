@@ -77,7 +77,7 @@ func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 	// if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 	if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
 		return func() (game.Scene, error) {
-			nextScene, err := s.initScenes.InitPlayScene()
+			nextScene, err := s.initScenes.InitPlayScene[Stage1]()
 			if err != nil {
 				return nil, fmt.Errorf("s.initScenes.InitPlayScene() でエラーが発生しました。\n%w", err)
 			}

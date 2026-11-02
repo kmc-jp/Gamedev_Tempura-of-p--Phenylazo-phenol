@@ -51,7 +51,9 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 		//各シーンの Constructor
 		initializedScenes := &scene.InitializedScenes{}
 		initializedScenes.InitTitleScene = TitleSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
-		initializedScenes.InitPlayScene = PlaySceneConstruct(assetsManager, Handler, gdata, initializedScenes)
+		initializedScenes.InitPlayScene = map[scene.Stage]Utils.Factory[*scene.PlayScene]{
+			scene.Stage1: PlaySceneConstruct(assetsManager, Handler, gdata, initializedScenes),
+		}
 		initializedScenes.InitPauseScene = PauseSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
 		initializedScenes.InitTrainScene = TrainSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
 		initializedScenes.InitResultScene = ResultSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
