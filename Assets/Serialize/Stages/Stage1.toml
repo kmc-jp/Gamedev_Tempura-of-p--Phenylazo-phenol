@@ -20,14 +20,4 @@ register = {Name = "register", JsonPath =  "みんげー_レジ机.json", PngPat
 "8,1" = {Tile =  "shelf", Layer = "Object"}
 "9,1" = {Tile =  "shelf", Layer = "Object"}
 "10,1" = {Tile =  "shelf", Layer = "Object"}
-"1,2" = {Tile =  "shelf", Layer = "Object"}
-"2,2" = {Tile =  "shelf", Layer = "Object"}
-"3,2" = {Tile =  "shelf", Layer = "Object"}
-"4,2" = {Tile =  "shelf", Layer = "Object"}
-"5,2" = {Tile =  "shelf", Layer = "Object"}
-"6,2" = {Tile =  "shelf", Layer = "Object"}
-"7,2" = {Tile =  "shelf", Layer = "Object"}
-"8,2" = {Tile =  "shelf", Layer = "Object"}
-"9,2" = {Tile =  "shelf", Layer = "Object"}
-"10,2" = {Tile =  "shelf", Layer = "Object"}
 "-3, 0" = {Tile =  "ls", Layer = "Object"}
