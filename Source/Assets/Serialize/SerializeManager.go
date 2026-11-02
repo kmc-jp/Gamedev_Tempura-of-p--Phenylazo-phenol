@@ -34,7 +34,7 @@ func (sm SerializeManager) CheckAndCleanPath(path string) (string, error) {
 	}
 
 	cleanedpath := filepath.ToSlash(filepath.Clean(path))
-	if cleanedpath == "." {
+	if cleanedpath == "." || !fs.ValidPath(cleanedpath) {
 		return path, fmt.Errorf("path \"%s\" が不正です。", path)
 	}
 	cleanedpath = strings.TrimPrefix(cleanedpath, "/")
