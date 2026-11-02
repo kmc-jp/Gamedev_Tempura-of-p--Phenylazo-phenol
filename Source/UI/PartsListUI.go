@@ -14,11 +14,19 @@ import (
 )
 
 const (
-	partsListWidth  = 600
-	partsListHeight = 300
-	partCardHeight  = 100
-	partCardGap     = 10
-	scrollBarWidth  = 8
+	partsListWidth     = 600
+	partsListHeight    = 300
+	partCardHeight     = 100
+	partCardGap        = 10
+	scrollBarWidth     = 8
+	partsListTabHeight = 32
+)
+
+type PartsListTab uint8
+
+const (
+	PartsListFound PartsListTab = iota
+	PartsListOwned
 )
 
 type PartsListUI struct {
@@ -29,6 +37,9 @@ type PartsListUI struct {
 	cards         []*PartCard
 	contentHeight int
 	selected      int
+	lists         [2]game.Parts
+	activeTab     PartsListTab
+	showTabs      bool
 	visible       bool
 	empty         *Text
 }
@@ -59,17 +70,61 @@ func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont 
 }
 
 func (p *PartsListUI) SetParts(parts game.Parts) error {
-	contentHeight := partsListHeight - 60
+	p.showTabs = false
+	p.lists[PartsListFound] = parts
+	return p.rebuild(parts)
+}
+
+func (p *PartsListUI) SetLists(found, owned game.Parts) error {
+	p.showTabs = true
+	p.lists[PartsListFound] = found
+	p.lists[PartsListOwned] = owned
+	p.activeTab = PartsListFound
+	return p.rebuild(found)
+}
+
+func (p *PartsListUI) MoveTab(delta int) error {
+	if !p.showTabs || delta == 0 {
+		return nil
+	}
+	next := int(p.activeTab) + delta
+	if next < int(PartsListFound) {
+		next = int(PartsListFound)
+	}
+	if next > int(PartsListOwned) {
+		next = int(PartsListOwned)
+	}
+	if next == int(p.activeTab) {
+		return nil
+	}
+	p.activeTab = PartsListTab(next)
+	return p.rebuild(p.lists[p.activeTab])
+}
+
+func (p *PartsListUI) CurrentTab() PartsListTab {
+	return p.activeTab
+}
+
+func (p *PartsListUI) IsFoundTab() bool {
+	return !p.showTabs || p.activeTab == PartsListFound
+}
+
+func (p *PartsListUI) rebuild(parts game.Parts) error {
+	viewportHeight := partsListHeight - 60
+	if p.showTabs {
+		viewportHeight -= partsListTabHeight
+	}
+	contentHeight := viewportHeight
 	if len(parts) > 0 {
 		contentHeight = len(parts)*(partCardHeight+partCardGap) - partCardGap
 	}
-	if contentHeight < partsListHeight-60 {
-		contentHeight = partsListHeight - 60
+	if contentHeight < viewportHeight {
+		contentHeight = viewportHeight
 	}
 
 	scroll, err := NewScrollUI(
-		image.Point{X: int(p.position.X) + 20, Y: int(p.position.Y) + 40},
-		image.Point{X: partsListWidth - 40, Y: partsListHeight - 60},
+		image.Point{X: int(p.position.X) + 20, Y: int(p.position.Y) + 40 + p.tabOffset()},
+		image.Point{X: partsListWidth - 40, Y: viewportHeight},
 		image.Point{X: partsListWidth - 40, Y: contentHeight},
 		ScrollVertical,
 	)
@@ -80,10 +135,15 @@ func (p *PartsListUI) SetParts(parts game.Parts) error {
 	p.cards = nil
 	p.contentHeight = contentHeight
 	for i, part := range parts {
+		price := fmt.Sprintf("価値: %d", part.Value())
+		if p.showTabs && p.activeTab == PartsListFound {
+			price = fmt.Sprintf("価格: %d", part.Val)
+		}
 		card := NewPartCard(
 			image.Point{X: 0, Y: i * (partCardHeight + partCardGap)},
 			image.Point{X: partsListWidth - 40, Y: partCardHeight},
 			part,
+			price,
 			p.font,
 			p.captionFont,
 		)
@@ -99,7 +159,7 @@ func (p *PartsListUI) SetParts(parts game.Parts) error {
 	p.empty = nil
 	if len(parts) == 0 {
 		empty, err := NewText(
-			utils.Position{X: p.position.X + 20, Y: p.position.Y + 80},
+			utils.Position{X: p.position.X + 20, Y: p.position.Y + 80 + float64(p.tabOffset())},
 			gamecolor.Black(),
 			"所持パーツはありません",
 			p.font,
@@ -109,6 +169,13 @@ func (p *PartsListUI) SetParts(parts game.Parts) error {
 		}
 	}
 	return nil
+}
+
+func (p *PartsListUI) tabOffset() int {
+	if p.showTabs {
+		return partsListTabHeight
+	}
+	return 0
 }
 
 func (p *PartsListUI) SetVisible(visible bool) {
@@ -193,12 +260,15 @@ func (p *PartsListUI) Draw(screen *ebiten.Image) {
 	screen.DrawImage(panel, op)
 
 	DrawText(
-		utils.Position{X: p.position.X + 20, Y: p.position.Y + 18},
+		utils.Position{X: p.position.X + 20, Y: p.position.Y + 12},
 		gamecolor.Black(),
-		"所持パーツ",
+		"パーツ一覧",
 		p.font,
 		screen,
 	)
+	if p.showTabs {
+		p.drawTabs(screen)
+	}
 	if p.empty != nil {
 		p.empty.Draw(screen)
 		return
@@ -208,7 +278,7 @@ func (p *PartsListUI) Draw(screen *ebiten.Image) {
 }
 
 func (p *PartsListUI) drawScrollBar(screen *ebiten.Image) {
-	viewportHeight := partsListHeight - 60
+	viewportHeight := partsListHeight - 60 - p.tabOffset()
 	maxOffset := p.contentHeight - viewportHeight
 	if maxOffset <= 0 {
 		return
@@ -222,7 +292,7 @@ func (p *PartsListUI) drawScrollBar(screen *ebiten.Image) {
 	thumbTravel := trackHeight - thumbHeight
 	thumbOffset := thumbTravel * p.scroll.Offset() / maxOffset
 	x := int(p.position.X) + partsListWidth - 20
-	y := int(p.position.Y) + 40
+	y := int(p.position.Y) + 40 + p.tabOffset()
 
 	track := ebiten.NewImage(scrollBarWidth, trackHeight)
 	track.Fill(stdcolor.RGBA{R: 190, G: 190, B: 190, A: 255})
@@ -237,17 +307,49 @@ func (p *PartsListUI) drawScrollBar(screen *ebiten.Image) {
 	screen.DrawImage(thumb, thumbOp)
 }
 
+func (p *PartsListUI) drawTabs(screen *ebiten.Image) {
+	tabWidth := (partsListWidth - 40) / 2
+	for i, label := range []string{"発見したパーツ", "所持パーツ"} {
+		x := int(p.position.X) + 20 + i*tabWidth
+		y := int(p.position.Y) + 35
+		tab := ebiten.NewImage(tabWidth, partsListTabHeight)
+		tab.Fill(stdcolor.RGBA{R: 220, G: 220, B: 220, A: 255})
+		tabOp := &ebiten.DrawImageOptions{}
+		tabOp.GeoM.Translate(float64(x), float64(y))
+		screen.DrawImage(tab, tabOp)
+		if PartsListTab(i) == p.activeTab {
+			borderColor := stdcolor.RGBA{R: 255, G: 165, B: 0, A: 255}
+			for _, edge := range []struct {
+				x, y, width, height int
+			}{
+				{x, y, tabWidth, 3},
+				{x, y + partsListTabHeight - 3, tabWidth, 3},
+				{x, y, 3, partsListTabHeight},
+				{x + tabWidth - 3, y, 3, partsListTabHeight},
+			} {
+				line := ebiten.NewImage(edge.width, edge.height)
+				line.Fill(borderColor)
+				lineOp := &ebiten.DrawImageOptions{}
+				lineOp.GeoM.Translate(float64(edge.x), float64(edge.y))
+				screen.DrawImage(line, lineOp)
+			}
+		}
+		DrawText(utils.Position{X: float64(x + 10), Y: float64(y + 2)}, gamecolor.Black(), label, p.font, screen)
+	}
+}
+
 type PartCard struct {
 	position    image.Point
 	size        image.Point
 	part        *game.Part
+	price       string
 	font        *text.GoTextFace
 	captionFont *text.GoTextFace
 	selected    bool
 }
 
-func NewPartCard(position, size image.Point, part *game.Part, font *text.GoTextFace, captionFont *text.GoTextFace) *PartCard {
-	return &PartCard{position: position, size: size, part: part, font: font, captionFont: captionFont}
+func NewPartCard(position, size image.Point, part *game.Part, price string, font *text.GoTextFace, captionFont *text.GoTextFace) *PartCard {
+	return &PartCard{position: position, size: size, part: part, price: price, font: font, captionFont: captionFont}
 }
 
 func (p *PartCard) Update(active bool) error {
@@ -296,7 +398,7 @@ func (p *PartCard) Draw(screen *ebiten.Image) {
 	x := float64(p.position.X + 100)
 	DrawText(utils.Position{X: x, Y: float64(p.position.Y + 10)}, gamecolor.Black(), fmt.Sprintf("%s  ( %s )", p.part.Name, kindText(p.part)), p.font, screen)
 	DrawText(utils.Position{X: x, Y: float64(p.position.Y + 34)}, gamecolor.Orange(), fmt.Sprintf("%s", rarityText(p.part)), p.font, screen)
-	DrawText(utils.Position{X: x + 100, Y: float64(p.position.Y + 34)}, gamecolor.Black(), fmt.Sprintf("%s   価格: %d   重さ: %d", rankText(p.part), p.part.Val*2, p.part.Weight), p.font, screen)
+	DrawText(utils.Position{X: x + 100, Y: float64(p.position.Y + 34)}, gamecolor.Black(), fmt.Sprintf("%s   %s   重さ: %d", rankText(p.part), p.price, p.part.Weight), p.font, screen)
 	DrawText(utils.Position{X: x, Y: float64(p.position.Y + 64)}, gamecolor.Black(), p.part.Detail, p.captionFont, screen)
 }
 

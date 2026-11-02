@@ -15,9 +15,12 @@ import (
 type partsListUI interface {
 	Element
 	SetParts(game.Parts) error
+	SetLists(game.Parts, game.Parts) error
 	SetVisible(bool)
 	Visible() bool
 	MoveSelection(int)
+	MoveTab(int) error
+	IsFoundTab() bool
 	SelectedPart() *game.Part
 	SelectedIndex() int
 }
@@ -93,7 +96,7 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 				if s.partsList.Visible() {
 					s.partsList.SetVisible(false)
 				} else {
-					if err := s.partsList.SetParts(s.Gamedata.Found); err != nil {
+					if err := s.partsList.SetLists(s.Gamedata.Found, s.Gamedata.Parts); err != nil {
 						return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
 					}
 					s.partsList.SetVisible(true)
@@ -101,6 +104,16 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 			}
 
 			if s.partsList.Visible() {
+				if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
+					if err := s.partsList.MoveTab(-1); err != nil {
+						return nil, transition.None(), fmt.Errorf("パーツ一覧タブの切り替えに失敗しました。\n%w", err)
+					}
+				}
+				if s.Input.ActionIsJustPressed(inputconfig.ActionMoveRight) {
+					if err := s.partsList.MoveTab(1); err != nil {
+						return nil, transition.None(), fmt.Errorf("パーツ一覧タブの切り替えに失敗しました。\n%w", err)
+					}
+				}
 				if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
 					s.partsList.MoveSelection(-1)
 				}
@@ -160,7 +173,7 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 			s.Gamedata.Timer.Set(0)
 			s.Gamedata.State = game.Play_Select
 
-			if err := s.partsList.SetParts(s.Gamedata.Found); err != nil {
+			if err := s.partsList.SetLists(s.Gamedata.Found, s.Gamedata.Parts); err != nil {
 				return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
 			}
 			s.partsList.SetVisible(true)
@@ -172,6 +185,16 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 	if s.Gamedata.State == game.Play_Select {
 
 		if s.partsList != nil && s.partsList.Visible() {
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
+				if err := s.partsList.MoveTab(-1); err != nil {
+					return nil, transition.None(), fmt.Errorf("パーツ一覧タブの切り替えに失敗しました。\n%w", err)
+				}
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveRight) {
+				if err := s.partsList.MoveTab(1); err != nil {
+					return nil, transition.None(), fmt.Errorf("パーツ一覧タブの切り替えに失敗しました。\n%w", err)
+				}
+			}
 			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
 				s.partsList.MoveSelection(-1)
 			}
@@ -181,6 +204,9 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		}
 
 		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
+			if s.partsList == nil || !s.partsList.IsFoundTab() {
+				return
+			}
 			sel := s.partsList.SelectedIndex()
 			res := s.Gamedata.BuyPart(sel)
 			switch res {
@@ -195,7 +221,7 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 			default:
 				fmt.Print("不正な値がBuyPart()から渡されました")
 			}
-			if err := s.partsList.SetParts(s.Gamedata.Found); err != nil {
+			if err := s.partsList.SetLists(s.Gamedata.Found, s.Gamedata.Parts); err != nil {
 				return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
 			}
 		}
