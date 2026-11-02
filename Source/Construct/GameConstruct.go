@@ -48,6 +48,12 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 			return nil, fmt.Errorf("parts.LoadRegistryImages(assetsManager.Image) でエラーが発生しました。\n%w", err)
 		}
 
+		// 各シーンのマップ情報
+		_, err := MakeStage2URL(assetsManager)
+		if err != nil {
+			return nil, fmt.Errorf("MakeStage2URL(assetsManager) でエラーが発生しました。\n%w", err)
+		}
+
 		//各シーンの Constructor
 		initializedScenes := &scene.InitializedScenes{}
 		initializedScenes.InitTitleScene = TitleSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
