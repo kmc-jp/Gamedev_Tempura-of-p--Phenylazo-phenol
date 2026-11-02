@@ -49,7 +49,7 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 		}
 
 		// 各シーンのマップ情報
-		_, err := MakeStage2URL(assetsManager)
+		Stage2URL, err := MakeStage2URL(assetsManager)
 		if err != nil {
 			return nil, fmt.Errorf("MakeStage2URL(assetsManager) でエラーが発生しました。\n%w", err)
 		}
@@ -58,7 +58,7 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 		initializedScenes := &scene.InitializedScenes{}
 		initializedScenes.InitTitleScene = TitleSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
 		initializedScenes.InitPlayScene = map[scene.Stage]Utils.Factory[*scene.PlayScene]{
-			scene.Stage1: PlaySceneConstruct(assetsManager, Handler, gdata, initializedScenes),
+			scene.Stage1: PlaySceneConstruct(assetsManager, Handler, gdata, initializedScenes, Stage2URL, scene.Stage1),
 		}
 		initializedScenes.InitPauseScene = PauseSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
 		initializedScenes.InitTrainScene = TrainSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
