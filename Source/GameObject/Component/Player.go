@@ -61,6 +61,9 @@ func (p *Player) Update(active bool) (err error) {
 		}
 	}
 
+	// カメラをプレイヤーに追従させる
+	p.scene.SetCameraCenter(p.tf.Position())
+
 	return nil
 }
 
