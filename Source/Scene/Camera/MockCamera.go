@@ -1,6 +1,7 @@
-package scene
+package camera
 
 import (
+	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"math"
 
@@ -13,7 +14,7 @@ type MockCamera struct {
 }
 
 // Draw implements [WorldDrawer].
-func (m MockCamera) Draw(screen *ebiten.Image, objects []Entity) {
+func (m MockCamera) Draw(screen *ebiten.Image, objects []scene.Entity) {
 	for _, obj := range objects {
 		image, _ := obj.Draw()
 		pos := obj.Position()
@@ -38,4 +39,4 @@ func NewMockCamera() (*MockCamera, error) {
 
 // test
 var _ Utils.Factory[*MockCamera] = NewMockCamera
-var _ WorldDrawer = MockCamera{}
+var _ scene.WorldDrawer = MockCamera{}
