@@ -2,6 +2,7 @@ package construct
 
 import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
+	imageassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Image"
 	serialize "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize"
 	serializetarget "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize/SerializeTarget"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
@@ -33,5 +34,20 @@ func MakeWorldDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[
 
 func MakeUIDrawerFactory() (Utils.Factory[scene.UIDrawer], error) {
 	DrawerFactory := Utils.CastFactory[*scene.UICamera, scene.UIDrawer](scene.NewUICamera())
+	return DrawerFactory, nil
+}
+
+func MakeBGDrawerFactory(assetsManager *assets.AssetsManager, pngPath string, jsonPath string) (Utils.Factory[scene.BackGroundDrawer], error) {
+	imageData, err := imageassets.NewImageData("BackGround", pngPath, jsonPath, assetsManager.Image)
+	if err != nil {
+		return nil, fmt.Errorf("imageassets.NewImageData でエラーが発生しました。\n%w", err)
+	}
+
+	asp, img, err := assetsManager.Image.Load(*imageData)
+	if err != nil {
+		return nil, fmt.Errorf("assetsManager.Image.Load でエラーが発生しました。\n%w", err)
+	}
+
+	DrawerFactory := Utils.CastFactory[*scene.BackGroundCamera, scene.BackGroundDrawer](scene.NewBackGroundCamera(asp, img, ""))
 	return DrawerFactory, nil
 }

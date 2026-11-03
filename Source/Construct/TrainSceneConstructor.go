@@ -24,7 +24,9 @@ func TrainSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inpu
 			return nil, fmt.Errorf("MakeUIDrawerFactory() でエラーが発生しました。\n%w", err)
 		}
 
-		trainscene, err := scene.NewTrainScene(worldDrawerFactory, UIDrawerFactory, inputHandler, gdata, initScenes)()
+		BGDrawerFactory, err := MakeBGDrawerFactory(assetsManager, "みんげー_電車内.png", "みんげー_電車内.json")
+
+		trainscene, err := scene.NewTrainScene(worldDrawerFactory, UIDrawerFactory, BGDrawerFactory, inputHandler, gdata, initScenes)()
 		if err != nil {
 			return nil, fmt.Errorf("NewTrainScene() でエラーが発生しました。\n%w", err)
 		}

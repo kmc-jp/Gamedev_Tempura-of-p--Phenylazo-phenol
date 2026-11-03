@@ -19,13 +19,15 @@ type TrainScene struct {
 	uiDrawer  UIDrawer
 	partsList partsListUI
 
+	bgDrawer BackGroundDrawer
+
 	// text       *ui.Text
 	Input      *input.Handler
 	Gamedata   *game.Gamedata
 	initScenes *InitializedScenes
 }
 
-func NewTrainScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory[UIDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TrainScene] {
+func NewTrainScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory[UIDrawer], bgDrawer Utils.Factory[BackGroundDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TrainScene] {
 	return func() (*TrainScene, error) {
 		camera, err := worldDrawer()
 		if err != nil {
@@ -35,11 +37,16 @@ func NewTrainScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factor
 		if err != nil {
 			return &TrainScene{}, fmt.Errorf("uiDrawer() でエラーが発生しました。 \n%w", err)
 		}
+		bgCamera, err := bgDrawer()
+		if err != nil {
+			return &TrainScene{}, fmt.Errorf("BGDrawer() でエラーが発生しました。 \n%w", err)
+		}
 		trs := TrainScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
 			elements:    []Element{},
 			uiDrawer:    uiCamera,
+			bgDrawer:    bgCamera,
 			// text:       text,
 			Input:      Input,
 			Gamedata:   gdata,
@@ -55,6 +62,7 @@ func (s TrainScene) Name() string {
 }
 
 func (s *TrainScene) Draw(screen *ebiten.Image) {
+	s.bgDrawer.Draw(screen, *s.Gamedata)
 	s.worldDrawer.Draw(screen, s.entities)
 	s.uiDrawer.Draw(screen, s.elements)
 }
@@ -76,6 +84,11 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 
 	for _, entity := range s.entities {
 		entity.Update(active)
+	}
+
+	err = s.bgDrawer.Update()
+	if err != nil {
+		return nil, transition.None(), fmt.Errorf("s.bgDrawer.Update() でエラーが発生しました。\n%w", err)
 	}
 
 	if s.partsList.Visible() {
