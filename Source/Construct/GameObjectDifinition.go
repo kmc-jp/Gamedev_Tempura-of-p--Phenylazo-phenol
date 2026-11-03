@@ -151,7 +151,7 @@ func NewPlayer(
 		}
 
 		// player (Component)
-		plc, err := component.NewPlayer(PlScene, plobj, plobj.Render().(*component.AnimRender))()
+		plc, err := component.NewPlayer(PlScene, plobj, plobj.Render().(*component.AnimRender), plobj.Transform())()
 		if err != nil {
 			return nil, fmt.Errorf("component.NewPlayer(PlScene, pl)() でエラーが発生しました。\n%w", err)
 		}

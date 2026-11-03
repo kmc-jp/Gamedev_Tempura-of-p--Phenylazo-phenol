@@ -17,6 +17,7 @@ type Player struct {
 	ipt   *input.Handler
 	tw    *TileWalker
 	dir   Utils.Vec2Int
+	tf    gameobject.Transform
 	scene *scene.PlayScene
 	anim  *AnimRender
 
@@ -60,10 +61,13 @@ func (p *Player) Update(active bool) (err error) {
 		}
 	}
 
+	// カメラをプレイヤーに追従させる
+	p.scene.SetCameraCenter(p.tf.Position())
+
 	return nil
 }
 
-func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject, anim *AnimRender) Utils.Factory[*Player] {
+func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject, anim *AnimRender, tf gameobject.Transform) Utils.Factory[*Player] {
 	return func() (*Player, error) {
 		// TileWalker を取得
 		tw, err := obj.GetComponent(reflect.TypeFor[*TileWalker]())
@@ -78,6 +82,7 @@ func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject, anim *AnimRen
 			ipt:                   scene.Input,
 			scene:                 scene,
 			anim:                  anim,
+			tf:                    tf,
 			timerInteractInterval: timer,
 		}
 
