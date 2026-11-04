@@ -6,6 +6,7 @@ import (
 	serialize "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize"
 	serializetarget "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize/SerializeTarget"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
+	camera "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Camera"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 	"reflect"
@@ -28,12 +29,12 @@ func MakeWorldDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[
 		return nil, fmt.Errorf("cameraConfig.Construct() でエラーが発生しました。\n%w", err)
 	}
 
-	DrawerFactory := Utils.CastFactory[*scene.Camera, scene.WorldDrawer](cameraFactory.(Utils.Factory[*scene.Camera]))
+	DrawerFactory := Utils.CastFactory[*camera.Camera, scene.WorldDrawer](cameraFactory.(Utils.Factory[*camera.Camera]))
 	return DrawerFactory, nil
 }
 
 func MakeUIDrawerFactory() (Utils.Factory[scene.UIDrawer], error) {
-	DrawerFactory := Utils.CastFactory[*scene.UICamera, scene.UIDrawer](scene.NewUICamera())
+	DrawerFactory := Utils.CastFactory[*camera.UICamera, scene.UIDrawer](camera.NewUICamera())
 	return DrawerFactory, nil
 }
 
@@ -48,6 +49,6 @@ func MakeBGDrawerFactory(assetsManager *assets.AssetsManager, pngPath string, js
 		return nil, fmt.Errorf("assetsManager.Image.Load でエラーが発生しました。\n%w", err)
 	}
 
-	DrawerFactory := Utils.CastFactory[*scene.BackGroundCamera, scene.BackGroundDrawer](scene.NewBackGroundCamera(asp, img, ""))
+	DrawerFactory := Utils.CastFactory[*camera.BackGroundCamera, scene.BackGroundDrawer](camera.NewBackGroundCamera(asp, img, ""))
 	return DrawerFactory, nil
 }

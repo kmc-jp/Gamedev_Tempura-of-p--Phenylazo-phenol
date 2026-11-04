@@ -1,6 +1,7 @@
-package scene
+package camera
 
 import (
+	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 	"math"
@@ -23,7 +24,7 @@ type drawImage struct {
 }
 
 // Draw implements [WorldDrawer].
-func (c Camera) Draw(screen *ebiten.Image, objects []Entity) {
+func (c Camera) Draw(screen *ebiten.Image, objects []scene.Entity) {
 	scSize := screen.Bounds().Size()
 	images := make([][]drawImage, c.layerCount)
 	for _, obj := range objects {
@@ -61,7 +62,7 @@ func (c *Camera) SetCenter(center Utils.Position) {
 	c.center = center
 }
 
-var _ WorldDrawer = &Camera{}
+var _ scene.WorldDrawer = &Camera{}
 
 type kvp struct {
 	key   string

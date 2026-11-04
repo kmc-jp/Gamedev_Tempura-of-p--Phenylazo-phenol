@@ -1,7 +1,8 @@
-package scene
+package camera
 
 import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
+	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 	"image"
@@ -64,4 +65,4 @@ func (bgc *BackGroundCamera) FrameUpdate() {
 }
 
 // test
-var _ BackGroundDrawer = &BackGroundCamera{}
+var _ scene.BackGroundDrawer = &BackGroundCamera{}
