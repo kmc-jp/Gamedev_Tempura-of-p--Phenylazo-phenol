@@ -10,9 +10,16 @@ import (
 )
 
 type PlayerConfig struct {
-	Name          string
-	Position      tilemap.TilePosition  // 座標とレイヤー
-	Walktime      int                   // 歩行にかかる時間
+	Name     string
+	Position tilemap.TilePosition // 座標とレイヤー
+	Walktime int                  // 歩行にかかる時間
+
+	// タグ
+	u string
+	d string
+	l string
+	r string
+
 	TileData      TileData              // Source\Assets\Serialize\SerializeTarget\TileMapData.go 参照
 	initialized   bool                  // シリアライズされない
 	assetsManager *assets.AssetsManager // シリアライズされない

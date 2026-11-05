@@ -7,6 +7,11 @@ X = 0
 Y = 0
 Layer = "Human"
 
+# アニメーションタグ
+u = "backward"
+d = "forward"
+l = "left"
+r = "right"
 
 [TileData]
 Name = "Player"
