@@ -264,10 +264,10 @@ func (tmd TileMapData) Construct() (any, error) {
 		}
 
 		// posを指定
-		posUL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUL]}
-		posDL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyDL]}
-		posUR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUR]}
-		posDR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyDR]}
+		posUL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUL].Add(Utils.Vec2{X: 0, Y: -tmd.TileSize.ToVec2().Y/2 + 1})}
+		posDL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyDL].Add(Utils.Vec2{X: 0, Y: tmd.TileSize.ToVec2().Y/2 - 1})}
+		posUR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUR].Add(Utils.Vec2{X: 0, Y: -tmd.TileSize.ToVec2().Y/2 + 1})}
+		posDR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyDR].Add(Utils.Vec2{X: 0, Y: tmd.TileSize.ToVec2().Y/2 - 1})}
 
 		// 実際のタイルのデータを生成
 		tileFactoryUL, ok := Tiles[CornerKeyUL]
