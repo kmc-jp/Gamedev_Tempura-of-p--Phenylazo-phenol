@@ -15,10 +15,10 @@ type PlayerConfig struct {
 	Walktime int                  // 歩行にかかる時間
 
 	// タグ
-	u string
-	d string
-	l string
-	r string
+	U string
+	D string
+	L string
+	R string
 
 	TileData      TileData              // Source\Assets\Serialize\SerializeTarget\TileMapData.go 参照
 	initialized   bool                  // シリアライズされない
@@ -57,6 +57,7 @@ type PlayerConstructData struct {
 	Position tilemap.TilePosition
 	TileData *tilemap.TileData
 	Walktime int
+	DirTag   map[Utils.Vec2Int]string
 }
 
 // プレイヤーを生成するために必要な情報を生成して返す
@@ -79,7 +80,20 @@ func (pc PlayerConfig) Construct() (any, error) {
 		return nil, fmt.Errorf("tilemap.NewTileData でエラーが発生しました。\n%w", err)
 	}
 
-	return PlayerConstructData{Name: pc.Name, Position: pc.Position, TileData: td, Walktime: pc.Walktime}, nil
+	dirTag := map[Utils.Vec2Int]string{
+		Utils.NewVecIntUp():    pc.U,
+		Utils.NewVecIntDown():  pc.D,
+		Utils.NewVecIntLeft():  pc.L,
+		Utils.NewVecIntRight(): pc.R,
+	}
+
+	return PlayerConstructData{
+		Name:     pc.Name,
+		Position: pc.Position,
+		TileData: td,
+		Walktime: pc.Walktime,
+		DirTag:   dirTag,
+	}, nil
 }
 
 // test

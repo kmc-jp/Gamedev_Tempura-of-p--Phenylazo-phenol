@@ -2,16 +2,16 @@ Name = "Player"
 
 WalkTime = 12
 
+# アニメーションタグ
+U = "backward"
+D = "forward"
+L = "left"
+R = "right"
+
 [Position]
 X = 0
 Y = 0
 Layer = "Human"
-
-# アニメーションタグ
-u = "backward"
-d = "forward"
-l = "left"
-r = "right"
 
 [TileData]
 Name = "Player"

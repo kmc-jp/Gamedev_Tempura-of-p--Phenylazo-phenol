@@ -143,6 +143,7 @@ func NewPlayer(
 	NewAnimRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[*component.AnimRender],
 	assetsManager *assets.AssetsManager,
 	walktime int,
+	dirTag map[Utils.Vec2Int]string,
 ) Utils.Factory[*gameobject.GameObject] {
 	return func() (*gameobject.GameObject, error) {
 		plobj, err := NewCharactor(name, position, TileData, TileMap, PlScene, NewTransform, NewAnimRender, assetsManager, walktime)()
@@ -151,7 +152,7 @@ func NewPlayer(
 		}
 
 		// player (Component)
-		plc, err := component.NewPlayer(PlScene, plobj, plobj.Render().(*component.AnimRender), plobj.Transform())()
+		plc, err := component.NewPlayer(PlScene, plobj, plobj.Render().(*component.AnimRender), plobj.Transform(), dirTag)()
 		if err != nil {
 			return nil, fmt.Errorf("component.NewPlayer(PlScene, pl)() でエラーが発生しました。\n%w", err)
 		}
