@@ -6,6 +6,7 @@ import (
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
+	stdcolor "image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	input "github.com/quasilyte/ebitengine-input"
@@ -54,6 +55,10 @@ func (s PauseScene) Name() string {
 }
 
 func (s *PauseScene) Draw(screen *ebiten.Image) {
+	sc := ebiten.NewImage(screen.Bounds().Dx(), screen.Bounds().Dy())
+	sc.Fill(stdcolor.RGBA{100, 100, 100, 200})
+	screen.DrawImage(sc, &ebiten.DrawImageOptions{})
+
 	s.worldDrawer.Draw(screen, s.entities)
 	s.uiDrawer.Draw(screen, s.elements)
 }
