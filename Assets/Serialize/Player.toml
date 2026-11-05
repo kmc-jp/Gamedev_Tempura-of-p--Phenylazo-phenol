@@ -10,5 +10,5 @@ Layer = "Human"
 
 [TileData]
 Name = "Player"
-JsonPath = "みんげー主人公走るアニメーション正面.json"
-PngPath = "みんげー主人公走るアニメーション正面-Sheet.png"
+JsonPath = "みんげー主人公走るアニメーション前後左右.json"
+PngPath = "みんげー主人公走るアニメーション前後左右-Sheet.png"
