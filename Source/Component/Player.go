@@ -21,8 +21,7 @@ type Player struct {
 	scene *scene.PlayScene
 
 	// アニメーション関連
-	anim   *AnimRender
-	dirTag map[Utils.Vec2Int]string
+	anim *AnimRender
 
 	timerInteractInterval *tick.Timer
 }
@@ -70,7 +69,7 @@ func (p *Player) Update(active bool) (err error) {
 	return nil
 }
 
-func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject, anim *AnimRender, tf gameobject.Transform, dirTag map[Utils.Vec2Int]string) Utils.Factory[*Player] {
+func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject, anim *AnimRender, tf gameobject.Transform) Utils.Factory[*Player] {
 	return func() (*Player, error) {
 		// TileWalker を取得
 		tw, err := obj.GetComponent(reflect.TypeFor[*TileWalker]())
@@ -85,7 +84,6 @@ func NewPlayer(scene *scene.PlayScene, obj *gameobject.GameObject, anim *AnimRen
 			ipt:                   scene.Input,
 			scene:                 scene,
 			anim:                  anim,
-			dirTag:                dirTag,
 			tf:                    tf,
 			timerInteractInterval: timer,
 		}

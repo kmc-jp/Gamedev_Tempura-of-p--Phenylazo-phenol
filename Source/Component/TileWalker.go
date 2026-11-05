@@ -18,6 +18,7 @@ type TileWalker struct {
 	isWalking bool
 	elapsed   int
 	direction Utils.Vec2Int
+	dirTag    map[Utils.Vec2Int]string
 }
 
 // test
@@ -53,7 +54,7 @@ func (w *TileWalker) MoveStart(Direction Utils.Vec2Int) {
 	}
 }
 
-func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition, tf gameobject.Transform, Map *TileMap, anim *AnimRender, walktime int) Utils.Factory[*TileWalker] {
+func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition, tf gameobject.Transform, Map *TileMap, anim *AnimRender, walktime int, dirTag map[Utils.Vec2Int]string) Utils.Factory[*TileWalker] {
 	return func() (*TileWalker, error) {
 		t := TileWalker{
 			Data:     tiledata,
@@ -62,6 +63,7 @@ func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition, tf gameo
 			tm:       Map,
 			anim:     anim,
 			walktime: Utils.NewReadOnly(walktime),
+			dirTag:   dirTag,
 		}
 		return &t, nil
 	}
