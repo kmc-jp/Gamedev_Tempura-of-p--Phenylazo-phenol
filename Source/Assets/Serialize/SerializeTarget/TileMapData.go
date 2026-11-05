@@ -179,10 +179,8 @@ func (tmd TileMapData) Construct() (any, error) {
 		}
 
 		// posを指定
-		posU1 := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyU].Add(Utils.Vec2{X: tmd.TileSize.ToVec2().X / 4, Y: 0})}
-		posU2 := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyU].Add(Utils.Vec2{X: -tmd.TileSize.ToVec2().X / 4, Y: 0})}
-		posD1 := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: down + 1}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyD].Add(Utils.Vec2{X: tmd.TileSize.ToVec2().X / 4, Y: 0})}
-		posD2 := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: down + 1}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyD].Add(Utils.Vec2{X: -tmd.TileSize.ToVec2().X / 4, Y: 0})}
+		posU := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyU]}
+		posD := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: down + 1}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyD]}
 
 		// 実際のタイルのデータを生成
 		tileFactoryU, ok := Tiles[WallKeyU]
@@ -203,12 +201,10 @@ func (tmd TileMapData) Construct() (any, error) {
 			return nil, fmt.Errorf("WallDown %s の生成に失敗しました。\n%w\n", WallKeyD, err)
 		}
 
-		mapdata[posU1] = realtiledataU
-		mapdata[posU2] = realtiledataU
-		enterabledata[posU1.Position] = false
-		mapdata[posD1] = realtiledataD
-		mapdata[posD2] = realtiledataD
-		enterabledata[posD1.Position] = false
+		mapdata[posU] = realtiledataU
+		enterabledata[posU.Position] = false
+		mapdata[posD] = realtiledataD
+		enterabledata[posD.Position] = false
 	}
 	// 縦壁
 	for j := up; j <= down; j++ {
@@ -223,10 +219,8 @@ func (tmd TileMapData) Construct() (any, error) {
 		}
 
 		// posを指定
-		posL1 := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: j}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyL].Add(Utils.Vec2{X: tmd.TileSize.ToVec2().X / 4, Y: tmd.TileSize.ToVec2().Y / 4})}
-		posL2 := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: j}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyL].Add(Utils.Vec2{X: tmd.TileSize.ToVec2().X / 4, Y: -tmd.TileSize.ToVec2().Y / 4})}
-		posR1 := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: j}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyR].Add(Utils.Vec2{X: -tmd.TileSize.ToVec2().X / 4, Y: tmd.TileSize.ToVec2().Y / 4})}
-		posR2 := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: j}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyR].Add(Utils.Vec2{X: -tmd.TileSize.ToVec2().X / 4, Y: -tmd.TileSize.ToVec2().Y / 4})}
+		posL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: j}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyL]}
+		posR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: j}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyR]}
 
 		// 実際のタイルのデータを生成
 		tileFactoryL, ok := Tiles[WallKeyL]
@@ -247,12 +241,10 @@ func (tmd TileMapData) Construct() (any, error) {
 			return nil, fmt.Errorf("WallDown %s の生成に失敗しました。\n%w\n", WallKeyR, err)
 		}
 
-		mapdata[posL1] = realtiledataL
-		mapdata[posL2] = realtiledataL
-		enterabledata[posL1.Position] = false
-		mapdata[posR1] = realtiledataR
-		mapdata[posR2] = realtiledataR
-		enterabledata[posR1.Position] = false
+		mapdata[posL] = realtiledataL
+		enterabledata[posL.Position] = false
+		mapdata[posR] = realtiledataR
+		enterabledata[posR.Position] = false
 	}
 	// 角
 	// 上角を張る
@@ -272,10 +264,10 @@ func (tmd TileMapData) Construct() (any, error) {
 		}
 
 		// posを指定
-		posUL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUL].Add(Utils.Vec2{X: tmd.TileSize.ToVec2().X / 4, Y: -tmd.TileSize.ToVec2().Y / 4})}
-		posDL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyDL].Add(Utils.Vec2{X: tmd.TileSize.ToVec2().X / 4, Y: tmd.TileSize.ToVec2().Y / 4})}
-		posUR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUR].Add(Utils.Vec2{X: -tmd.TileSize.ToVec2().X / 4, Y: -tmd.TileSize.ToVec2().Y / 4})}
-		posDR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyDR].Add(Utils.Vec2{X: -tmd.TileSize.ToVec2().X / 4, Y: tmd.TileSize.ToVec2().Y / 4})}
+		posUL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUL]}
+		posDL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyDL]}
+		posUR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUR]}
+		posDR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyDR]}
 
 		// 実際のタイルのデータを生成
 		tileFactoryUL, ok := Tiles[CornerKeyUL]
@@ -332,8 +324,8 @@ func (tmd TileMapData) Construct() (any, error) {
 		}
 
 		// posを指定
-		posL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: down + 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyL].Add(Utils.Vec2{X: tmd.TileSize.ToVec2().X / 4, Y: 0})}
-		posR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: down + 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyR].Add(Utils.Vec2{X: -tmd.TileSize.ToVec2().X / 4, Y: 0})}
+		posL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: down + 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyL]}
+		posR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: down + 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyR]}
 
 		// 実際のタイルのデータを生成
 		tileFactoryL, ok := Tiles[CornerKeyL]
