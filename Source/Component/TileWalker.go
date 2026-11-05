@@ -32,10 +32,7 @@ func (w *TileWalker) Update(active bool) (err error) {
 	if w.isWalking {
 		w.elapsed++
 		if w.elapsed > w.walktime.Value() {
-			w.isWalking = false
-			w.elapsed = 0
-			w.Position.Offset = Utils.NewZeroVec2()
-			w.Position.Position = w.Position.Position.Add(w.direction)
+			w.moveStop()
 		} else {
 			diff := w.tm.TileSize.ToVec2().HadamardProd(w.direction.ToVec2()).ScalarProd(1 / float64(w.walktime.Value()))
 			w.Position.Offset = w.Position.Offset.Add(diff)
@@ -52,6 +49,13 @@ func (w *TileWalker) MoveStart(Direction Utils.Vec2Int) {
 		w.isWalking = true
 		w.direction = Direction
 	}
+}
+
+func (w *TileWalker) moveStop() {
+	w.isWalking = false
+	w.elapsed = 0
+	w.Position.Offset = Utils.NewZeroVec2()
+	w.Position.Position = w.Position.Position.Add(w.direction)
 }
 
 func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition, tf gameobject.Transform, Map *TileMap, anim *AnimRender, walktime int, dirTag map[Utils.Vec2Int]string) Utils.Factory[*TileWalker] {
