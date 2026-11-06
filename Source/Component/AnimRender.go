@@ -12,10 +12,11 @@ import (
 
 // アニメーション画像を映すRender
 type AnimRender struct {
-	asp      *goaseprite.File
-	wholeImg *ebiten.Image
-	layer    string
-	player   *goaseprite.Player
+	asp       *goaseprite.File
+	wholeImg  *ebiten.Image
+	layer     string
+	player    *goaseprite.Player
+	isPlaying bool
 }
 
 // アニメーションが可能な Render をつくる
@@ -59,6 +60,10 @@ func (r *AnimRender) SetTag(tag string) error {
 	}
 }
 
+func (r *AnimRender) SetPlaying(activate bool) {
+	r.isPlaying = activate
+}
+
 func (r AnimRender) Draw() (*ebiten.Image, string) {
 	img := r.wholeImg.SubImage(image.Rect(r.player.CurrentFrameCoords())).(*ebiten.Image)
 
@@ -66,7 +71,9 @@ func (r AnimRender) Draw() (*ebiten.Image, string) {
 }
 
 func (r *AnimRender) Update() error {
-	r.FrameUpdate()
+	if r.isPlaying {
+		r.FrameUpdate()
+	}
 
 	return nil
 }
