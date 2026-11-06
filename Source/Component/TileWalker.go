@@ -48,6 +48,8 @@ func (w *TileWalker) MoveStart(Direction Utils.Vec2Int) {
 	if enterable, ok := w.tm.Enterable[moveto]; (enterable || !ok) && !w.isWalking {
 		w.isWalking = true
 		w.direction = Direction
+		w.anim.SetTag(w.dirTag[Direction])
+		w.anim.SetPlaying(true)
 	}
 }
 
@@ -56,6 +58,7 @@ func (w *TileWalker) moveStop() {
 	w.elapsed = 0
 	w.Position.Offset = Utils.NewZeroVec2()
 	w.Position.Position = w.Position.Position.Add(w.direction)
+	w.anim.SetPlaying(false)
 }
 
 func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition, tf gameobject.Transform, Map *TileMap, anim *AnimRender, walktime int, dirTag map[Utils.Vec2Int]string) Utils.Factory[*TileWalker] {
