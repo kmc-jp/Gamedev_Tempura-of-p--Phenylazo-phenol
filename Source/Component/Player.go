@@ -39,20 +39,16 @@ func (p *Player) Update(active bool) (err error) {
 	p.timerInteractInterval.Set(interactInterval)
 
 	if p.ipt.ActionIsPressed(inputconfig.ActionMoveLeft) {
-		p.tw.MoveStart(Utils.NewVecIntLeft())
-		p.dir = Utils.NewVecIntLeft()
+		p.TryMove(Utils.NewVecIntLeft())
 	}
 	if p.ipt.ActionIsPressed(inputconfig.ActionMoveRight) {
-		p.tw.MoveStart(Utils.NewVecIntRight())
-		p.dir = Utils.NewVecIntRight()
+		p.TryMove(Utils.NewVecIntRight())
 	}
 	if p.ipt.ActionIsPressed(inputconfig.ActionMoveUp) {
-		p.tw.MoveStart(Utils.NewVecIntUp())
-		p.dir = Utils.NewVecIntUp()
+		p.TryMove(Utils.NewVecIntUp())
 	}
 	if p.ipt.ActionIsPressed(inputconfig.ActionMoveDown) {
-		p.tw.MoveStart(Utils.NewVecIntDown())
-		p.dir = Utils.NewVecIntDown()
+		p.TryMove(Utils.NewVecIntDown())
 	}
 	if p.ipt.ActionIsJustPressed(inputconfig.ActionInteract) {
 		if p.timerInteractInterval.Expired() {
@@ -113,6 +109,18 @@ func (p *Player) interact() error {
 	}
 
 	return nil
+}
+
+func (p *Player) TryMove(Direction Utils.Vec2Int) bool {
+	if p.tw.IsMoving() {
+		fmt.Println("IsMoving = true")
+		return false
+	}
+
+	moved := p.tw.TryMove(Direction)
+	p.dir = Direction
+
+	return moved
 }
 
 // test
