@@ -18,7 +18,9 @@ type StdRender struct {
 	layer string
 }
 
-func NewLayerableRender(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[*StdRender] {
+type StdRenderOpt func(*StdRender)
+
+func NewLayerableRender(asp *goaseprite.File, img *ebiten.Image, layer string, opts ...StdRenderOpt) Utils.Factory[*StdRender] {
 	return func() (*StdRender, error) {
 		if asp == nil {
 			return nil, fmt.Errorf("asp が nil です。")
@@ -49,7 +51,20 @@ func NewLayerableRender(asp *goaseprite.File, img *ebiten.Image, layer string) U
 			DIO:   &ebiten.DrawImageOptions{},
 			layer: layer,
 		}
+
+		// オプション適用
+		for _, opt := range opts {
+			opt(&rndr)
+		}
+
 		return &rndr, nil
+	}
+}
+
+// オプション
+func SR_WithDrawImageOptions(DIO *ebiten.DrawImageOptions) StdRenderOpt {
+	return func(sr *StdRender) {
+		sr.DIO = DIO
 	}
 }
 

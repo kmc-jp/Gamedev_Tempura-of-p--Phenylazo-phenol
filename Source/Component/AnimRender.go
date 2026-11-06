@@ -20,9 +20,11 @@ type AnimRender struct {
 	isPlaying bool
 }
 
+type AnimRenderOpt func(*AnimRender)
+
 // アニメーションが可能な Render をつくる
 // 使いまわし可能
-func NewAnimRender(asp *goaseprite.File, img *ebiten.Image, layer string, firstTag string) Utils.Factory[*AnimRender] {
+func NewAnimRender(asp *goaseprite.File, img *ebiten.Image, layer string, firstTag string, opts ...AnimRenderOpt) Utils.Factory[*AnimRender] {
 	return func() (*AnimRender, error) {
 		if asp == nil {
 			return nil, fmt.Errorf("asp が nil です。")
@@ -44,7 +46,19 @@ func NewAnimRender(asp *goaseprite.File, img *ebiten.Image, layer string, firstT
 			player:   player,
 		}
 
+		// オプション適用
+		for _, opt := range opts {
+			opt(&rndr)
+		}
+
 		return &rndr, nil
+	}
+}
+
+// オプション
+func AR_WithDrawImageOptions(DIO *ebiten.DrawImageOptions) AnimRenderOpt {
+	return func(ar *AnimRender) {
+		ar.DIO = DIO
 	}
 }
 
