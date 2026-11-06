@@ -29,6 +29,7 @@ func (c Camera) Draw(screen *ebiten.Image, objects []scene.Entity) {
 	images := make([][]drawImage, c.layerCount)
 	for _, obj := range objects {
 		image, DIO, Layer := obj.Draw()
+		op := *DIO
 		layernum := c.layers[Layer] // 存在しない場合はゼロ
 		pos := obj.Position().Offset(c.center)
 
@@ -36,9 +37,9 @@ func (c Camera) Draw(screen *ebiten.Image, objects []scene.Entity) {
 		sizex, sizey := image.Bounds().Dx(), image.Bounds().Dy()
 		iposx, iposy := math.Floor(posx-float64(sizex)/2), math.Floor(posy-float64(sizey)/2)
 
-		DIO.GeoM.Translate(iposx, iposy)
+		op.GeoM.Translate(iposx, iposy)
 
-		imagedata := drawImage{image: image, option: DIO}
+		imagedata := drawImage{image: image, option: &op}
 		if imagedata.image == nil {
 			panic(fmt.Errorf("Entity %s の image が nil です。", obj.Name()))
 		}
