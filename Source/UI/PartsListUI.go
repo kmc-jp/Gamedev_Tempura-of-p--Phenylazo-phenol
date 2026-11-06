@@ -15,7 +15,7 @@ import (
 
 const (
 	partsListWidth     = 600
-	partsListHeight    = 300
+	partsListHeight    = 340
 	partCardHeight     = 100
 	partCardGap        = 10
 	scrollBarWidth     = 8
@@ -110,13 +110,10 @@ func (p *PartsListUI) IsFoundTab() bool {
 }
 
 func (p *PartsListUI) rebuild(parts game.Parts) error {
-	viewportHeight := partsListHeight - 60
-	if p.showTabs {
-		viewportHeight -= partsListTabHeight
-	}
+	viewportHeight := p.viewportHeight()
 	contentHeight := viewportHeight
 	if len(parts) > 0 {
-		contentHeight = len(parts)*(partCardHeight+partCardGap) - partCardGap
+		contentHeight = len(parts) * (partCardHeight + partCardGap)
 	}
 	if contentHeight < viewportHeight {
 		contentHeight = viewportHeight
@@ -178,6 +175,10 @@ func (p *PartsListUI) tabOffset() int {
 	return 0
 }
 
+func (p *PartsListUI) viewportHeight() int {
+	return partsListHeight - 60 - p.tabOffset()
+}
+
 func (p *PartsListUI) SetVisible(visible bool) {
 	p.visible = visible
 }
@@ -228,7 +229,7 @@ func (p *PartsListUI) SelectedIndex() int {
 func (p *PartsListUI) ensureSelectedVisible() {
 	selectedTop := p.selected * (partCardHeight + partCardGap)
 	selectedBottom := selectedTop + partCardHeight
-	viewportHeight := partsListHeight - 60
+	viewportHeight := p.viewportHeight()
 	offset := p.scroll.Offset()
 	if selectedTop < offset {
 		p.scroll.SetOffset(selectedTop)
@@ -278,7 +279,7 @@ func (p *PartsListUI) Draw(screen *ebiten.Image) {
 }
 
 func (p *PartsListUI) drawScrollBar(screen *ebiten.Image) {
-	viewportHeight := partsListHeight - 60 - p.tabOffset()
+	viewportHeight := p.viewportHeight()
 	maxOffset := p.contentHeight - viewportHeight
 	if maxOffset <= 0 {
 		return
