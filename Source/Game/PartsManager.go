@@ -101,7 +101,7 @@ const (
 type purchase uint
 
 func (g *Gamedata) BuyPart(index int) purchase {
-	if len(g.Found) == 0 {
+	if index < 0 || index >= len(g.Found) {
 		return NoItem
 	}
 
@@ -117,7 +117,7 @@ func (g *Gamedata) BuyPart(index int) purchase {
 	g.AddPartToPartsList(p)
 	g.Money -= p.Val
 	g.Weight -= p.Weight
-	g.Found = slices.Delete(g.Found, index, index)
+	g.Found = slices.Delete(g.Found, index, index+1)
 	return Buy
 }
 
