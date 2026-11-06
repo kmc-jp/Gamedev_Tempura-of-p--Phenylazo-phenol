@@ -50,6 +50,10 @@ func (w *TileWalker) MoveStart(Direction Utils.Vec2Int) {
 		w.direction = Direction
 		w.anim.SetTag(w.dirTag[Direction])
 		w.anim.SetPlaying(true)
+	} else {
+		// 向きを変えるだけ
+		w.direction = Direction
+		w.anim.SetTag(w.dirTag[Direction])
 	}
 }
 
