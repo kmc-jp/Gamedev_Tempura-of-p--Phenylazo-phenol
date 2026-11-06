@@ -50,7 +50,7 @@ func (g GameObject) Update(active bool) (err error) {
 	return nil
 }
 
-func (g GameObject) Draw() (image *ebiten.Image, Layer string) {
+func (g GameObject) Draw() (*ebiten.Image, *ebiten.DrawImageOptions, string) {
 	return g.Render().Draw()
 }
 

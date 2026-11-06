@@ -14,6 +14,7 @@ import (
 type StdRender struct {
 	asp   *goaseprite.File
 	img   *ebiten.Image
+	DIO   *ebiten.DrawImageOptions
 	layer string
 }
 
@@ -45,14 +46,15 @@ func NewLayerableRender(asp *goaseprite.File, img *ebiten.Image, layer string) U
 		rndr := StdRender{
 			asp:   asp,
 			img:   sub,
+			DIO:   &ebiten.DrawImageOptions{},
 			layer: layer,
 		}
 		return &rndr, nil
 	}
 }
 
-func (r StdRender) Draw() (image *ebiten.Image, Layer string) {
-	return r.img, r.layer
+func (r StdRender) Draw() (*ebiten.Image, *ebiten.DrawImageOptions, string) {
+	return r.img, r.DIO, r.layer
 }
 
 func (r StdRender) Update() error {

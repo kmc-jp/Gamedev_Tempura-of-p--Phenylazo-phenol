@@ -14,6 +14,7 @@ import (
 type AnimRender struct {
 	asp       *goaseprite.File
 	wholeImg  *ebiten.Image
+	DIO       *ebiten.DrawImageOptions
 	layer     string
 	player    *goaseprite.Player
 	isPlaying bool
@@ -39,6 +40,7 @@ func NewAnimRender(asp *goaseprite.File, img *ebiten.Image, layer string, firstT
 			asp:      asp,
 			wholeImg: img,
 			layer:    layer,
+			DIO:      &ebiten.DrawImageOptions{},
 			player:   player,
 		}
 
@@ -64,10 +66,10 @@ func (r *AnimRender) SetPlaying(activate bool) {
 	r.isPlaying = activate
 }
 
-func (r AnimRender) Draw() (*ebiten.Image, string) {
+func (r AnimRender) Draw() (*ebiten.Image, *ebiten.DrawImageOptions, string) {
 	img := r.wholeImg.SubImage(image.Rect(r.player.CurrentFrameCoords())).(*ebiten.Image)
 
-	return img, r.layer
+	return img, r.DIO, r.layer
 }
 
 func (r *AnimRender) Update() error {
