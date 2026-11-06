@@ -15,7 +15,7 @@ type TileWalker struct {
 	anim     *AnimRender
 	walktime Utils.ReadOnly[int] //フレーム数
 
-	isWalking bool
+	isMoving  bool
 	elapsed   int
 	direction Utils.Vec2Int
 	dirTag    map[Utils.Vec2Int]string
@@ -29,7 +29,7 @@ func (w *TileWalker) Update(active bool) (err error) {
 		return nil
 	}
 
-	if w.isWalking {
+	if w.isMoving {
 		w.elapsed++
 		if w.elapsed > w.walktime.Value() {
 			w.moveStop()
@@ -45,8 +45,8 @@ func (w *TileWalker) Update(active bool) (err error) {
 
 func (w *TileWalker) TryMove(Direction Utils.Vec2Int) bool {
 	moveto := w.Position.Position.Add(Direction)
-	if enterable, ok := w.tm.Enterable[moveto]; (enterable || !ok) && !w.isWalking {
-		w.isWalking = true
+	if enterable, ok := w.tm.Enterable[moveto]; (enterable || !ok) && !w.isMoving {
+		w.isMoving = true
 		w.direction = Direction
 		w.anim.SetTag(w.dirTag[Direction])
 		w.anim.SetPlaying(true)
@@ -60,11 +60,15 @@ func (w *TileWalker) TryMove(Direction Utils.Vec2Int) bool {
 }
 
 func (w *TileWalker) moveStop() {
-	w.isWalking = false
+	w.isMoving = false
 	w.elapsed = 0
 	w.Position.Offset = Utils.NewZeroVec2()
 	w.Position.Position = w.Position.Position.Add(w.direction)
 	w.anim.SetPlaying(false)
+}
+
+func (w TileWalker) IsMoving() bool {
+	return w.isMoving
 }
 
 func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition, tf gameobject.Transform, Map *TileMap, anim *AnimRender, walktime int, dirTag map[Utils.Vec2Int]string) Utils.Factory[*TileWalker] {
