@@ -5,6 +5,8 @@ import (
 	tilemap "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/TileMap"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type TileMapData struct {
@@ -39,12 +41,13 @@ type TileMapData struct {
 }
 
 type TileData struct {
-	Name     string
-	JsonPath string
-	PngPath  string
-	Size     Utils.Vec2Int
-	Offset   Utils.Vec2
-	Type     tileType
+	Name       string
+	JsonPath   string
+	PngPath    string
+	Size       Utils.Vec2Int
+	Offset     Utils.Vec2
+	Type       tileType
+	Reversible bool
 }
 
 type tileType int
@@ -104,6 +107,7 @@ func (tmd TileMapData) Construct() (any, error) {
 	// タイル種別の一覧
 	// レイヤーを入れればタイルがデータが返ってくるようになってる
 	Tiles := map[string](func(layer string) (*tilemap.TileData, error)){}
+	ReverseTiles := map[string](func(layer string) (*tilemap.TileData, error)){}
 	// タイル毎のOffsetの一覧
 	Offsets := map[string]Utils.Vec2{}
 	for tilekey, tiledata := range tmd.TileData {
@@ -127,6 +131,13 @@ func (tmd TileMapData) Construct() (any, error) {
 		tile := makeTileData(tiledata.Name, imagedata, tileSize, interactivity)
 		Tiles[tilekey] = tile
 		Offsets[tilekey] = tiledata.Offset
+
+		if tiledata.Reversible {
+			DIO := &ebiten.DrawImageOptions{}
+			DIO.GeoM.Scale(-1, 1)
+			revtile := makeTileDataWithDIO(tiledata.Name, imagedata, tileSize, interactivity, *DIO)
+			ReverseTiles[tilekey] = revtile
+		}
 	}
 
 	// マップを組み立てる
@@ -392,6 +403,12 @@ func (tmd TileMapData) Construct() (any, error) {
 func makeTileData(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType) func(layer string) (*tilemap.TileData, error) {
 	return func(layer string) (*tilemap.TileData, error) {
 		return tilemap.NewTileData(name, imgData, layer, tileSize, Interact)
+	}
+}
+
+func makeTileDataWithDIO(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType, DIO ebiten.DrawImageOptions) func(layer string) (*tilemap.TileData, error) {
+	return func(layer string) (*tilemap.TileData, error) {
+		return tilemap.NewTileData(name, imgData, layer, tileSize, Interact, tilemap.TileData_DIOOption(DIO))
 	}
 }
 
