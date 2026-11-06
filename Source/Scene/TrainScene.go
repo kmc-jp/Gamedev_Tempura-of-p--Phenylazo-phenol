@@ -5,6 +5,7 @@ import (
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -79,6 +80,12 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 		if err := s.partsList.SetParts(s.Gamedata.Parts); err != nil {
 			return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
 		}
+
+		s.Gamedata.Timer = tick.NewTimer()
+		s.Gamedata.Timer.Set(50)
+	}
+
+	if s.Gamedata.Timer.Expired() {
 		s.partsList.SetVisible(true)
 	}
 

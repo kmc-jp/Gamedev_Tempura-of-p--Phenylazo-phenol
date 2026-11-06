@@ -39,6 +39,9 @@ func NewBackGroundCamera(asp *goaseprite.File, wholeImg *ebiten.Image, firstTag 
 }
 
 func (bgc BackGroundCamera) Draw(screen *ebiten.Image, gdata game.Gamedata) {
+	bgc.drawOption.GeoM.Reset()
+	bgc.drawOption.GeoM.Scale(5, 5)
+
 	img := bgc.wholeImg.SubImage(image.Rect(bgc.player.CurrentFrameCoords())).(*ebiten.Image)
 
 	screen.DrawImage(img, bgc.drawOption)
