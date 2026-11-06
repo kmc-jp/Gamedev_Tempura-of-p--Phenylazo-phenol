@@ -43,17 +43,19 @@ func (w *TileWalker) Update(active bool) (err error) {
 	return nil
 }
 
-func (w *TileWalker) MoveStart(Direction Utils.Vec2Int) {
+func (w *TileWalker) TryMove(Direction Utils.Vec2Int) bool {
 	moveto := w.Position.Position.Add(Direction)
 	if enterable, ok := w.tm.Enterable[moveto]; (enterable || !ok) && !w.isWalking {
 		w.isWalking = true
 		w.direction = Direction
 		w.anim.SetTag(w.dirTag[Direction])
 		w.anim.SetPlaying(true)
+		return true
 	} else {
 		// 向きを変えるだけ
 		w.direction = Direction
 		w.anim.SetTag(w.dirTag[Direction])
+		return false
 	}
 }
 
