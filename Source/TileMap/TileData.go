@@ -13,7 +13,7 @@ type TileData struct {
 	Layer     string
 	TileSize  Utils.Vec2Int
 	Interact  InteractType
-	DIO       ebiten.DrawImageOptions
+	DIO       *ebiten.DrawImageOptions
 }
 
 type InteractType int
@@ -36,7 +36,7 @@ func NewTileData(name string, imgData *imageassets.ImageData, layer string, Tile
 		Layer:     layer,
 		TileSize:  TileSize,
 		Interact:  Interact,
-		DIO:       ebiten.DrawImageOptions{},
+		DIO:       &ebiten.DrawImageOptions{},
 	}
 
 	for _, opt := range opts {
@@ -46,7 +46,7 @@ func NewTileData(name string, imgData *imageassets.ImageData, layer string, Tile
 	return td, nil
 }
 
-func TileData_DIOOption(DIO ebiten.DrawImageOptions) TileDataOpt {
+func TileData_DIOOption(DIO *ebiten.DrawImageOptions) TileDataOpt {
 	return func(td *TileData) {
 		td.DIO = DIO
 	}
