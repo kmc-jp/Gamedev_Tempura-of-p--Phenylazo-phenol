@@ -48,33 +48,33 @@ func (pam *PathAnimateManager) SetPathAnimation(atype motiontype, to Vec2, fromS
 
 	switch atype {
 	case Move_Walk_speedBased:
-		distParFrame := fromSpeed / 60
-		framesRequired := uint(distance / distParFrame)
+		distParStep := fromSpeed / 60
+		StepsRequired := uint(distance / distParStep)
 
 		pam.currentStep = 0
-		pam.ToStep = framesRequired
+		pam.ToStep = StepsRequired
 		pam.direction = direction
 		pam.destinaton = to
 		pam.speed = fromSpeed
 		pam.acceleration = 0
 
 	case Move_Walk_timeBased:
-		framesRequired := time * 6
-		distParFrame := distance / float64(framesRequired)
-		spd := distParFrame * 60
+		StepsRequired := time * 6
+		distParStep := distance / float64(StepsRequired)
+		spd := distParStep * 60
 
 		pam.currentStep = 0
-		pam.ToStep = framesRequired
+		pam.ToStep = StepsRequired
 		pam.direction = direction
 		pam.destinaton = to
 		pam.speed = spd
 		pam.acceleration = 0
 	case Move_Decelerate:
-		framesRequired := time * 6
-		acl := (distance - fromSpeed*float64(framesRequired)) / (float64(framesRequired) * float64(framesRequired))
+		StepsRequired := time * 6
+		acl := (distance - fromSpeed*float64(StepsRequired)) / (float64(StepsRequired) * float64(StepsRequired))
 
 		pam.currentStep = 0
-		pam.ToStep = framesRequired
+		pam.ToStep = StepsRequired
 		pam.direction = direction
 		pam.destinaton = to
 		pam.speed = fromSpeed
