@@ -88,7 +88,7 @@ func (pam *PathAnimateManager) SetPathAnimation(atype motiontype, to Vec2, fromS
 
 func (p *Position) PathAnimate(pam *PathAnimateManager) motiontype {
 	// position += direction norm * (v/60 * t + a/60 * t * t)
-	p.Move(pam.direction.ScalarProd(float64(pam.speed*float64(pam.currentStep) + pam.acceleration*float64(pam.currentStep)*float64(pam.currentStep))).ScalarProd(1 / 60))
+	p.Move(pam.direction.ScalarProd(float64(pam.speed*float64(pam.currentStep) + pam.acceleration*float64(pam.currentStep)*float64(pam.currentStep))).ScalarProd(1.0 / 60.0))
 	pam.currentStep++
 	if pam.currentStep == pam.ToStep {
 		p.SetPosition(pam.destinaton)
