@@ -20,7 +20,9 @@ const (
 	Moving
 )
 
-type motiontype uint
+type MotionType uint
+
+type motiontype = MotionType
 
 type PathAnimateManager struct {
 	currentStep uint

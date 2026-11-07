@@ -50,4 +50,13 @@ func (t *Text) SetText(value string) {
 	t.text = value
 }
 
+func (t *Text) Position() utils.Position {
+	return t.position
+}
+
+func (t *Text) SetPosition(position utils.Position) {
+	t.position = position
+}
+
 var _ scene.Element = (*Text)(nil)
+var _ scene.PositionElement = (*Text)(nil)
