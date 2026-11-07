@@ -12,7 +12,7 @@ const (
 
 // only linear motion
 const (
-	Move_Walk_speedBased motiontype = iota
+	Move_Walk_speedBased Motiontype = iota
 	Move_Walk_timeBased
 	Move_Decelerate
 
@@ -20,9 +20,7 @@ const (
 	Moving
 )
 
-type MotionType uint
-
-type motiontype = MotionType
+type Motiontype uint
 
 type PathAnimateManager struct {
 	currentStep uint
@@ -50,7 +48,7 @@ func NewPathAnimateManager() *PathAnimateManager {
 	}
 }
 
-func (pam *PathAnimateManager) SetPathAnimation(atype motiontype, to Vec2, fromSpeed float64, time uint, p *Position) error {
+func (pam *PathAnimateManager) SetPathAnimation(atype Motiontype, to Vec2, fromSpeed float64, time uint, p *Position) error {
 	if p == nil {
 		return fmt.Errorf("position が nil です")
 	}
@@ -113,7 +111,7 @@ func (pam *PathAnimateManager) SetPathAnimation(atype motiontype, to Vec2, fromS
 	return nil
 }
 
-func (p *Position) PathAnimate(pam *PathAnimateManager) motiontype {
+func (p *Position) PathAnimate(pam *PathAnimateManager) Motiontype {
 	if pam == nil || !pam.active {
 		return Move_Finished
 	}

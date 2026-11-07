@@ -61,7 +61,7 @@ func (a *AnimatableUI) SetPosition(position utils.Position) {
 }
 
 func (a *AnimatableUI) SetPathAnimation(
-	animationType utils.MotionType,
+	animationType utils.Motiontype,
 	to utils.Vec2,
 	fromSpeed float64,
 	time uint,
