@@ -14,10 +14,13 @@ import (
 type StdRender struct {
 	asp   *goaseprite.File
 	img   *ebiten.Image
+	DIO   *ebiten.DrawImageOptions
 	layer string
 }
 
-func NewLayerableRender(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[*StdRender] {
+type StdRenderOpt func(*StdRender)
+
+func NewLayerableRender(asp *goaseprite.File, img *ebiten.Image, layer string, opts ...StdRenderOpt) Utils.Factory[*StdRender] {
 	return func() (*StdRender, error) {
 		if asp == nil {
 			return nil, fmt.Errorf("asp が nil です。")
@@ -45,14 +48,28 @@ func NewLayerableRender(asp *goaseprite.File, img *ebiten.Image, layer string) U
 		rndr := StdRender{
 			asp:   asp,
 			img:   sub,
+			DIO:   &ebiten.DrawImageOptions{},
 			layer: layer,
 		}
+
+		// オプション適用
+		for _, opt := range opts {
+			opt(&rndr)
+		}
+
 		return &rndr, nil
 	}
 }
 
-func (r StdRender) Draw() (image *ebiten.Image, Layer string) {
-	return r.img, r.layer
+// オプション
+func SR_WithDrawImageOptions(DIO *ebiten.DrawImageOptions) StdRenderOpt {
+	return func(sr *StdRender) {
+		sr.DIO = DIO
+	}
+}
+
+func (r StdRender) Draw() (*ebiten.Image, *ebiten.DrawImageOptions, string) {
+	return r.img, r.DIO, r.layer
 }
 
 func (r StdRender) Update() error {

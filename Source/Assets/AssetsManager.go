@@ -14,6 +14,10 @@ type AssetsManager struct {
 	assetsFS  *embed.FS
 }
 
+func (am *AssetsManager) Open(path string) (fs.File, error) {
+	return am.assetsFS.Open(path)
+}
+
 func NewAssetsManager(assetsFS *embed.FS) (*AssetsManager, error) {
 	imageFS, err := fs.Sub(assetsFS, "Assets/Images")
 	if err != nil {

@@ -12,15 +12,19 @@ import (
 
 // アニメーション画像を映すRender
 type AnimRender struct {
-	asp      *goaseprite.File
-	wholeImg *ebiten.Image
-	layer    string
-	player   *goaseprite.Player
+	asp       *goaseprite.File
+	wholeImg  *ebiten.Image
+	DIO       *ebiten.DrawImageOptions
+	layer     string
+	player    *goaseprite.Player
+	isPlaying bool
 }
+
+type AnimRenderOpt func(*AnimRender)
 
 // アニメーションが可能な Render をつくる
 // 使いまわし可能
-func NewAnimRender(asp *goaseprite.File, img *ebiten.Image, layer string, firstTag string) Utils.Factory[*AnimRender] {
+func NewAnimRender(asp *goaseprite.File, img *ebiten.Image, layer string, firstTag string, opts ...AnimRenderOpt) Utils.Factory[*AnimRender] {
 	return func() (*AnimRender, error) {
 		if asp == nil {
 			return nil, fmt.Errorf("asp が nil です。")
@@ -38,10 +42,23 @@ func NewAnimRender(asp *goaseprite.File, img *ebiten.Image, layer string, firstT
 			asp:      asp,
 			wholeImg: img,
 			layer:    layer,
+			DIO:      &ebiten.DrawImageOptions{},
 			player:   player,
 		}
 
+		// オプション適用
+		for _, opt := range opts {
+			opt(&rndr)
+		}
+
 		return &rndr, nil
+	}
+}
+
+// オプション
+func AR_WithDrawImageOptions(DIO *ebiten.DrawImageOptions) AnimRenderOpt {
+	return func(ar *AnimRender) {
+		ar.DIO = DIO
 	}
 }
 
@@ -59,14 +76,20 @@ func (r *AnimRender) SetTag(tag string) error {
 	}
 }
 
-func (r AnimRender) Draw() (*ebiten.Image, string) {
+func (r *AnimRender) SetPlaying(activate bool) {
+	r.isPlaying = activate
+}
+
+func (r AnimRender) Draw() (*ebiten.Image, *ebiten.DrawImageOptions, string) {
 	img := r.wholeImg.SubImage(image.Rect(r.player.CurrentFrameCoords())).(*ebiten.Image)
 
-	return img, r.layer
+	return img, r.DIO, r.layer
 }
 
 func (r *AnimRender) Update() error {
-	r.FrameUpdate()
+	if r.isPlaying {
+		r.FrameUpdate()
+	}
 
 	return nil
 }

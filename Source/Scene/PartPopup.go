@@ -16,6 +16,7 @@ const (
 type partPopup struct {
 	image    *ebiten.Image
 	position Utils.Position
+	DIO      *ebiten.DrawImageOptions
 	timer    *tick.Timer
 	expired  bool
 }
@@ -35,6 +36,7 @@ func NewPartPopup(image *ebiten.Image, position Utils.Position) Entity {
 	return &partPopup{
 		image:    popupImage,
 		position: position,
+		DIO:      &ebiten.DrawImageOptions{},
 		timer:    timer,
 	}
 }
@@ -51,8 +53,8 @@ func (p *partPopup) Update(active bool) error {
 	return nil
 }
 
-func (p *partPopup) Draw() (*ebiten.Image, string) {
-	return p.image, "Popup"
+func (p *partPopup) Draw() (*ebiten.Image, *ebiten.DrawImageOptions, string) {
+	return p.image, p.DIO, "Popup"
 }
 
 func (p *partPopup) Position() Utils.Position {
