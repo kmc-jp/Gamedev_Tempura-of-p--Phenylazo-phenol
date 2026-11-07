@@ -20,3 +20,8 @@ func (p Position) DistanceSquared(p2 Position) float64 {
 func (p Position) Distance(p2 Position) float64 {
 	return p.Offset(p2).Length()
 }
+
+func (p *Position) SetPosition(v Vec2) {
+	p.X = v.X
+	p.Y = v.Y
+}
