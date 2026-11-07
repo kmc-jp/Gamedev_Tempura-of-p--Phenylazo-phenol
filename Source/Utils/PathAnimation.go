@@ -1,7 +1,5 @@
 package Utils
 
-import tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
-
 //only linear motion
 const (
 	Move_Walk_speedBased motiontype = iota
@@ -17,7 +15,6 @@ type motiontype uint
 type PathAnimateManager struct {
 	currentStep uint
 	ToStep      uint
-	timer       *tick.Timer
 
 	direction    Vec2
 	destinaton   Vec2
