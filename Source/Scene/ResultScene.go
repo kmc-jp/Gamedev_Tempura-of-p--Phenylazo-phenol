@@ -77,7 +77,10 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 		//組み立てに使うパーツを選択
 
 		s.gamedata.Assemble = append(s.gamedata.Assemble, s.gamedata.Parts...) //本来はs.gamedata.Partsを追加
-		s.gamedata.State = game.Result_Assembled
+		s.gamedata.Assemble = s.gamedata.Assemble.SortWithKind()
+		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+			s.gamedata.State = game.Result_Assembled
+		}
 	}
 
 	// 組み立てPC観察フェーズ
