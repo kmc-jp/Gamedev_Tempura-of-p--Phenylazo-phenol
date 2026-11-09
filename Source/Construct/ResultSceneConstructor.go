@@ -72,6 +72,16 @@ func ResultSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inp
 		)
 		resultscene.AddUIElement(InstalledPartsUI)
 
+		partsList, err := ui.NewPartsListUI(
+			Utils.Position{X: 20, Y: 30},
+			ui.FontFace(gdata.Font, 16),
+			ui.FontFace(gdata.Font, 12),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("ui.NewPartsListUI() でエラーが発生しました。\n%w", err)
+		}
+		resultscene.SetPartsList(partsList)
+
 		return resultscene, nil
 	}
 }
