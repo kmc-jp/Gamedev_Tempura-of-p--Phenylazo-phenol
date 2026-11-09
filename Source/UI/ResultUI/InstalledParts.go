@@ -53,6 +53,21 @@ func (ips *InstalledParts) SetPartsInfo() error {
 				return fmt.Errorf("SetPartsInfo()のAnimatableUI生成NewAnimatableUI()でエラーが発生しました\n%w\n", err)
 			}
 			ips.parts = append(ips.parts, aui)
+		} else {
+			t, err := ui.NewText(*ips.pos, color.Orange(), v.Name, ui.FontFace(ips.gdata.Font, TextSize))
+			if err != nil {
+				return fmt.Errorf("SetPartsInfo()のテキスト生成NewText()でエラーが発生しました\n%w\n", err)
+			}
+			aui, err := ui.NewAnimatableUI(
+				Utils.Position{X: ips.pos.X - UIsOffset, Y: ips.parts[i-1].Position().Y + RecordDistance},
+				ips.recordSize,
+				nil,
+				t,
+			)
+			if err != nil {
+				return fmt.Errorf("SetPartsInfo()のAnimatableUI生成NewAnimatableUI()でエラーが発生しました\n%w\n", err)
+			}
+			ips.parts = append(ips.parts, aui)
 		}
 	}
 	return nil
