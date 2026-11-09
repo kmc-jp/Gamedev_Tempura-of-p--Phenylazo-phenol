@@ -61,7 +61,7 @@ func (a *AnimatableUI) SetPosition(position utils.Position) {
 	a.syncTextPosition()
 }
 
-// to: 目標位置, fromspeed: 初速, time: 終了までの設定時間; 数値の組み合わせと実際の挙動の整合性に注意
+// to: 目標位置, fromspeed: 初速, time: 終了までの設定時間(0.1s); 数値の組み合わせと実際の挙動の整合性に注意
 func (a *AnimatableUI) SetPathAnimation(
 	animationType utils.Motiontype,
 	to utils.Vec2,
