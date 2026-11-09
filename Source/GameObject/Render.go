@@ -5,6 +5,6 @@ import (
 )
 
 type Render interface {
-	Draw() (image *ebiten.Image, Layer string)
+	Draw() (image *ebiten.Image, DIO *ebiten.DrawImageOptions, Layer string)
 	Update() error
 }

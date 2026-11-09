@@ -90,6 +90,7 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 
 	// ベンチマークフェーズ
 	if s.gamedata.State == game.Result_Benchmark {
+		s.elements[1].Update(true)
 
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 			var score float32

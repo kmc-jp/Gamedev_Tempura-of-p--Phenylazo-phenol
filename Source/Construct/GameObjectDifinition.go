@@ -104,6 +104,7 @@ func NewCharactor(
 	NewAnimRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[*component.AnimRender],
 	assetsManager *assets.AssetsManager,
 	walktime int,
+	dirTag map[Utils.Vec2Int]string,
 ) Utils.Factory[*gameobject.GameObject] {
 	return func() (*gameobject.GameObject, error) {
 		// キャラクター画像設定
@@ -120,7 +121,7 @@ func NewCharactor(
 		}
 
 		// TileWalker
-		TW, err := component.NewTileWalker(TileData, position, o.Transform(), TileMap, o.Render().(*component.AnimRender), walktime)()
+		TW, err := component.NewTileWalker(TileData, position, o.Transform(), TileMap, o.Render().(*component.AnimRender), walktime, dirTag)()
 		if err != nil {
 			return nil, fmt.Errorf("component.NewTileWalker(TileData, position)() でエラーが発生しました。\n%w", err)
 		}
@@ -143,9 +144,10 @@ func NewPlayer(
 	NewAnimRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[*component.AnimRender],
 	assetsManager *assets.AssetsManager,
 	walktime int,
+	dirTag map[Utils.Vec2Int]string,
 ) Utils.Factory[*gameobject.GameObject] {
 	return func() (*gameobject.GameObject, error) {
-		plobj, err := NewCharactor(name, position, TileData, TileMap, PlScene, NewTransform, NewAnimRender, assetsManager, walktime)()
+		plobj, err := NewCharactor(name, position, TileData, TileMap, PlScene, NewTransform, NewAnimRender, assetsManager, walktime, dirTag)()
 		if err != nil {
 			return nil, fmt.Errorf("NewCharactor() でエラーが発生しました。\n%w", err)
 		}

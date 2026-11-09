@@ -16,16 +16,15 @@ type MockCamera struct {
 // Draw implements [WorldDrawer].
 func (m MockCamera) Draw(screen *ebiten.Image, objects []scene.Entity) {
 	for _, obj := range objects {
-		image, _ := obj.Draw()
+		image, DIO, _ := obj.Draw()
 		pos := obj.Position()
 
 		posx, posy := pos.X, pos.Y
 		sizex, sizey := image.Bounds().Dx(), image.Bounds().Dy()
 		iposx, iposy := math.Floor(posx-float64(sizex)/2), math.Floor(posy-float64(sizey)/2)
 
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(iposx, iposy)
-		screen.DrawImage(image, op)
+		DIO.GeoM.Translate(iposx, iposy)
+		screen.DrawImage(image, DIO)
 	}
 }
 
