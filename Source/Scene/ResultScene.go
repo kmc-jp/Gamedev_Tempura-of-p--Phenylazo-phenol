@@ -89,17 +89,28 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
 				s.partsList.MoveSelection(1)
 			}
+			if s.isSelectingArbitraryParts() && s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+				s.partsList.SetVisible(false)
+				s.gamedata.State = game.Result_Assembled
+				return
+			}
 			if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
 				part := s.partsList.SelectedPart()
 				if part == nil {
+					if s.isSelectingArbitraryParts() {
+						return
+					}
 					return nil, transition.None(), fmt.Errorf("選択されたパーツがありません")
 				}
 				s.gamedata.Assemble = append(s.gamedata.Assemble, part)
+				if s.isSelectingArbitraryParts() {
+					if err := s.setCurrentPartsList(); err != nil {
+						return nil, transition.None(), fmt.Errorf("任意パーツ一覧の更新に失敗しました。\n%w", err)
+					}
+					return
+				}
 				s.partKindIndex++
-				if s.partKindIndex >= len(game.AvailableParts) {
-					s.partsList.SetVisible(false)
-					s.gamedata.State = game.Result_Assembled
-				} else if err := s.setCurrentPartsList(); err != nil {
+				if err := s.setCurrentPartsList(); err != nil {
 					return nil, transition.None(), fmt.Errorf("結果画面のパーツ一覧の更新に失敗しました。\n%w", err)
 				}
 			}
@@ -167,24 +178,33 @@ func (s *ResultScene) setCurrentPartsList() error {
 	if s.partsList == nil {
 		return fmt.Errorf("パーツ一覧が設定されていません")
 	}
-	if s.partKindIndex < 0 || s.partKindIndex >= len(game.AvailableParts) {
+	if s.partKindIndex < 0 || s.partKindIndex > len(game.AvailableParts) {
 		return fmt.Errorf("パーツ種別の選択位置が不正です: %d", s.partKindIndex)
 	}
 
-	kind := game.AvailableParts[s.partKindIndex]
 	available := game.Parts{}
-	for _, part := range s.gamedata.Parts {
-		if part != nil && part.Kind == kind {
-			available = append(available, part)
+	if s.isSelectingArbitraryParts() {
+		selected := s.selectedArbitraryParts()
+		for _, part := range s.gamedata.Parts {
+			if part != nil && !s.isAvailablePart(part) && selected[part] == 0 {
+				available = append(available, part)
+			}
 		}
-	}
-	if len(available) == 0 {
-		trash := partsdata.Trash()
-		if trash == nil {
-			return fmt.Errorf("Trashパーツの生成に失敗しました")
+	} else {
+		kind := game.AvailableParts[s.partKindIndex]
+		for _, part := range s.gamedata.Parts {
+			if part != nil && part.Kind == kind {
+				available = append(available, part)
+			}
 		}
-		trash.Kind = kind
-		available = append(available, trash)
+		if len(available) == 0 {
+			trash := partsdata.Trash()
+			if trash == nil {
+				return fmt.Errorf("Trashパーツの生成に失敗しました")
+			}
+			trash.Kind = kind
+			available = append(available, trash)
+		}
 	}
 
 	if err := s.partsList.SetParts(available); err != nil {
@@ -192,6 +212,29 @@ func (s *ResultScene) setCurrentPartsList() error {
 	}
 	s.partsList.SetVisible(true)
 	return nil
+}
+
+func (s *ResultScene) selectedArbitraryParts() map[*game.Part]int {
+	selected := map[*game.Part]int{}
+	for _, part := range s.gamedata.Assemble {
+		if part != nil && !s.isAvailablePart(part) {
+			selected[part]++
+		}
+	}
+	return selected
+}
+
+func (s *ResultScene) isSelectingArbitraryParts() bool {
+	return s.partKindIndex == len(game.AvailableParts)
+}
+
+func (s *ResultScene) isAvailablePart(part *game.Part) bool {
+	for _, availableKind := range game.AvailableParts {
+		if part.Kind == availableKind {
+			return true
+		}
+	}
+	return false
 }
 
 func (s ResultScene) SetCameraCenter(center Utils.Position) {
