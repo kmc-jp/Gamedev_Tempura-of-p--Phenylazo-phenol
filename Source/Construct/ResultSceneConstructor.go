@@ -5,6 +5,7 @@ import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
+	resultui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI/ResultUI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
@@ -63,6 +64,13 @@ func ResultSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inp
 			return nil, err
 		}
 		resultscene.AddUIElement(animUI)
+
+		InstalledPartsUI := resultui.NewInstalledParts(
+			Utils.Position{},
+			image.Point{X: 100, Y: 20},
+			gdata,
+		)
+		resultscene.AddUIElement(InstalledPartsUI)
 
 		return resultscene, nil
 	}

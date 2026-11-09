@@ -85,7 +85,7 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 		//所持パーツをもとに利用する絵を決定
 		//完成PCを表示
 
-		s.gamedata.State = game.Result_Benchmark
+		s.elements[2].Update(true)
 	}
 
 	// ベンチマークフェーズ
