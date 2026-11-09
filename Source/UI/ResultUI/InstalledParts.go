@@ -18,7 +18,7 @@ type InstalledParts struct {
 	pos        *Utils.Position
 	recordSize image.Point
 
-	gdata game.Gamedata
+	gdata *game.Gamedata
 
 	timer *tick.Timer
 
@@ -38,7 +38,7 @@ func NewInstalledParts(pos Utils.Position, recordSize image.Point, gdata *game.G
 		parts:      []*ui.AnimatableUI{},
 		pos:        &pos,
 		recordSize: recordSize,
-		gdata:      *gdata,
+		gdata:      gdata,
 		timer:      tick.NewTimer(),
 		active:     []bool{},
 		newest:     0,
@@ -94,6 +94,9 @@ func (i *InstalledParts) Draw(screen *ebiten.Image) {
 
 func (i *InstalledParts) Update(active bool) error {
 	if i.newest == uint(len(i.active)) {
+		if err := i.gdata.NextState(); err != nil {
+			return err
+		}
 		return nil
 	}
 	i.timer.Set(SlideinInterval)
