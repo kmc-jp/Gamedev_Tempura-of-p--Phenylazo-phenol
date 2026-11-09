@@ -8,7 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// パーツ種別
+// パーツ種別 kind
 const (
 	CPU kinds = iota
 	GPU
@@ -24,6 +24,18 @@ const (
 	Others
 )
 
+// 小分類 subcategory
+const (
+	GPU_Black subcategory = iota
+	GPU_White
+
+	MB_Black
+	MB_White
+
+	Case_Black
+	Case_White
+)
+
 const (
 	AvailablePartsKind = 5 // 有効なパーツ種の数
 	ArbitraryPartsKind = 1 // 任意のパーツ種の数
@@ -32,6 +44,7 @@ const (
 var AvailableParts = [AvailablePartsKind]kinds{CPU, GPU, RAM, MB, Case}
 
 type kinds uint
+type subcategory uint
 
 // パーツの状態ランク, UI上でのアルファベット表記はしない
 // Value倍率を定義
@@ -58,6 +71,7 @@ type rarity uint
 type Part struct {
 	Name        string
 	Kind        kinds
+	Subcategory subcategory
 	Rarity      rarity
 	Weight      int
 	Val         int
