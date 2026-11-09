@@ -5,6 +5,7 @@ import (
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
+	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
 	"image"
 
@@ -18,12 +19,18 @@ type InstalledParts struct {
 	recordSize image.Point
 
 	gdata game.Gamedata
+
+	timer *tick.Timer
+
+	active []bool
+	newest uint
 }
 
 const (
-	RecordDistance = 5
-	TextSize       = 20
-	UIsOffset      = 300 //ui移動開始前の位置差分
+	RecordDistance  = 5
+	TextSize        = 20
+	UIsOffset       = 300 //ui移動開始前の位置差分; 正数値で左からスライドイン
+	SlideinInterval = 4   //unit: 0.1s
 )
 
 func NewInstalledParts(pos Utils.Position, recordSize image.Point, gdata *game.Gamedata) *InstalledParts {
@@ -32,6 +39,9 @@ func NewInstalledParts(pos Utils.Position, recordSize image.Point, gdata *game.G
 		pos:        &pos,
 		recordSize: recordSize,
 		gdata:      *gdata,
+		timer:      tick.NewTimer(),
+		active:     []bool{},
+		newest:     0,
 	}
 }
 
@@ -70,6 +80,9 @@ func (ips *InstalledParts) SetPartsInfo() error {
 			ips.parts = append(ips.parts, aui)
 		}
 	}
+	for i := 0; i < len(ips.parts); i++ {
+		ips.active = append(ips.active, false)
+	}
 	return nil
 }
 
@@ -80,8 +93,18 @@ func (i *InstalledParts) Draw(screen *ebiten.Image) {
 }
 
 func (i *InstalledParts) Update(active bool) error {
-	for _, v := range i.parts {
-		v.Update(true)
+	if i.newest == uint(len(i.active)) {
+		return nil
+	}
+	i.timer.Set(SlideinInterval)
+	if i.timer.Expired() {
+		i.active[i.newest] = true
+		i.newest++
+	}
+	for idx, actv := range i.active {
+		if err := i.parts[idx].Update(actv); err != nil {
+			return fmt.Errorf("InstalledParts.Update()でエラーが発生しました\n%w\n", err)
+		}
 	}
 	return nil
 }
