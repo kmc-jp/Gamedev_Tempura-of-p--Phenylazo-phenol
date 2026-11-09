@@ -24,6 +24,8 @@ type InstalledParts struct {
 
 	active []bool
 	newest uint
+
+	ready bool
 }
 
 const (
@@ -93,6 +95,11 @@ func (i *InstalledParts) Draw(screen *ebiten.Image) {
 }
 
 func (i *InstalledParts) Update(active bool) error {
+	if i.ready == false {
+		i.SetPartsInfo()
+		i.ready = true
+		return nil
+	}
 	if i.newest == uint(len(i.active)) {
 		if err := i.gdata.NextState(); err != nil {
 			return err
