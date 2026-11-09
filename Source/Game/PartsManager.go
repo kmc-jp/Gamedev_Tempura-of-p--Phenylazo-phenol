@@ -229,3 +229,28 @@ func (p *Part) SetRandomRank(a, b, c, d float32) error {
 	}
 	return nil
 }
+
+// AvailableParts の順にKindでソート
+func (pts Parts) SortWithKind() Parts {
+	var sorted Parts
+	var eliminated Parts
+
+	//ptsから各Kindを抽出, nil化
+	for i := 0; i < AvailablePartsKind; i++ {
+		for j, v := range pts {
+			if v.Kind == AvailableParts[i] {
+				sorted = append(sorted, v)
+				pts[j] = nil
+			}
+		}
+	}
+
+	//残りの要素を追加
+	sorted = append(sorted, pts...)
+	for _, v := range sorted {
+		if v != nil {
+			eliminated = append(eliminated, v)
+		}
+	}
+	return eliminated
+}
