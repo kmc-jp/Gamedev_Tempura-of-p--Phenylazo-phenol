@@ -98,6 +98,7 @@ func (g *Gamedata) ResetGame() {
 	g.Money = InitialMoney
 }
 
+// 同じScene内での利用を想定
 func (g *Gamedata) NextState() error {
 	if g.State >= states {
 		return fmt.Errorf("未知のstateに遷移しようとしています")
