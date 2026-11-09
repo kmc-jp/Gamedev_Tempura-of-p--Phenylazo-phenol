@@ -3,6 +3,7 @@ package game
 import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
 	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
+	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
@@ -69,6 +70,8 @@ const (
 	Result_QuitGame
 )
 
+const states = 9 //stateの数
+
 type state uint
 
 func NewGamedata() *Gamedata {
@@ -93,4 +96,12 @@ func (g *Gamedata) ResetGame() {
 	g.Assemble = []*Part{}
 	g.Weight = InitialWeight
 	g.Money = InitialMoney
+}
+
+func (g *Gamedata) NextState() error {
+	if g.State >= states {
+		return fmt.Errorf("未知のstateに遷移しようとしています")
+	}
+	g.State++
+	return nil
 }
