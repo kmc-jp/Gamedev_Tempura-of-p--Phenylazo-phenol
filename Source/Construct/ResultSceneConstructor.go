@@ -5,6 +5,7 @@ import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
+	resultui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI/ResultUI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
@@ -59,10 +60,17 @@ func ResultSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inp
 		if err != nil {
 			return nil, fmt.Errorf("ui.NewanimatableUI() でエラーが発生しました。\n%w", err)
 		}
-		if err := animUI.SetPathAnimation(Utils.Move_Decelerate, Utils.Vec2{X: 100, Y: 100}, 280, 10); err != nil {
+		if err := animUI.SetPathAnimation(Utils.Move_Decelerate, Utils.Vec2{X: 150, Y: 150}, 360, 10); err != nil {
 			return nil, err
 		}
 		resultscene.AddUIElement(animUI)
+
+		InstalledPartsUI := resultui.NewInstalledParts(
+			Utils.Position{X: 30, Y: 30},
+			image.Point{X: 100, Y: 20},
+			gdata,
+		)
+		resultscene.AddUIElement(InstalledPartsUI)
 
 		return resultscene, nil
 	}

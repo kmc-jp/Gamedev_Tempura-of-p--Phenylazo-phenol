@@ -76,7 +76,7 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 	if s.gamedata.State == game.Result_SelectParts {
 		//組み立てに使うパーツを選択
 
-		s.gamedata.Assemble = append(s.gamedata.Assemble, s.gamedata.Found...) //本来はs.gamedata.Partsを追加
+		s.gamedata.Assemble = append(s.gamedata.Assemble, s.gamedata.Parts...) //本来はs.gamedata.Partsを追加
 		s.gamedata.State = game.Result_Assembled
 	}
 
@@ -85,7 +85,7 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 		//所持パーツをもとに利用する絵を決定
 		//完成PCを表示
 
-		s.gamedata.State = game.Result_Benchmark
+		s.elements[2].Update(true)
 	}
 
 	// ベンチマークフェーズ
