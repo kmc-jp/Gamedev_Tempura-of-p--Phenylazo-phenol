@@ -102,21 +102,32 @@ func (i *InstalledParts) Update(active bool) error {
 		i.ready = true
 		return nil
 	}
-	if i.newest == uint(len(i.active)) {
-		if err := i.gdata.NextState(); err != nil {
-			return err
+	if i.newest < uint(len(i.active)) {
+		i.timer.Set(SlideinInterval)
+		if i.timer.Expired() {
+			i.active[i.newest] = true
+			i.newest++
 		}
-		return nil
-	}
-	i.timer.Set(SlideinInterval)
-	if i.timer.Expired() {
-		i.active[i.newest] = true
-		i.newest++
 	}
 	for idx, actv := range i.active {
 		if err := i.parts[idx].Update(actv); err != nil {
 			return fmt.Errorf("InstalledParts.Update()でエラーが発生しました\n%w\n", err)
 		}
 	}
+
+	if i.newest == uint(len(i.active)) && i.allAnimationsFinished() {
+		if err := i.gdata.NextState(); err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+func (i *InstalledParts) allAnimationsFinished() bool {
+	for _, part := range i.parts {
+		if part.IsAnimating() {
+			return false
+		}
+	}
+	return true
 }
