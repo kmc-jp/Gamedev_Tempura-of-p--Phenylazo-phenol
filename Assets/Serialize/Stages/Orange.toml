@@ -6,11 +6,11 @@ WallLayer = "Floor"
 
 [TileData]
 shelf = {Name = "shelf", JsonPath = "みんげー_棚.json", PngPath = "みんげー_棚.png", Type = "shelf", Size = {X = 2, Y = 1}, Offset = {X = 19, Y = 4}}
-floor = {Name = "floor", JsonPath = "Images/StageAssets/Red/みんげー_床_橙.json", PngPath = "Images/StageAssets/Red/みんげー_床_橙.png"}
+floor = {Name = "floor", JsonPath = "StageAssets/Orange/みんげー_床_橙.json", PngPath = "StageAssets/Orange/みんげー_床_橙.png"}
 register = {Name = "register", JsonPath =  "みんげー_レジ机.json", PngPath = "みんげー_レジ机.png", Size = {X = 1, Y = 1}, Offset = {X = 19, Y = 4}}
-WallTop = {Name = "wallTop", JsonPath = "Images/StageAssets/Red/みんげー_床_橙.json", PngPath = "Images/StageAssets/Red/みんげー_床_橙.png"}
-WallSide = {Name = "wallSide", JsonPath = "Images/StageAssets/Red/みんげー_床_橙.json", PngPath = "Images/StageAssets/Red/みんげー_床_橙.png", Reversible = true}
-WallCorner = {Name = "wallCorner", JsonPath = "Images/StageAssets/Red/みんげー_床_橙.json", PngPath = "Images/StageAssets/Red/みんげー_床_橙.png", Reversible = true}
+WallTop = {Name = "wallTop", JsonPath = "StageAssets/Orange/みんげー_壁横_橙.json", PngPath = "StageAssets/Orange/みんげー_壁横_橙.png"}
+WallSide = {Name = "wallSide", JsonPath = "StageAssets/Orange/みんげー_壁縦_橙.json", PngPath = "StageAssets/Orange/みんげー_壁縦_橙.png", Reversible = true}
+WallCorner = {Name = "wallCorner", JsonPath = "StageAssets/Orange/みんげー_壁縦端_橙.json", PngPath = "StageAssets/Orange/みんげー_壁縦端_橙.png", Reversible = true}
 
 [ObjectMap]
 "-1, 0" = {Tile =  "register", Layer = "Object"}
