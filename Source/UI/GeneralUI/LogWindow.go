@@ -48,3 +48,19 @@ func NewLogWindow(pos Utils.Position, gdata game.Gamedata, displaytime uint) (*L
 		timer:       tick.NewTimer(),
 	}, nil
 }
+
+func (lw *LogWindow) SetMessage(text string) {
+	lw.RichUI.SetText(text)
+}
+
+func (lw *LogWindow) ClearMessage() {
+	lw.RichUI.SetText("")
+}
+
+func (lw *LogWindow) Draw(screen *ebiten.Image) {
+	lw.RichUI.Draw(screen)
+}
+
+func (lw *LogWindow) Update(active bool) error {
+	return nil
+}

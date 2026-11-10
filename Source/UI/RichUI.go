@@ -76,4 +76,8 @@ func (r *RichUI) SetPosition(position utils.Position) {
 	r.position = position
 }
 
+func (r *RichUI) SetText(text string) {
+	r.text.SetText(text)
+}
+
 var _ scene.Element = (*RichUI)(nil)
