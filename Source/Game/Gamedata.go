@@ -27,7 +27,8 @@ type Gamedata struct {
 	//仮UIでのテスト用テキストデータ
 	Text string
 
-	Message string
+	Message    string //ゲーム内メッセージ用
+	Message_sn uint   //メッセージの変更検知用serial number
 
 	//以下ゲーム用データ
 
@@ -107,4 +108,9 @@ func (g *Gamedata) NextState() error {
 	}
 	g.State++
 	return nil
+}
+
+func (g *Gamedata) SetMessage(msg string) {
+	g.Message = msg
+	g.Message_sn++
 }

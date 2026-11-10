@@ -16,9 +16,15 @@ import (
 type LogWindow struct {
 	*ui.RichUI
 
-	DisplayTime uint //メッセージログ表示時間; unit: 0.1s
+	DisplayTime uint16 //メッセージログ表示時間; unit: 0.1s
+	displaying  bool
+
+	allowInterrupt bool
 
 	timer *tick.Timer
+
+	gdata  game.Gamedata
+	msg_sn uint
 }
 
 const (
@@ -31,7 +37,7 @@ var (
 	BackgroundColor = color.RGBA{200, 200, 200, 200}
 )
 
-func NewLogWindow(pos Utils.Position, gdata game.Gamedata, displaytime uint) (*LogWindow, error) {
+func NewLogWindow(pos Utils.Position, gdata game.Gamedata, displaytime uint16) (*LogWindow, error) {
 	t, err := ui.NewText(pos, TextColor, "", ui.FontFace(gdata.Font, TextSize))
 	if err != nil {
 		return nil, fmt.Errorf("NewLogWindow()のNewText()でエラーが発生しました\n%w\n", err)
@@ -43,9 +49,13 @@ func NewLogWindow(pos Utils.Position, gdata game.Gamedata, displaytime uint) (*L
 		return nil, fmt.Errorf("NewLogWindow()のNewRichUI()でエラーが発生しました\n%w\n", err)
 	}
 	return &LogWindow{
-		RichUI:      rui,
-		DisplayTime: displaytime,
-		timer:       tick.NewTimer(),
+		RichUI:         rui,
+		DisplayTime:    displaytime,
+		displaying:     false,
+		allowInterrupt: true,
+		timer:          tick.NewTimer(),
+		gdata:          gdata,
+		msg_sn:         0,
 	}, nil
 }
 
@@ -62,5 +72,34 @@ func (lw *LogWindow) Draw(screen *ebiten.Image) {
 }
 
 func (lw *LogWindow) Update(active bool) error {
+	if !active {
+		return nil
+	}
+	if lw.gdata.Message == "" {
+		return nil
+	}
+	if !lw.displaying {
+		lw.displaying = true
+		lw.timer.Set(lw.DisplayTime)
+		lw.SetMessage(lw.gdata.Message)
+		lw.msg_sn = lw.gdata.Message_sn
+	} else {
+		if lw.msg_sn != lw.gdata.Message_sn && lw.allowInterrupt {
+			lw.timer.Set(0)
+			lw.timer.Set(lw.DisplayTime)
+			lw.SetMessage(lw.gdata.Message)
+			lw.msg_sn = lw.gdata.Message_sn
+		} else if lw.msg_sn != lw.gdata.Message_sn && !lw.allowInterrupt {
+			return fmt.Errorf("*LogWindow.Update()でメッセージウィンドウのテキスト割り込みが発生しました")
+		} else {
+			//no process
+		}
+	}
+
+	if lw.timer.Expired() {
+		lw.timer.Set(0)
+		lw.ClearMessage()
+		lw.displaying = false
+	}
 	return nil
 }
