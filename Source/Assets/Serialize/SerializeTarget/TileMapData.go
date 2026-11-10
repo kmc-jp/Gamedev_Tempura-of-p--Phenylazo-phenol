@@ -135,7 +135,7 @@ func (tmd TileMapData) Construct() (any, error) {
 		if tiledata.Reversible {
 			DIO := &ebiten.DrawImageOptions{}
 			DIO.GeoM.Scale(-1, 1)
-			revtile := makeTileDataWithDIO(tiledata.Name, imagedata, tileSize, interactivity, *DIO)
+			revtile := makeTileDataWithDIO(tiledata.Name, imagedata, tileSize, interactivity, DIO)
 			ReverseTiles[tilekey] = revtile
 		}
 	}
@@ -238,7 +238,7 @@ func (tmd TileMapData) Construct() (any, error) {
 		if !ok {
 			return nil, fmt.Errorf("WallKeyUp のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, WallKeyL)
 		}
-		tileFactoryR, ok := Tiles[WallKeyR]
+		tileFactoryR, ok := ReverseTiles[WallKeyR]
 		if !ok {
 			return nil, fmt.Errorf("WallKeyDown のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, WallKeyR)
 		}
@@ -285,7 +285,7 @@ func (tmd TileMapData) Construct() (any, error) {
 		if !ok {
 			return nil, fmt.Errorf("CornerUL のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyUL)
 		}
-		tileFactoryUR, ok := Tiles[CornerKeyUR]
+		tileFactoryUR, ok := ReverseTiles[CornerKeyUR]
 		if !ok {
 			return nil, fmt.Errorf("CornerUR のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyUR)
 		}
@@ -293,7 +293,7 @@ func (tmd TileMapData) Construct() (any, error) {
 		if !ok {
 			return nil, fmt.Errorf("CornerDL のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyDL)
 		}
-		tileFactoryDR, ok := Tiles[CornerKeyDR]
+		tileFactoryDR, ok := ReverseTiles[CornerKeyDR]
 		if !ok {
 			return nil, fmt.Errorf("CornerDR のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyDR)
 		}
@@ -406,7 +406,7 @@ func makeTileData(name string, imgData *imageassets.ImageData, tileSize Utils.Ve
 	}
 }
 
-func makeTileDataWithDIO(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType, DIO ebiten.DrawImageOptions) func(layer string) (*tilemap.TileData, error) {
+func makeTileDataWithDIO(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType, DIO *ebiten.DrawImageOptions) func(layer string) (*tilemap.TileData, error) {
 	return func(layer string) (*tilemap.TileData, error) {
 		return tilemap.NewTileData(name, imgData, layer, tileSize, Interact, tilemap.TileData_DIOOption(DIO))
 	}
