@@ -89,16 +89,22 @@ func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 	}
 
 	if s.Input.ActionIsJustPressed(inputconfig.Action1) {
-		return func() (game.Scene, error) {
-			nextScene, err := s.initScenes.InitPlayScene[Stage1]()
-			if err != nil {
-				return nil, fmt.Errorf("s.initScenes.InitPlayScene() でエラーが発生しました。\n%w", err)
-			}
-			nextScene.Gamedata = s.gamedata
-			nextScene.Gamedata.ForNewScene(game.Play_Explore)
-			nextScene.initScenes = s.initScenes
-			return nextScene, nil
-		}, transition.NewScene(), nil
+		return s.mkStage(Stage1), transition.NewScene(), nil
+	}
+	if s.Input.ActionIsJustPressed(inputconfig.ActionRed) {
+		return s.mkStage(Red), transition.NewScene(), nil
+	}
+	if s.Input.ActionIsJustPressed(inputconfig.ActionBlue) {
+		return s.mkStage(Blue), transition.NewScene(), nil
+	}
+	if s.Input.ActionIsJustPressed(inputconfig.ActionGreen) {
+		return s.mkStage(Green), transition.NewScene(), nil
+	}
+	if s.Input.ActionIsJustPressed(inputconfig.ActionOrange) {
+		return s.mkStage(Orange), transition.NewScene(), nil
+	}
+	if s.Input.ActionIsJustPressed(inputconfig.ActionPurple) {
+		return s.mkStage(Purple), transition.NewScene(), nil
 	}
 
 	return
@@ -114,4 +120,17 @@ func (s *TitleScene) AddUIElement(e Element) {
 
 func (s TitleScene) SetCameraCenter(center Utils.Position) {
 	s.worldDrawer.SetCenter(center)
+}
+
+func (s TitleScene) mkStage(stage Stage) Utils.Factory[game.Scene] {
+	return func() (game.Scene, error) {
+		nextScene, err := s.initScenes.InitPlayScene[stage]()
+		if err != nil {
+			return nil, fmt.Errorf("s.initScenes.InitPlayScene() でエラーが発生しました。\n%w", err)
+		}
+		nextScene.Gamedata = s.gamedata
+		nextScene.Gamedata.ForNewScene(game.Play_Explore)
+		nextScene.initScenes = s.initScenes
+		return nextScene, nil
+	}
 }
