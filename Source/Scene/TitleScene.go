@@ -100,30 +100,6 @@ func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 			return nextScene, nil
 		}, transition.NewScene(), nil
 	}
-	if s.Input.ActionIsJustPressed(inputconfig.Action2) {
-		return func() (game.Scene, error) {
-			nextScene, err := s.initScenes.InitPlayScene[Stage2]()
-			if err != nil {
-				return nil, fmt.Errorf("s.initScenes.InitPlayScene() でエラーが発生しました。\n%w", err)
-			}
-			nextScene.Gamedata = s.gamedata
-			nextScene.Gamedata.ForNewScene(game.Play_Explore)
-			nextScene.initScenes = s.initScenes
-			return nextScene, nil
-		}, transition.NewScene(), nil
-	}
-	if s.Input.ActionIsJustPressed(inputconfig.Action3) {
-		return func() (game.Scene, error) {
-			nextScene, err := s.initScenes.InitPlayScene[Stage3]()
-			if err != nil {
-				return nil, fmt.Errorf("s.initScenes.InitPlayScene() でエラーが発生しました。\n%w", err)
-			}
-			nextScene.Gamedata = s.gamedata
-			nextScene.Gamedata.ForNewScene(game.Play_Explore)
-			nextScene.initScenes = s.initScenes
-			return nextScene, nil
-		}, transition.NewScene(), nil
-	}
 
 	return
 }
