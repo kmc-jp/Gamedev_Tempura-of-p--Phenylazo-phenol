@@ -162,8 +162,8 @@ func MakeTileMapObj(assetsManager *assets.AssetsManager, Stage2URL scene.Stage2U
 	NewTransform := func(position Utils.Position) Utils.Factory[gameobject.Transform] {
 		return Utils.CastFactory[*component.StdTransform, gameobject.Transform](component.NewStdTransform(position))
 	}
-	NewRenderer := func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render] {
-		return Utils.CastFactory[*component.StdRender, gameobject.Render](component.NewLayerableRender(asp, img, layer))
+	NewRenderer := func(asp *goaseprite.File, img *ebiten.Image, DIO *ebiten.DrawImageOptions, layer string) Utils.Factory[gameobject.Render] {
+		return Utils.CastFactory[*component.StdRender, gameobject.Render](component.NewLayerableRender(asp, img, layer, component.SR_WithDrawImageOptions(DIO)))
 	}
 	tilemapobj, err := NewTileMapObject("TileMapObj", *TileMapData, PlScene, NewTransform, NewRenderer, assetsManager)()
 	if err != nil {

@@ -16,9 +16,11 @@ import (
 // 個々の GameObject の定義を書く
 
 // タイルマップ関連
-func NewTileObject(name string, data tilemap.TileData, scene *scene.PlayScene, NewTransform Utils.Factory[gameobject.Transform], NewRender Utils.Factory[gameobject.Render]) Utils.Factory[*gameobject.GameObject] {
+func NewTileObject(name string, data tilemap.TileData, scene *scene.PlayScene, NewTransform Utils.Factory[gameobject.Transform], NewRender func(*ebiten.DrawImageOptions) Utils.Factory[gameobject.Render]) Utils.Factory[*gameobject.GameObject] {
 	return func() (*gameobject.GameObject, error) {
-		o, err := gameobject.NewGameObject(name, scene, NewTransform, NewRender)()
+		dio := data.DIO
+
+		o, err := gameobject.NewGameObject(name, scene, NewTransform, NewRender(dio))()
 		if err != nil {
 			return o, fmt.Errorf("newStdObject() でエラーが発生しました。\n%w", err)
 		}
@@ -39,7 +41,7 @@ func NewTileMapObject(
 	mapdata tilemap.TileMapData,
 	PlScene *scene.PlayScene,
 	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
-	NewRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[gameobject.Render],
+	NewRender func(*goaseprite.File, *ebiten.Image, *ebiten.DrawImageOptions, string) Utils.Factory[gameobject.Render],
 	assetsManager *assets.AssetsManager,
 ) Utils.Factory[*gameobject.GameObject] {
 	return func() (*gameobject.GameObject, error) {
@@ -80,7 +82,12 @@ func NewTileMapObject(
 					mock, _ := gameobject.NewMockGameObject(name)()
 					return mock, fmt.Errorf("assetsManager.Image.Load(data.ImageData) でエラーが発生しました。\n%w", err)
 				}
-				toFactory := NewTileObject(name, data, Scene, transformFactry, NewRender(asp, img, layer))
+
+				NR := func(DIO *ebiten.DrawImageOptions) Utils.Factory[gameobject.Render] {
+					return NewRender(asp, img, DIO, layer)
+				}
+
+				toFactory := NewTileObject(name, data, Scene, transformFactry, NR)
 				return toFactory()
 			}
 		}
