@@ -133,8 +133,10 @@ func (tmd TileMapData) Construct() (any, error) {
 		Offsets[tilekey] = tiledata.Offset
 
 		if tiledata.Reversible {
+			tsv2 := tmd.TileSize.ToVec2()
 			DIO := &ebiten.DrawImageOptions{}
 			DIO.GeoM.Scale(-1, 1)
+			DIO.GeoM.Translate(tsv2.X, 0)
 			revtile := makeTileDataWithDIO(tiledata.Name, imagedata, tileSize, interactivity, DIO)
 			ReverseTiles[tilekey] = revtile
 		}
