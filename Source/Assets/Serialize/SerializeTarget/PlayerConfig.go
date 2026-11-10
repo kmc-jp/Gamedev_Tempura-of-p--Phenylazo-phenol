@@ -2,6 +2,7 @@ package serializetarget
 
 import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
+	assetsutil "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/AssetsUtils"
 	imageassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Image"
 	serialize "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize"
 	tilemap "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/TileMap"
@@ -33,11 +34,11 @@ func (pc *PlayerConfig) Init(
 	}
 
 	// ファイルパスチェック
-	_, err := assetsManager.Image.CheckAndCleanPath(pc.TileData.JsonPath)
+	_, err := assetsutil.CheckAndCleanPath(pc.TileData.JsonPath, assetsManager.GetFS())
 	if err != nil {
 		return fmt.Errorf("assetsManager.Image.CheckAndCleanPath(pc.TileData.JsonPath) でエラーが発生しました。 JsonPath が不正です。\n%w", err)
 	}
-	_, err = assetsManager.Image.CheckAndCleanPath(pc.TileData.PngPath)
+	_, err = assetsutil.CheckAndCleanPath(pc.TileData.PngPath, assetsManager.GetFS())
 	if err != nil {
 		return fmt.Errorf("assetsManager.Image.CheckAndCleanPath(pc.TileData.PngPath) でエラーが発生しました。 PngPath が不正です。\n%w", err)
 	}

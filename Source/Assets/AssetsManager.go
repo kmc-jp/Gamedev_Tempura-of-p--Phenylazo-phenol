@@ -43,3 +43,7 @@ func NewAssetsManager(assetsFS *embed.FS) (*AssetsManager, error) {
 		assetsFS:  assetsFS,
 	}, nil
 }
+
+func (am AssetsManager) GetFS() fs.FS {
+	return am.assetsFS
+}
