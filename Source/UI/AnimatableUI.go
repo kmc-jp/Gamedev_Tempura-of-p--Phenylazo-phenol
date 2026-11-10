@@ -85,6 +85,10 @@ func (a *AnimatableUI) AnimationManager() *utils.PathAnimateManager {
 	return a.animationManager
 }
 
+func (a *AnimatableUI) IsAnimating() bool {
+	return a.animating
+}
+
 func (a *AnimatableUI) syncTextPosition() {
 	if a.RichUI.text == nil {
 		return
