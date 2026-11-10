@@ -44,7 +44,7 @@ func TrainSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inpu
 		trainscene.AddUIElement(text)
 
 		partsList, err := ui.NewPartsListUI(
-			Utils.Position{X: 20, Y: 30},
+			Utils.Position{X: 20, Y: 50},
 			ui.FontFace(gdata.Font, 16),
 			ui.FontFace(gdata.Font, 12),
 		)
