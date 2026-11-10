@@ -27,6 +27,8 @@ type Gamedata struct {
 	//仮UIでのテスト用テキストデータ
 	Text string
 
+	Message string
+
 	//以下ゲーム用データ
 
 	//持ち運び可能な残り荷物重量
