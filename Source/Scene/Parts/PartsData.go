@@ -64,6 +64,8 @@ var (
 			Val:         2000,
 			Rank:        game.C,
 			Performance: 1000,
+			Detail:      "MB の仮パーツデータ",
+			ImgName:     "みんげー_マザボ",
 		}
 	})
 
@@ -75,6 +77,8 @@ var (
 			Val:         2000,
 			Rank:        game.B,
 			Performance: 1000,
+			Detail:      "ケースの仮データ",
+			ImgName:     "完成版pc見本",
 		}
 	})
 

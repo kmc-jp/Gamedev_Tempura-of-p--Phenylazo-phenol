@@ -92,6 +92,14 @@ func (v1 Vec2) LengthSquared() float64 {
 	return v1.X*v1.X + v1.Y*v1.Y
 }
 
+func (v1 Vec2) Distance(v2 Vec2) float64 {
+	return math.Pow(v1.DistanceSquared(v2), 0.5)
+}
+
+func (v1 Vec2) DistanceSquared(v2 Vec2) float64 {
+	return v1.Sub(v2).LengthSquared()
+}
+
 func (v1 Vec2) Normalize() (Vec2, error) {
 	if v1.LengthSquared() == 0 {
 		return NewZeroVec2(), errors.New("零ベクトルは正規化できません")

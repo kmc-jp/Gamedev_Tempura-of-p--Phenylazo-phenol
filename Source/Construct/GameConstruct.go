@@ -38,9 +38,10 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 		}
 
 		gdata := game.NewGamedata()
-		gdata.Font, err = ui.LoadFont("Assets/Fonts/Noto_Sans_JP/static/NotoSansJP-Medium.ttf")
+		fontPath := "Assets/Fonts/Noto_Sans_JP/static/NotoSansJP-Medium.ttf"
+		gdata.Font, err = ui.LoadFont(assetsManager, fontPath)
 		if err != nil {
-			return nil, fmt.Errorf("ui.LoadFont(\"Assets/Fonts/Noto_Sans_JP/static/NotoSansJP-Medium.ttf\")でエラーが発生しました \n%w", err)
+			return nil, fmt.Errorf("ui.LoadFont(assetsManager, \"%s\")でエラーが発生しました \n%w", fontPath, err)
 		}
 		gdata.AssetsManager = assetsManager
 
