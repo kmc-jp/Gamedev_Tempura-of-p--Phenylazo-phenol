@@ -122,6 +122,7 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 	}
 
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+		s.Gamedata.Visited++
 		return s.Gamedata.NextStage(), transition.NewScene(), nil
 	}
 
