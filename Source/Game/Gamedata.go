@@ -35,6 +35,9 @@ type Gamedata struct {
 	//所持金
 	Money int
 
+	//訪れた店の数
+	Visited uint
+
 	//所持品
 	Parts Parts
 
@@ -96,6 +99,7 @@ func (g *Gamedata) ResetGame() {
 	g.Assemble = []*Part{}
 	g.Weight = InitialWeight
 	g.Money = InitialMoney
+	g.Visited = 0
 }
 
 // 同じScene内での利用を想定
