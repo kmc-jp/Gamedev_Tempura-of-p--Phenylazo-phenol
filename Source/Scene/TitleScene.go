@@ -77,34 +77,15 @@ func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 	// if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 	if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
 		return func() (game.Scene, error) {
-			nextScene, err := s.initScenes.InitPlayScene[Stage1]()
+			nextScene, err := s.initScenes.InitSelectStageScene()
 			if err != nil {
-				return nil, fmt.Errorf("s.initScenes.InitPlayScene() でエラーが発生しました。\n%w", err)
+				return nil, fmt.Errorf("s.initScenes.InitSelectStageScene() でエラーが発生しました。\n%w", err)
 			}
-			nextScene.Gamedata = s.gamedata
-			nextScene.Gamedata.ForNewScene(game.Play_Explore)
+			nextScene.gamedata = s.gamedata
+			nextScene.gamedata.ForNewScene(game.SelectStage_Default)
 			nextScene.initScenes = s.initScenes
 			return nextScene, nil
 		}, transition.NewScene(), nil
-	}
-
-	if s.Input.ActionIsJustPressed(inputconfig.Action1) {
-		return s.mkStage(Stage1), transition.NewScene(), nil
-	}
-	if s.Input.ActionIsJustPressed(inputconfig.ActionRed) {
-		return s.mkStage(Red), transition.NewScene(), nil
-	}
-	if s.Input.ActionIsJustPressed(inputconfig.ActionBlue) {
-		return s.mkStage(Blue), transition.NewScene(), nil
-	}
-	if s.Input.ActionIsJustPressed(inputconfig.ActionGreen) {
-		return s.mkStage(Green), transition.NewScene(), nil
-	}
-	if s.Input.ActionIsJustPressed(inputconfig.ActionOrange) {
-		return s.mkStage(Orange), transition.NewScene(), nil
-	}
-	if s.Input.ActionIsJustPressed(inputconfig.ActionPurple) {
-		return s.mkStage(Purple), transition.NewScene(), nil
 	}
 
 	return
