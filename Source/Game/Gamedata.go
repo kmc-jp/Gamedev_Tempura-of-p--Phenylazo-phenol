@@ -119,3 +119,7 @@ func (g *Gamedata) NextState() error {
 	g.State++
 	return nil
 }
+
+func (g *Gamedata) SetNextStage(nextStage Utils.Factory[Scene]) {
+	g.nextStage = nextStage
+}
