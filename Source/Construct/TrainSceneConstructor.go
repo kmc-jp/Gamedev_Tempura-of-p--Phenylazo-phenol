@@ -34,7 +34,7 @@ func TrainSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inpu
 		text, err := ui.NewText(
 			Utils.Position{},
 			color.Orange(),
-			"電車で移動中\nESCキーでメニューを開く\nEnterキー で Result へ",
+			"電車で移動中\nESCキーでメニューを開く\nEnterキー で 店に向かう",
 			ui.FontFace(gdata.Font, 15),
 		)
 
