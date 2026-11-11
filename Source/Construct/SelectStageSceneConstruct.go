@@ -32,7 +32,7 @@ func SelectStageSceneConstruct(assetsManager *assets.AssetsManager, inputHandler
 		text, err := ui.NewText(
 			Utils.Position{},
 			color.Orange(),
-			"Title\nPress 1 Key to Start Stage1\nPress 2 Key to Start RedStage\nPress 3 Key to Start BlueStage\nPress 4 Key to Start GreenStage\nPress 5 Key to Start OrangeStage\nPress 6 Key to Start PurpleStage",
+			"ステージ選択\nPress 1 Key to Start Stage1\nPress 2 Key to Start RedStage\nPress 3 Key to Start BlueStage\nPress 4 Key to Start GreenStage\nPress 5 Key to Start OrangeStage\nPress 6 Key to Start PurpleStage",
 			ui.FontFace(gdata.Font, 15),
 		)
 		if err != nil {
