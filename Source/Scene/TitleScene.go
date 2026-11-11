@@ -82,7 +82,7 @@ func (s *TitleScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 				return nil, fmt.Errorf("s.initScenes.InitSelectStageScene() でエラーが発生しました。\n%w", err)
 			}
 			nextScene.gamedata = s.gamedata
-			nextScene.gamedata.ForNewScene(game.Play_Explore)
+			nextScene.gamedata.ForNewScene(game.SelectStage_Default)
 			nextScene.initScenes = s.initScenes
 			return nextScene, nil
 		}, transition.NewScene(), nil

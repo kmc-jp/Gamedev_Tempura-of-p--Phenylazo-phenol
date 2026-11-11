@@ -61,6 +61,8 @@ const ()
 const (
 	Title_Default state = iota
 
+	SelectStage_Default
+
 	Play_Explore
 	Play_Timeup
 	Play_Select
