@@ -188,7 +188,7 @@ func MakePlayer(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene, T
 
 	PlayerConfig := ConfigAny.(serializetarget.PlayerConfig)
 
-	err = PlayerConfig.Init(assetsManager)
+	err = PlayerConfig.Init(assetsManager.Image)
 	if err != nil {
 		return nil, fmt.Errorf("PlayerConfig.Init(assetsManager) でエラーが発生しました。\n%w", err)
 	}

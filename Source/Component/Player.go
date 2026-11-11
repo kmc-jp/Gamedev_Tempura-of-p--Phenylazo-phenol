@@ -113,7 +113,6 @@ func (p *Player) interact() error {
 
 func (p *Player) TryMove(Direction Utils.Vec2Int) bool {
 	if p.tw.IsMoving() {
-		fmt.Println("IsMoving = true")
 		return false
 	}
 

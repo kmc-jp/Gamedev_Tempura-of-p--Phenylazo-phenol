@@ -1,6 +1,7 @@
 package serialize
 
 import (
+	assetsutil "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/AssetsUtils"
 	"fmt"
 	"reflect"
 )
@@ -12,8 +13,8 @@ type SerializeData struct {
 	Path string
 }
 
-func NewSerializeData(name string, Type reflect.Type, path string, serializeManager *SerializeManager) (*SerializeData, error) {
-	cleanedPath, err := serializeManager.CheckAndCleanPath(path)
+func NewSerializeData(name string, Type reflect.Type, path string, SerializeManager *SerializeManager) (*SerializeData, error) {
+	cleanedPath, err := assetsutil.CheckAndCleanPath(path, SerializeManager.serializeFS)
 	if err != nil {
 		return nil, fmt.Errorf("path が不正です。\n%w", err)
 	}
