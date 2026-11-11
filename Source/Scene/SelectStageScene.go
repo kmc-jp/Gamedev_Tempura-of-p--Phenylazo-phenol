@@ -74,7 +74,7 @@ func (s *SelectStageScene) Update(active bool) (nextScene Utils.Factory[game.Sce
 		entity.Update(active)
 	}
 
-	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+	if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
 		return func() (game.Scene, error) {
 			nextScene, err := s.initScenes.InitResultScene()
 			if err != nil {
