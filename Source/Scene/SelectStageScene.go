@@ -74,15 +74,14 @@ func (s *SelectStageScene) Update(active bool) (nextScene Utils.Factory[game.Sce
 		entity.Update(active)
 	}
 
-	// if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-	if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
+	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 		return func() (game.Scene, error) {
-			nextScene, err := s.initScenes.InitPlayScene[Stage1]()
+			nextScene, err := s.initScenes.InitResultScene()
 			if err != nil {
-				return nil, fmt.Errorf("s.initScenes.InitPlayScene() でエラーが発生しました。\n%w", err)
+				return nil, fmt.Errorf("s.initScenes.InitResultScene() でエラーが発生しました。\n%w", err)
 			}
-			nextScene.Gamedata = s.gamedata
-			nextScene.Gamedata.ForNewScene(game.Play_Explore)
+			nextScene.gamedata = s.gamedata
+			nextScene.gamedata.ForNewScene(game.Result_SelectParts)
 			nextScene.initScenes = s.initScenes
 			return nextScene, nil
 		}, transition.NewScene(), nil
