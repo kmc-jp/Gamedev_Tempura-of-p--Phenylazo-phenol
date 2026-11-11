@@ -88,6 +88,7 @@ type FloorData struct {
 
 type WallData struct {
 	Top    string
+	Bottom string
 	Side   string
 	Corner string
 }
@@ -188,7 +189,7 @@ func (tmd TileMapData) Construct() (any, error) {
 		}
 		WallKeyD, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", i, down+1)]
 		if !ok {
-			WallKeyD = tmd.Wall.Top
+			WallKeyD = tmd.Wall.Bottom
 		}
 
 		// posを指定
@@ -219,8 +220,8 @@ func (tmd TileMapData) Construct() (any, error) {
 		mapdata[posD] = realtiledataD
 		enterabledata[posD.Position] = false
 	}
-	// 縦壁
-	for j := up; j <= down; j++ {
+	// 縦壁 (ふたつのばす)
+	for j := up - 2; j <= down; j++ {
 		// (i,up-1), (i,down-1) に置く壁タイルを指定
 		WallKeyL, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", left-1, j)]
 		if !ok {
@@ -236,11 +237,11 @@ func (tmd TileMapData) Construct() (any, error) {
 		posR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: j}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyR]}
 
 		// 実際のタイルのデータを生成
-		tileFactoryL, ok := Tiles[WallKeyL]
+		tileFactoryL, ok := ReverseTiles[WallKeyL]
 		if !ok {
 			return nil, fmt.Errorf("WallKeyUp のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, WallKeyL)
 		}
-		tileFactoryR, ok := ReverseTiles[WallKeyR]
+		tileFactoryR, ok := Tiles[WallKeyR]
 		if !ok {
 			return nil, fmt.Errorf("WallKeyDown のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, WallKeyR)
 		}
@@ -259,81 +260,57 @@ func (tmd TileMapData) Construct() (any, error) {
 		mapdata[posR] = realtiledataR
 		enterabledata[posR.Position] = false
 	}
-	// 角
-	// 上角を張る
-	{
-		// 各位置に置く角壁タイルを指定
-		CornerKeyUL, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", left-1, up-1)]
-		CornerKeyDL := ""
-		if !ok {
-			CornerKeyUL = tmd.Wall.Corner
-			CornerKeyDL = tmd.Wall.Side
-		}
-		CornerKeyUR, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", right+1, up-1)]
-		CornerKeyDR := ""
-		if !ok {
-			CornerKeyUR = tmd.Wall.Corner
-			CornerKeyDR = tmd.Wall.Side
-		}
+	// // 角
+	// // 上角を張る
+	// {
+	// 	// 各位置に置く角壁タイルを指定
+	// 	CornerKeyUL, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", left-1, up-2)]
+	// 	if !ok {
+	// 		CornerKeyUL = tmd.Wall.Corner
+	// 	}
+	// 	CornerKeyUR, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", right+1, up-2)]
+	// 	if !ok {
+	// 		CornerKeyUR = tmd.Wall.Corner
+	// 	}
 
-		// posを指定
-		posUL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUL].Add(Utils.Vec2{X: 0, Y: -tmd.TileSize.ToVec2().Y/2 + 1})}
-		posDL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyDL].Add(Utils.Vec2{X: 0, Y: tmd.TileSize.ToVec2().Y/2 - 1})}
-		posUR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUR].Add(Utils.Vec2{X: 0, Y: -tmd.TileSize.ToVec2().Y/2 + 1})}
-		posDR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyDR].Add(Utils.Vec2{X: 0, Y: tmd.TileSize.ToVec2().Y/2 - 1})}
+	// 	// posを指定
+	// 	posUL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 2}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUL]}
+	// 	posUR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 2}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUR]}
 
-		// 実際のタイルのデータを生成
-		tileFactoryUL, ok := Tiles[CornerKeyUL]
-		if !ok {
-			return nil, fmt.Errorf("CornerUL のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyUL)
-		}
-		tileFactoryUR, ok := ReverseTiles[CornerKeyUR]
-		if !ok {
-			return nil, fmt.Errorf("CornerUR のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyUR)
-		}
-		tileFactoryDL, ok := Tiles[CornerKeyDL]
-		if !ok {
-			return nil, fmt.Errorf("CornerDL のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyDL)
-		}
-		tileFactoryDR, ok := ReverseTiles[CornerKeyDR]
-		if !ok {
-			return nil, fmt.Errorf("CornerDR のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyDR)
-		}
+	// 	// 実際のタイルのデータを生成
+	// 	tileFactoryUL, ok := ReverseTiles[CornerKeyUL]
+	// 	if !ok {
+	// 		return nil, fmt.Errorf("CornerUL のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyUL)
+	// 	}
+	// 	tileFactoryUR, ok := Tiles[CornerKeyUR]
+	// 	if !ok {
+	// 		return nil, fmt.Errorf("CornerUR のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyUR)
+	// 	}
 
-		realtiledataUL, err := tileFactoryUL(tmd.WallLayer)
-		if err != nil {
-			return nil, fmt.Errorf("Floor %s の生成に失敗しました。\n%w\n", CornerKeyUL, err)
-		}
-		realtiledataUR, err := tileFactoryUR(tmd.WallLayer)
-		if err != nil {
-			return nil, fmt.Errorf("Floor %s の生成に失敗しました。\n%w\n", CornerKeyUR, err)
-		}
-		realtiledataDL, err := tileFactoryDL(tmd.WallLayer)
-		if err != nil {
-			return nil, fmt.Errorf("Floor %s の生成に失敗しました。\n%w\n", CornerKeyDL, err)
-		}
-		realtiledataDR, err := tileFactoryDR(tmd.WallLayer)
-		if err != nil {
-			return nil, fmt.Errorf("Floor %s の生成に失敗しました。\n%w\n", CornerKeyDR, err)
-		}
+	// 	realtiledataUL, err := tileFactoryUL(tmd.WallLayer)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("Floor %s の生成に失敗しました。\n%w\n", CornerKeyUL, err)
+	// 	}
+	// 	realtiledataUR, err := tileFactoryUR(tmd.WallLayer)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("Floor %s の生成に失敗しました。\n%w\n", CornerKeyUR, err)
+	// 	}
 
-		mapdata[posUL] = realtiledataUL
-		mapdata[posDL] = realtiledataDL
-		enterabledata[posUL.Position] = false
-		mapdata[posUR] = realtiledataUR
-		mapdata[posDR] = realtiledataDR
-		enterabledata[posUR.Position] = false
-	}
+	// 	mapdata[posUL] = realtiledataUL
+	// 	enterabledata[posUL.Position] = false
+	// 	mapdata[posUR] = realtiledataUR
+	// 	enterabledata[posUR.Position] = false
+	// }
 	// 下角
 	{
 		// (left,down+1), (right,down+1) に置く壁タイルを指定
-		CornerKeyL, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", left-1, down+1)]
+		CornerKeyL, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", left-1, down+2)]
 		if !ok {
-			CornerKeyL = tmd.Wall.Top
+			CornerKeyL = tmd.Wall.Bottom
 		}
-		CornerKeyR, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", right+1, down+1)]
+		CornerKeyR, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", right+1, down+2)]
 		if !ok {
-			CornerKeyR = tmd.Wall.Top
+			CornerKeyR = tmd.Wall.Bottom
 		}
 
 		// posを指定

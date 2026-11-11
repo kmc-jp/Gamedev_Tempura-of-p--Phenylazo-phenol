@@ -1,14 +1,15 @@
 TileSize = {X = 26, Y = 26}
 Floor = {Tile = "floor", UpLeft = {X = -5, Y = -5}, DownRight = {X = 15, Y = 10}}
 FloorLayer = "Floor"
-Wall = {Top = "WallTop", Side = "WallSide", Corner = "WallCorner"}
+Wall = {Top = "WallTop", Bottom = "WallBottom", Side = "WallSide", Corner = "WallCorner"}
 WallLayer = "Floor"
 
 [TileData]
 shelf = {Name = "shelf", JsonPath = "みんげー_棚.json", PngPath = "みんげー_棚.png", Type = "shelf", Size = {X = 2, Y = 1}, Offset = {X = 19, Y = 4}}
 floor = {Name = "floor", JsonPath = "StageAssets/Red/みんげー_床_赤.json", PngPath = "StageAssets/Red/みんげー_床_赤.png"}
 register = {Name = "register", JsonPath =  "みんげー_レジ机.json", PngPath = "みんげー_レジ机.png", Size = {X = 1, Y = 1}, Offset = {X = 19, Y = 4}}
-WallTop = {Name = "wallTop", JsonPath = "StageAssets/Red/みんげー_壁横_赤.json", PngPath = "StageAssets/Red/みんげー_壁横_赤.png"}
+WallTop = {Name = "wallTop", JsonPath = "StageAssets/Red/みんげー_壁横_赤.json", PngPath = "StageAssets/Red/みんげー_壁横_赤.png", Offset = {X = 0, Y = -13}}
+WallBottom = {Name = "wallTop", JsonPath = "StageAssets/Red/みんげー_壁横_赤.json", PngPath = "StageAssets/Red/みんげー_壁横_赤.png", Offset = {X = 0, Y = 13}}
 WallSide = {Name = "wallSide", JsonPath = "StageAssets/Red/みんげー_壁縦_赤.json", PngPath = "StageAssets/Red/みんげー_壁縦_赤.png", Reversible = true}
 WallCorner = {Name = "wallCorner", JsonPath = "StageAssets/Red/みんげー_壁縦端_赤.json", PngPath = "StageAssets/Red/みんげー_壁縦端_赤.png", Reversible = true}
 
