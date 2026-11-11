@@ -94,6 +94,10 @@ func (g *Gamedata) ForNewScene(state state) {
 	g.Text = ""
 }
 
+func (g *Gamedata) ForNewStage() {
+	g.Visited++
+}
+
 // ゲームサイクル終了時のゲームデータ初期化
 func (g *Gamedata) ResetGame() {
 	g.Parts = []*Part{}
