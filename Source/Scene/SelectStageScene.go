@@ -74,37 +74,42 @@ func (s *SelectStageScene) Update(active bool) (nextScene Utils.Factory[game.Sce
 		entity.Update(active)
 	}
 
-	// if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 	if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
 		return func() (game.Scene, error) {
-			nextScene, err := s.initScenes.InitPlayScene[Stage1]()
+			nextScene, err := s.initScenes.InitResultScene()
 			if err != nil {
-				return nil, fmt.Errorf("s.initScenes.InitPlayScene() でエラーが発生しました。\n%w", err)
+				return nil, fmt.Errorf("s.initScenes.InitResultScene() でエラーが発生しました。\n%w", err)
 			}
-			nextScene.Gamedata = s.gamedata
-			nextScene.Gamedata.ForNewScene(game.Play_Explore)
+			nextScene.gamedata = s.gamedata
+			nextScene.gamedata.ForNewScene(game.Result_SelectParts)
 			nextScene.initScenes = s.initScenes
 			return nextScene, nil
 		}, transition.NewScene(), nil
 	}
 
 	if s.Input.ActionIsJustPressed(inputconfig.Action1) {
-		return s.mkStage(Stage1), transition.NewScene(), nil
+		s.gamedata.SetNextStage(s.mkStage(Stage1))
+		return s.mkTrainScene(), transition.NewScene(), nil
 	}
 	if s.Input.ActionIsJustPressed(inputconfig.ActionRed) {
-		return s.mkStage(Red), transition.NewScene(), nil
+		s.gamedata.SetNextStage(s.mkStage(Red))
+		return s.mkTrainScene(), transition.NewScene(), nil
 	}
 	if s.Input.ActionIsJustPressed(inputconfig.ActionBlue) {
-		return s.mkStage(Blue), transition.NewScene(), nil
+		s.gamedata.SetNextStage(s.mkStage(Blue))
+		return s.mkTrainScene(), transition.NewScene(), nil
 	}
 	if s.Input.ActionIsJustPressed(inputconfig.ActionGreen) {
-		return s.mkStage(Green), transition.NewScene(), nil
+		s.gamedata.SetNextStage(s.mkStage(Green))
+		return s.mkTrainScene(), transition.NewScene(), nil
 	}
 	if s.Input.ActionIsJustPressed(inputconfig.ActionOrange) {
-		return s.mkStage(Orange), transition.NewScene(), nil
+		s.gamedata.SetNextStage(s.mkStage(Orange))
+		return s.mkTrainScene(), transition.NewScene(), nil
 	}
 	if s.Input.ActionIsJustPressed(inputconfig.ActionPurple) {
-		return s.mkStage(Purple), transition.NewScene(), nil
+		s.gamedata.SetNextStage(s.mkStage(Purple))
+		return s.mkTrainScene(), transition.NewScene(), nil
 	}
 
 	return
@@ -130,6 +135,19 @@ func (s SelectStageScene) mkStage(stage Stage) Utils.Factory[game.Scene] {
 		}
 		nextScene.Gamedata = s.gamedata
 		nextScene.Gamedata.ForNewScene(game.Play_Explore)
+		nextScene.initScenes = s.initScenes
+		return nextScene, nil
+	}
+}
+
+func (s SelectStageScene) mkTrainScene() Utils.Factory[game.Scene] {
+	return func() (game.Scene, error) {
+		nextScene, err := s.initScenes.InitTrainScene()
+		if err != nil {
+			return nil, fmt.Errorf("s.initScenes.InitTrainScene() でエラーが発生しました。\n%w", err)
+		}
+		nextScene.Gamedata = s.gamedata
+		nextScene.Gamedata.ForNewScene(game.Train_Default)
 		nextScene.initScenes = s.initScenes
 		return nextScene, nil
 	}

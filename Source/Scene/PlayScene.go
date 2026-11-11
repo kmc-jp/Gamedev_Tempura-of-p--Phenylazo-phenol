@@ -231,14 +231,14 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 			s.partsList.SetVisible(false)
 			return func() (game.Scene, error) {
-				trainScene, err := s.initScenes.InitTrainScene()
+				nextScene, err := s.initScenes.InitSelectStageScene()
 				if err != nil {
 					return nil, err
 				}
-				trainScene.Gamedata = s.Gamedata
-				trainScene.Gamedata.ForNewScene(game.Train_Default)
-				trainScene.initScenes = s.initScenes
-				return trainScene, nil
+				nextScene.gamedata = s.Gamedata
+				nextScene.gamedata.ForNewScene(game.SelectStage_Default)
+				nextScene.initScenes = s.initScenes
+				return nextScene, nil
 			}, transition.NewScene(), nil
 		}
 	}

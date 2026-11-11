@@ -2,6 +2,7 @@ package game
 
 import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
+	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
 
@@ -21,6 +22,8 @@ type Gamedata struct {
 	Timer *tick.Timer
 
 	Flag []bool
+
+	nextStage Utils.Factory[Scene]
 
 	State state
 
@@ -115,4 +118,12 @@ func (g *Gamedata) NextState() error {
 	}
 	g.State++
 	return nil
+}
+
+func (g *Gamedata) SetNextStage(nextStage Utils.Factory[Scene]) {
+	g.nextStage = nextStage
+}
+
+func (g *Gamedata) NextStage() Utils.Factory[Scene] {
+	return g.nextStage
 }
