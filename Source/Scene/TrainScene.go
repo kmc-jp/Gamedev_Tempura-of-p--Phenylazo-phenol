@@ -122,16 +122,7 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 	}
 
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
-		return func() (game.Scene, error) {
-			resultScene, err := s.initScenes.InitResultScene()
-			if err != nil {
-				return nil, err
-			}
-			resultScene.gamedata = s.Gamedata
-			resultScene.gamedata.ForNewScene(game.Result_SelectParts)
-			resultScene.initScenes = s.initScenes
-			return resultScene, nil
-		}, transition.NewScene(), nil
+		return s.Gamedata.NextStage(), transition.NewScene(), nil
 	}
 
 	return

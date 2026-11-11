@@ -123,3 +123,7 @@ func (g *Gamedata) NextState() error {
 func (g *Gamedata) SetNextStage(nextStage Utils.Factory[Scene]) {
 	g.nextStage = nextStage
 }
+
+func (g *Gamedata) NextStage() Utils.Factory[Scene] {
+	return g.nextStage
+}
