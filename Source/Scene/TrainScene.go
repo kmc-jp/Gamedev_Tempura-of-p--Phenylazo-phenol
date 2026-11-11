@@ -77,6 +77,10 @@ func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 		//シーン起動時処理
 		s.Gamedata.InitialProcess = false
 
+		if s.Gamedata.Visited == 0 {
+			return
+		}
+
 		if err := s.partsList.SetParts(s.Gamedata.Parts); err != nil {
 			return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
 		}
