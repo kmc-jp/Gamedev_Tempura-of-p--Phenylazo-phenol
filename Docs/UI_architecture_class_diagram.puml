@@ -1,0 +1,127 @@
+@startuml UIArchitecture
+title UI実装計画（受動的なView構成）
+
+skinparam classAttributeIconSize 0
+
+package "Input" {
+    class InputConfig {
+        +Setup() *input.Handler
+    }
+
+    class InputHandler {
+        +ActionIsPressed(action)
+        +ActionIsJustPressed(action)
+    }
+
+    InputConfig --> InputHandler : 準備
+}
+
+package "Game" {
+    class Gamedata {
+        +State
+        +Money
+        +Weight
+        +Parts
+    }
+}
+
+package "Scene" {
+    interface Scene {
+        +Update(active bool) error
+        +Draw(screen)
+    }
+
+    class PlayScene {
+        -Input : InputHandler
+        -Gamedata : Gamedata
+        -Canvas : PlaySceneCanvas
+        +Update(active bool)
+        +Draw(screen)
+    }
+
+    class PlaySceneCanvas {
+        -Timer : TimerUI
+        -Money : MoneyUI
+        -PartsList : PartsListUI
+    }
+
+    class Component {
+        +Update(active bool) error
+    }
+
+    interface Element {
+        +Update(active bool) error
+        +Draw(screen)
+    }
+
+    Scene <|.. PlayScene
+    PlayScene o-- Component : 更新
+    PlayScene *-- PlaySceneCanvas : UI構成
+}
+
+package "UI" {
+    class Text {
+        +SetText(text string)
+        +Draw(screen)
+    }
+
+    class RichUI {
+        +SetPosition(position)
+        +Draw(screen)
+    }
+
+    class ButtonUI {
+        +SetSelected(selected bool)
+        +Draw(screen)
+    }
+
+    class ScrollUI {
+        +SetOffset(offset int)
+        +Draw(screen)
+    }
+
+    class TimerUI {
+        +Draw(screen)
+    }
+
+    class MoneyUI {
+        +Draw(screen)
+    }
+
+    class PartsListUI {
+        +Draw(screen)
+    }
+
+    Element <|.. Text
+    Element <|.. RichUI
+    Element <|.. ButtonUI
+    Element <|.. ScrollUI
+    Element <|.. TimerUI
+    Element <|.. MoneyUI
+    Element <|.. PartsListUI
+    ButtonUI *-- RichUI
+    ScrollUI o-- Element : 表示
+}
+
+PlayScene --> InputHandler : 入力取得
+PlayScene --> Gamedata : Model更新・参照
+PlaySceneCanvas o-- Element : UI部品
+Element --> Gamedata : 必要な状態を参照して描画
+Component --> InputHandler : 必要な入力を取得
+Component --> Gamedata : Model更新・参照
+
+note left of Element
+入力を直接取得しない。
+Updateはアニメーション等の
+表示更新に限定する。
+end note
+
+note right of PlayScene
+MVUのUpdate相当。
+入力、Model更新、画面遷移、
+UIの構成を担当する。
+何を表示するかを知るが、
+描画方法は知らない。
+end note
+
+@enduml
