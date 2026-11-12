@@ -30,6 +30,9 @@ type Gamedata struct {
 
 	State state
 
+	//世界時間進行の有無
+	timeProgressing bool
+
 	//仮UIでのテスト用テキストデータ
 	Text string
 
@@ -114,6 +117,7 @@ func (g *Gamedata) ResetGame() {
 	g.Money = InitialMoney
 	g.Visited = 0
 	g.currentLocation = stageinfo.Departure
+	g.timeProgressing = false
 }
 
 // 同じScene内での利用を想定
@@ -131,4 +135,16 @@ func (g *Gamedata) SetNextStage(nextStage Utils.Factory[Scene]) {
 
 func (g *Gamedata) NextStage() Utils.Factory[Scene] {
 	return g.nextStage
+}
+
+func (g *Gamedata) EnableWorldTimeProgressing() {
+	g.timeProgressing = true
+}
+
+func (g *Gamedata) DisableWorldTimeProgressing() {
+	g.timeProgressing = false
+}
+
+func (g *Gamedata) WorldTimeProgress() bool {
+	return g.timeProgressing
 }
