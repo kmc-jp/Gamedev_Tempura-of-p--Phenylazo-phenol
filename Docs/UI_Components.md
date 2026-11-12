@@ -56,6 +56,17 @@ type Element interface {
 
 現時点の ScrollUI は表示と子要素の更新を担当し、マウスホイールやキー入力の解釈は呼び出し側に委譲する。また、スクロール中の子ボタンのマウス座標変換は未実装であり、表示用コンテナとして利用する。
 
+## InstalledParts
+
+`InstalledParts`（`Source/UI/ResultUI`）は、`Gamedata.Assemble`のパーツを種別名と名前のレコードとして並べ、上から順にスライドインさせる。
+
+- `Start() error`: 現在の`Gamedata.Assemble`から表示を初期化し、アニメーションを開始する。再呼び出しで再初期化される
+- `IsFinished() bool`: 全レコードの開始と表示アニメーションが完了したか。`Start()`前は`false`
+- `Update(active bool) error`: スライドインの順次開始とアニメーション更新のみ行う。`Start()`前は何もしない
+- `Draw(screen)`: 表示する
+
+`Gamedata`は読み取り専用で参照する。`NextState()`などのゲーム状態の変更やScene遷移は行わない。完了後の遷移は`ResultScene`が`IsFinished()`を確認して行う。
+
 ## 変更記録
 
 今回の UI 拡張では既存の `Text`、シーンの描画 API、入力設定を破壊的に変更していない。既存シーンのテキスト表示は `Text` 要素を経由するよう変更済みである。

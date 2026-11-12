@@ -12,7 +12,10 @@
 
 ## 優先順位
 
-### 1. InstalledPartsUIの責務分離
+### 1. InstalledPartsUIの責務分離（完了）
+
+`IsFinished()`と`Start()`を導入し、状態遷移を`ResultScene`へ移した。
+添字参照は`scene` package内の名前付きフィールドへ置き換え済み（Canvas化は3で実施）。
 
 対象:
 
@@ -55,6 +58,9 @@
 
 - UIの追加・削除・順番変更で誤ったUIを更新する
 - 実行時まで検出しにくい
+
+現状: `ResultScene`の`elements[index]`による更新は、名前付きフィールドへ暫定移行済み。
+残りはCanvas API interface／`scenecanvas`への移行と、他Sceneの対応である。
 
 `scene` packageにCanvas API interfaceを定義し、`scenecanvas` packageのScene固有Canvasへ移行する。
 具体的なCanvasは`construct`から注入し、SceneはCanvas APIだけを利用する。

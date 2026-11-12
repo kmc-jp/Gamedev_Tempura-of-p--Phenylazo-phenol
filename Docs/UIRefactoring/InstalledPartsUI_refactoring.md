@@ -7,40 +7,23 @@
 
 このリファクタリングでは、`InstalledPartsUI`を表示とアニメーションに限定し、ゲーム状態の変更とScene遷移を`ResultScene`へ戻す。
 
-## 現状の問題
+## 実施状況
 
-対象ファイルは[`InstalledParts.go`](../../Source/UI/ResultUI/InstalledParts.go)である。
+移行手順1〜5は実施済みである。手順6（ファイル分割）と、Canvasへの移行は未実施である。
 
-### UIがModelを変更している
+対象ファイルは[`InstalledParts.go`](../../Source/UI/ResultUI/InstalledParts.go)と[`ResultScene.go`](../../Source/Scene/ResultScene.go)である。
 
-現在の`Update()`は、全アニメーション完了後に次の状態へ遷移させる。
+### 解消した問題
 
-```go
-if i.newest == uint(len(i.active)) && i.allAnimationsFinished() {
-    if err := i.gdata.NextState(); err != nil {
-        return err
-    }
-}
-```
+- UIが`Update()`内で`Gamedata.NextState()`を呼んでいた。現在は`IsFinished()`で完了を返すだけで、`NextState()`は`ResultScene`が呼ぶ。
+- UIの初期化が初回`Update()`の遅延初期化だった。現在は`ResultScene`が`Start()`を呼ぶ。
+- `ResultScene`が`elements[1]`、`elements[2]`の添字でUIを特定していた。現在は`scene` package内の名前付きフィールド（`installedParts`、`benchmarkPrompt`）で参照する。
 
-これはUIの責務を越えている。
+### 暫定構成について
 
-- UIはアニメーションの完了を検知する
-- Sceneがゲーム状態を進める
-- Modelは状態遷移のルールを持つ
-
-という分担に変更する。
-
-### SceneがUI配列の添字に依存している
-
-[`ResultScene`](../../Source/Scene/ResultScene.go)は、次のように`elements`の順番でUIを特定している。
-
-```go
-s.elements[2].Update(true)
-s.elements[1].Update(true)
-```
-
-UIの追加・削除・順番変更で別のUIを更新する危険があるため、名前付きのCanvasへ移行する。
+`ui` packageが`scene` packageをimportしているため、`scene`側から`resultui`などの具体型は参照できない（循環import）。
+そのため`ResultScene`は`scene`内で定義したinterface型（`installedPartsUI`、`Element`）のフィールドでUIを保持する。
+これはCanvas導入までの暫定構成であり、Canvas化は[`UI_refactoring_priority.md`](./UI_refactoring_priority.md)の優先度3で行う。
 
 ## 目標構成
 
@@ -48,7 +31,7 @@ UIの追加・削除・順番変更で別のUIを更新する危険があるた�
 ResultScene
   ├── input.Handlerから入力を取得
   ├── Gamedataの状態を更新
-  ├── ResultCanvasのUIを名前で参照
+  ├── 名前付きフィールド（将来はCanvas）でUIを参照
   └── アニメーション完了後にModelの状態を遷移
             ↓
       InstalledPartsUI
@@ -64,9 +47,11 @@ ResultScene
 ## UIの公開API
 
 Sceneには、UIの内部配列や`AnimatableUI`を公開しない。
+`scene` packageには次のinterfaceを定義し、Sceneはこれだけに依存する。
 
 ```go
-type InstalledParts interface {
+type installedPartsUI interface {
+    Element // Update(active bool) error / Draw(screen)
     Start() error
     IsFinished() bool
 }
@@ -100,8 +85,8 @@ type InstalledParts struct {
 `ResultScene`は、アニメーション完了をゲーム状態の遷移条件として扱う。
 
 ```go
-if s.Canvas.InstalledParts.IsFinished() {
-    if err := s.Gamedata.NextState(); err != nil {
+if s.installedParts.IsFinished() {
+    if err := s.gamedata.NextState(); err != nil {
         return nil, transition.None(), fmt.Errorf(
             "InstalledPartsUI完了後の状態遷移に失敗しました: %w",
             err,
@@ -113,26 +98,27 @@ if s.Canvas.InstalledParts.IsFinished() {
 状態遷移の具体的な条件が複雑になった場合でも、判定はSceneまたはModel側に置く。
 UIは「表示が終わった」という事実だけを返す。
 
-## ResultCanvas
+## 現在のUI参照（名前付きフィールド）
 
-`ResultScene`のUIは配列の添字ではなく、名前付きのCanvasで管理する。
+`ResultScene`のUIは配列の添字ではなく、`scene` package内のinterface型の名前付きフィールドで参照する。
 
 ```go
-type ResultCanvas struct {
-    Header          *ui.Text
-    BenchmarkPrompt *ui.AnimatableUI
-    InstalledParts  *resultui.InstalledParts
-    PartsList       *ui.PartsListUI
+type ResultScene struct {
+    installedParts  installedPartsUI
+    benchmarkPrompt Element
+    partsList       partsListUI
+    // ...
 }
 ```
 
-Sceneからの参照例:
+`construct`が`SetInstalledParts`、`SetBenchmarkPrompt`、`SetPartsList`で注入する。
+各setterは描画用に`elements`へも追加するため、描画順は`construct`での呼び出し順で決まる。
+`elements`はDrawにのみ使用し、Updateでは添字参照しない。
 
-```go
-s.Canvas.InstalledParts.Update(active)
-s.Canvas.BenchmarkPrompt.Update(active)
-```
+## 将来のResultCanvas
 
+Canvas導入後は、これらのフィールドを`scene.ResultCanvasAPI`の意味ベースAPIへ置き換える。
+`scene`側は具体型を参照できないため、Canvas API interface経由で利用する。
 CanvasはUI部品の構成を保持するだけで、ゲームルールや状態遷移を持たない。
 
 ## 内部の分割
@@ -159,20 +145,20 @@ Source/UI/ResultUI/
 
 ## 段階的な移行手順
 
-1. `InstalledPartsUI`に`IsFinished()`を追加する。
-2. `InstalledPartsUI.Update()`から`Gamedata.NextState()`を削除する。
-3. `ResultScene.Update()`で`IsFinished()`を確認し、`Gamedata.NextState()`を呼ぶ。
-4. `ResultScene`の`elements[index]`参照を名前付きCanvasへ置き換える。
-5. `InstalledPartsUI`の初期化タイミングを`Start()`へ整理する。
-6. 必要に応じて内部状態・レコード・カテゴリ変換を別ファイルへ分割する。
+1. （実施済み）`InstalledPartsUI`に`IsFinished()`を追加する。
+2. （実施済み）`InstalledPartsUI.Update()`から`Gamedata.NextState()`を削除する。
+3. （実施済み）`ResultScene.Update()`で`IsFinished()`を確認し、`Gamedata.NextState()`を呼ぶ。
+4. （実施済み・暫定）`ResultScene`の`elements[index]`参照を名前付きフィールドへ置き換える。Canvasへの置き換えは優先度3で行う。
+5. （実施済み）`InstalledPartsUI`の初期化タイミングを`Start()`へ整理する。
+6. （未実施）必要に応じて内部状態・レコード・カテゴリ変換を別ファイルへ分割する。
 
 移行中は既存のコンストラクタを維持してもよいが、新規コードではCanvasと意味ベースAPIを使用する。
 
 ## 完了条件
 
-- `InstalledPartsUI`が`Gamedata.NextState()`を呼び出さない。
-- `InstalledPartsUI`がシーン遷移やゲーム状態を決定しない。
-- `ResultScene`が`elements[1]`や`elements[2]`でUIを参照しない。
-- `InstalledPartsUI`が共通UI要素インターフェースに依存しない。
+- 達成: `InstalledPartsUI`が`Gamedata.NextState()`を呼び出さない。
+- 達成: `InstalledPartsUI`がシーン遷移やゲーム状態を決定しない。
+- 達成: `ResultScene`が`elements[1]`や`elements[2]`でUIを参照しない。
+- 未達（Canvas化で対応）: `InstalledPartsUI`が共通UI要素インターフェースに依存しない。現在は描画のため`scene.Element`を満たす必要がある。
 - アニメーション完了の検知とゲーム状態の遷移が分離されている。
 - UIの追加・削除・順番変更で、別のUIが誤って更新されない。

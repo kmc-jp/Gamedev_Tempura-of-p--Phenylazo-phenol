@@ -12,14 +12,24 @@ import (
 	input "github.com/quasilyte/ebitengine-input"
 )
 
+// installedPartsUI は組み立て済みパーツの表示UI。
+// 表示開始と表示完了の通知だけを公開し、ゲーム状態の遷移はSceneが行う。
+type installedPartsUI interface {
+	Element
+	Start() error
+	IsFinished() bool
+}
+
 type ResultScene struct {
 	entities    []Entity
 	worldDrawer WorldDrawer
 
-	elements      []Element
-	uiDrawer      UIDrawer
-	partsList     partsListUI
-	partKindIndex int
+	elements        []Element
+	uiDrawer        UIDrawer
+	partsList       partsListUI
+	installedParts  installedPartsUI
+	benchmarkPrompt Element
+	partKindIndex   int
 	// text       *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
@@ -90,6 +100,12 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 				s.partsList.MoveSelection(1)
 			}
 			if s.isSelectingArbitraryParts() && s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+				if s.installedParts == nil {
+					return nil, transition.None(), fmt.Errorf("InstalledPartsUIが設定されていません")
+				}
+				if err := s.installedParts.Start(); err != nil {
+					return nil, transition.None(), fmt.Errorf("InstalledPartsUIの開始に失敗しました。\n%w", err)
+				}
 				s.partsList.SetVisible(false)
 				s.gamedata.State = game.Result_Assembled
 				return
@@ -122,12 +138,21 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 		//所持パーツをもとに利用する絵を決定
 		//完成PCを表示
 
-		s.elements[2].Update(true)
+		if err := s.installedParts.Update(true); err != nil {
+			return nil, transition.None(), fmt.Errorf("InstalledPartsUIの更新に失敗しました。\n%w", err)
+		}
+		if s.installedParts.IsFinished() {
+			if err := s.gamedata.NextState(); err != nil {
+				return nil, transition.None(), fmt.Errorf("InstalledPartsUI完了後の状態遷移に失敗しました: %w", err)
+			}
+		}
 	}
 
 	// ベンチマークフェーズ
 	if s.gamedata.State == game.Result_Benchmark {
-		s.elements[1].Update(true)
+		if err := s.benchmarkPrompt.Update(true); err != nil {
+			return nil, transition.None(), fmt.Errorf("ベンチマーク案内UIの更新に失敗しました。\n%w", err)
+		}
 
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 			var score float32
@@ -166,6 +191,16 @@ func (s *ResultScene) AddEntity(e Entity) {
 
 func (s *ResultScene) AddUIElement(e Element) {
 	s.elements = append(s.elements, e)
+}
+
+func (s *ResultScene) SetInstalledParts(ip installedPartsUI) {
+	s.installedParts = ip
+	s.AddUIElement(ip)
+}
+
+func (s *ResultScene) SetBenchmarkPrompt(e Element) {
+	s.benchmarkPrompt = e
+	s.AddUIElement(e)
 }
 
 func (s *ResultScene) SetPartsList(partsList partsListUI) {
