@@ -3,7 +3,7 @@ package tick
 type Timer struct {
 	//unit: 0.1 second
 	//0以外の場合は計測中として扱う
-	Time uint16
+	setTime uint16
 
 	tick      uint64
 	startTick uint64
@@ -21,9 +21,9 @@ func Tick() {
 			continue
 		}
 		timer.tick++
-		if timer.Time != 0 && timer.tick >= timer.startTick+uint64(timer.Time)*6 {
+		if timer.setTime != 0 && timer.tick >= timer.startTick+uint64(timer.setTime)*6 {
 			timer.expired = true
-			timer.Time = 0
+			timer.setTime = 0
 		}
 	}
 }
@@ -47,16 +47,16 @@ func (timer *Timer) Expired() bool {
 // Set configures the timer duration in 0.1-second units.
 func (timer *Timer) Set(time uint16) error {
 	if time == 0 {
-		timer.Time = 0
+		timer.setTime = 0
 		timer.expired = false
 		return nil
 	}
 
 	//すでに計測中の場合はTimer設定をスキップ
-	if timer.Time != 0 {
+	if timer.setTime != 0 {
 		return nil
 	}
-	timer.Time = time
+	timer.setTime = time
 	timer.startTick = timer.tick
 	return nil
 }
