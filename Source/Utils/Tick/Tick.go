@@ -68,3 +68,7 @@ func (timer *Timer) Suspend() {
 func (timer *Timer) Resume() {
 	timer.suspend = false
 }
+
+func (timer *Timer) GetCurrentTick() uint64 {
+	return timer.tick - timer.startTick
+}
