@@ -2,6 +2,7 @@ package game
 
 import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
+	stageinfo "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/StageInfo"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
@@ -24,6 +25,8 @@ type Gamedata struct {
 	Flag []bool
 
 	nextStage Utils.Factory[Scene]
+
+	currentLocation stageinfo.Location
 
 	State state
 
@@ -84,9 +87,10 @@ type state uint
 
 func NewGamedata() *Gamedata {
 	return &Gamedata{
-		Timer:  tick.NewTimer(),
-		Weight: InitialWeight,
-		Money:  InitialMoney,
+		Timer:           tick.NewTimer(),
+		Weight:          InitialWeight,
+		Money:           InitialMoney,
+		currentLocation: stageinfo.Departure,
 	}
 }
 
@@ -109,6 +113,7 @@ func (g *Gamedata) ResetGame() {
 	g.Weight = InitialWeight
 	g.Money = InitialMoney
 	g.Visited = 0
+	g.currentLocation = stageinfo.Departure
 }
 
 // 同じScene内での利用を想定

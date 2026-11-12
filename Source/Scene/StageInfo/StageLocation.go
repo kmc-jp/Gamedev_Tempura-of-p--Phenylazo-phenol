@@ -12,7 +12,7 @@ type StageLocation struct {
 }
 
 const (
-	Stage1 location = iota
+	Stage1 Location = iota
 	Red
 	Blue
 	Green
@@ -22,7 +22,7 @@ const (
 	Departure
 )
 
-type location uint
+type Location uint
 
 // 各ステージの相対位置 (数値は適当)
 var Locations []StageLocation = []StageLocation{
