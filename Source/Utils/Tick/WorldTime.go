@@ -1,4 +1,4 @@
-package game
+package tick
 
 var WorldTime uint
 
