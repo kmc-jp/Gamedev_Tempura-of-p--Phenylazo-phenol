@@ -159,3 +159,5 @@ HogeSceneがUI構成を保持
 7. 標準的な部品が不足した場合に限り、Ebiten UIの導入を検討する。
 
 実装上のクラス関係は[`UI_architecture_class_diagram.puml`](./UI_architecture_class_diagram.puml)を参照する。
+
+複雑なパーツ一覧UIの分割方針は[`PartsListUI_refactoring.md`](./PartsListUI_refactoring.md)を参照する。
