@@ -20,6 +20,8 @@ var Locations []StageLocation = []StageLocation{
 	{200, 50, 1}, //Green
 	{120, 70, 1}, //Orange
 	{80, 170, 1}, //Purple
+
+	{100, 50, 1}, //開始時のプレイヤー出発位置 (仮)
 }
 
 type locations []StageLocation
