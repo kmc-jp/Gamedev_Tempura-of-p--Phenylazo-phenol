@@ -8,6 +8,8 @@ type Timer struct {
 	tick      uint64
 	startTick uint64
 	expired   bool
+
+	suspend bool
 }
 
 var timers = map[*Timer]struct{}{}
@@ -15,6 +17,9 @@ var timers = map[*Timer]struct{}{}
 // Tick advances every timer created by NewTimer by one game frame.
 func Tick() {
 	for timer := range timers {
+		if timer.suspend {
+			continue
+		}
 		timer.tick++
 		if timer.Time != 0 && timer.tick >= timer.startTick+uint64(timer.Time)*6 {
 			timer.expired = true
@@ -54,4 +59,12 @@ func (timer *Timer) Set(time uint16) error {
 	timer.Time = time
 	timer.startTick = timer.tick
 	return nil
+}
+
+func (timer *Timer) Suspend() {
+	timer.suspend = true
+}
+
+func (timer *Timer) Resume() {
+	timer.suspend = false
 }
