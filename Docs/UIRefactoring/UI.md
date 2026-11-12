@@ -161,3 +161,7 @@ HogeSceneがUI構成を保持
 実装上のクラス関係は[`UI_architecture_class_diagram.puml`](./UI_architecture_class_diagram.puml)を参照する。
 
 複雑なパーツ一覧UIの分割方針は[`PartsListUI_refactoring.md`](./PartsListUI_refactoring.md)を参照する。
+
+InstalledPartsUIの責務分離は[`InstalledPartsUI_refactoring.md`](./InstalledPartsUI_refactoring.md)を参照する。
+
+全体の実施順は[`UI_refactoring_priority.md`](./UI_refactoring_priority.md)を参照する。
