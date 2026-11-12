@@ -2,6 +2,7 @@ package game
 
 import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
+	stageinfo "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/StageInfo"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
@@ -21,11 +22,19 @@ type Gamedata struct {
 
 	Timer *tick.Timer
 
+	//世界時間用のタイマー
+	WorldTimer *tick.WorldTimer
+
 	Flag []bool
 
 	nextStage Utils.Factory[Scene]
 
+	currentLocation stageinfo.Location
+
 	State state
+
+	//世界時間進行の有無
+	timeProgressing bool
 
 	//仮UIでのテスト用テキストデータ
 	Text string
@@ -84,9 +93,11 @@ type state uint
 
 func NewGamedata() *Gamedata {
 	return &Gamedata{
-		Timer:  tick.NewTimer(),
-		Weight: InitialWeight,
-		Money:  InitialMoney,
+		Timer:           tick.NewTimer(),
+		WorldTimer:      tick.NewWorldTimer(),
+		Weight:          InitialWeight,
+		Money:           InitialMoney,
+		currentLocation: stageinfo.Departure,
 	}
 }
 
@@ -109,6 +120,8 @@ func (g *Gamedata) ResetGame() {
 	g.Weight = InitialWeight
 	g.Money = InitialMoney
 	g.Visited = 0
+	g.currentLocation = stageinfo.Departure
+	g.timeProgressing = false
 }
 
 // 同じScene内での利用を想定
@@ -126,4 +139,16 @@ func (g *Gamedata) SetNextStage(nextStage Utils.Factory[Scene]) {
 
 func (g *Gamedata) NextStage() Utils.Factory[Scene] {
 	return g.nextStage
+}
+
+func (g *Gamedata) EnableWorldTimeProgressing() {
+	g.timeProgressing = true
+}
+
+func (g *Gamedata) DisableWorldTimeProgressing() {
+	g.timeProgressing = false
+}
+
+func (g *Gamedata) WorldTimeProgress() bool {
+	return g.timeProgressing
 }

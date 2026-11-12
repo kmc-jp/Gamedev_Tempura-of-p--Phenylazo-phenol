@@ -10,6 +10,14 @@ type Vec2 struct {
 	Y float64
 }
 
+type Vector2Value interface {
+	VectorValue() Vec2
+}
+
+func (v Vec2) VectorValue() Vec2 {
+	return v
+}
+
 func (v1 Vec2) VtoP() Position {
 	return Position{
 		X: v1.X,

@@ -12,6 +12,8 @@ const (
 	Purple
 )
 
+const Stages = 6 //Stage数
+
 var Stage2String map[Stage]string = map[Stage]string{
 	Stage1: "Stage1",
 	Red:    "Red",
