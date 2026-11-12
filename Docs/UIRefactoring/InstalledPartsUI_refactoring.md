@@ -67,8 +67,6 @@ Sceneには、UIの内部配列や`AnimatableUI`を公開しない。
 
 ```go
 type InstalledParts interface {
-    scene.Element
-
     Start() error
     IsFinished() bool
 }
@@ -175,6 +173,6 @@ Source/UI/ResultUI/
 - `InstalledPartsUI`が`Gamedata.NextState()`を呼び出さない。
 - `InstalledPartsUI`がシーン遷移やゲーム状態を決定しない。
 - `ResultScene`が`elements[1]`や`elements[2]`でUIを参照しない。
-- `InstalledPartsUI`が`scene.Element`を実装する。
+- `InstalledPartsUI`が共通UI要素インターフェースに依存しない。
 - アニメーション完了の検知とゲーム状態の遷移が分離されている。
 - UIの追加・削除・順番変更で、別のUIが誤って更新されない。

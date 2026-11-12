@@ -78,8 +78,6 @@ Scene側には、UIの内部構造ではなく意味ベースのAPIを公開す�
 
 ```go
 type PartsList interface {
-    scene.Element
-
     ShowFoundParts(found, owned game.Parts) error
     ShowParts(parts game.Parts) error
     Hide()
@@ -93,6 +91,7 @@ type PartsList interface {
 
     SelectedPart() *game.Part
     IsShowingFoundParts() bool
+    BuySelectedPart() (game.PurchaseResult, error)
 }
 ```
 
@@ -105,8 +104,10 @@ type PartsList interface {
 - `NextTab` / `PreviousTab`: タブを切り替える
 - `SelectedPart`: 現在選択されているModelのパーツを取得する
 - `IsShowingFoundParts`: 現在のタブの意味を確認する
+- `BuySelectedPart`: 現在選択されている発見済みパーツの購入をModelへ依頼する
 
 `SelectedIndex`、`MoveSelection(delta)`、`MoveTab(delta)`は、移行完了後にSceneから削除する。
+購入処理でUIの選択インデックスをSceneへ漏らさないため、Sceneは`BuySelectedPart`を利用する。
 
 ## 入力処理
 
@@ -150,7 +151,22 @@ s.partsList.Show()
 ```
 
 `PartsListUI`は受け取ったパーツを表示用に利用するが、パーツのゲームルール上の状態を変更しない。
-選択されたパーツをModelへ追加する処理は、SceneまたはModel側が担当する。
+選択されたパーツの購入処理は、Sceneが`BuySelectedPart`へ委譲する。
+`BuySelectedPart`は選択状態を内部で解決し、Modelの購入処理を呼び出す。
+購入結果の扱いとエラー表示はSceneが担当する。
+
+```go
+result, err := s.partsList.BuySelectedPart()
+if err != nil {
+    return nil, transition.None(), err
+}
+switch result {
+case game.Buy:
+    // 購入成功時の処理
+case game.NoItem, game.Lack_money, game.Lack_weight:
+    // 購入できない場合の通知
+}
+```
 
 ## `PartsListUI`内部の分割
 
@@ -170,7 +186,7 @@ Source/UI/
 - `PartCard`: パーツ1件の表示と選択表示だけを担当する
 - `PartsListState`: 選択中の要素、タブ、表示状態だけを保持する
 - `PartsListLayout`: 座標、サイズ、スクロール範囲を計算する
-- `PartsListUI`: 上記を組み合わせ、公開APIと`Element`を実装する
+- `PartsListUI`: 上記を組み合わせ、公開APIを実装する
 
 ゲームルールやシーン遷移は、これらのファイルへ移さない。
 
@@ -186,7 +202,7 @@ Scene package内の`partsListUI`インターフェースは、意味ベースの
 - [`ResultScene`](../Source/Scene/ResultScene.go)
 - [`PartsListUI`](../Source/UI/PartsListUI.go)
 
-Sceneの`elements []Element`自体は当面維持してよい。
+Sceneの`elements []Element`自体は移行中のみ維持してよい。
 `HogeSceneCanvas`を導入する場合は、Canvasが`PartsListUI`を保持し、SceneはCanvas経由で参照する。
 
 ```go
@@ -195,15 +211,23 @@ type PlaySceneCanvas struct {
 }
 ```
 
+この構造体は具体Canvasの内部実装例であり、Sceneから直接参照する型ではない。
+Sceneは`scene.PlayCanvasAPI`などのCanvas APIだけを保持し、具体Canvasや個別UIの構成を知らない。
+
 ## 段階的な移行手順
 
 1. `PartsListUI`に意味ベースのメソッドを追加する。
 2. `PlayScene`、`TrainScene`、`ResultScene`の呼び出しを新APIへ置き換える。
 3. Scene側の`SelectedIndex`、`MoveSelection`、`MoveTab`への依存を削除する。
-4. `partsListUI`インターフェースを`PartsList`へ変更する。
-5. 既存の低レベルAPIを削除する。
-6. 必要に応じて`PartCard`、状態、レイアウト計算を別ファイルへ分割する。
-7. `HogeSceneCanvas`へUI部品を移す。
+4. 購入処理を`BuySelectedPart`へ置き換える。
+5. `partsListUI`インターフェースを`PartsList`へ変更する。
+6. 既存の低レベルAPIを削除する。
+7. 必要に応じて`PartCard`、状態、レイアウト計算を別ファイルへ分割する。
+8. `HogeSceneCanvas`へUI部品を移す。
+9. Canvas移行完了後、`scene.Element`、Sceneの`elements []Element`、`UIDrawer`、`UICamera`などの
+   配列ベースUI管理をコメントアウトまたは削除する。
+10. ソース全体を検索し、廃止対象の型・フィールド・メソッドが残っておらず、
+    新規コードから再利用されていないことを確認する。
 
 移行中は互換メソッドを残してもよいが、新規コードでは意味ベースのAPIだけを使用する。
 
@@ -211,7 +235,10 @@ type PlaySceneCanvas struct {
 
 - Scene packageが`PartCard`、`cards`、選択インデックス、スクロール量を参照しない。
 - Scene packageが`MoveSelection(delta)`や`MoveTab(delta)`を呼び出さない。
-- `PartsListUI`が`scene.Element`を実装する。
+- Scene packageが`SelectedIndex()`を参照しない。
+- Scene packageが購入処理のために選択インデックスをModelへ渡さない。
+- Canvas移行完了後、`scene.Element`、Sceneの`elements []Element`、`UIDrawer`、`UICamera`が
+  コメントアウトまたは削除され、ソース全体の検索で利用箇所がない。
 - `PartsListUI`が入力パッケージや`ebiten/inpututil`を直接参照しない。
 - パーツ選択・タブ切り替え・スクロール追従がUI内部で完結する。
 - `go test ./...`またはプロジェクトで利用している同等の検証を通過する。
