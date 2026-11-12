@@ -45,7 +45,7 @@
 `SelectNext`、`SelectPrevious`、`NextTab`などの意味ベースAPIへ移行する。
 詳細は[`PartsListUI_refactoring.md`](./PartsListUI_refactoring.md)を参照する。
 
-### 3. Sceneの`elements[index]`依存の全廃（保留）
+### 3. Sceneの`elements[index]`依存の全廃
 
 対象:
 
@@ -56,7 +56,8 @@
 - UIの追加・削除・順番変更で誤ったUIを更新する
 - 実行時まで検出しにくい
 
-`ResultCanvas`などの名前付きstructへの移行は、Canvas方針を決定するまで保留する。
+`scene` packageにCanvas API interfaceを定義し、`scenecanvas` packageのScene固有Canvasへ移行する。
+具体的なCanvasは`construct`から注入し、SceneはCanvas APIだけを利用する。
 
 ### 4. ButtonUIの入力責務整理
 
@@ -103,15 +104,13 @@ Model参照をReaderや表示用データへ縮小する必要が生じた場合
 ## 現時点の保留事項
 
 - UIのライフサイクルと再生成・リセット方法（UIごとの実装事項として扱い、基本方針では規定しない）
-- 単純なUIと複雑なUIの表示データ更新方式
-- `HogeSceneCanvas`の正式採用
-- Canvas導入後のUI所有関係と描画順
 
 ## 実施上の注意
 
 - 一度に全UIを置き換えない。
 - まずModel更新・Scene遷移の責務をUIから取り除く。
 - 次にSceneからUI内部状態への依存を取り除く。
+- Canvas移行では、Scene側のCanvas API interfaceと具体Canvas実装を分離する。
 - UIの見た目変更と責務変更を同じ変更に詰め込みすぎない。
 - 各移行の完了時に、関連ドキュメントが実装と設計方針に一致しているか確認する。
 - ドキュメントの陳腐化や、実装済みの内容が移行案のまま残っていないか確認する。
