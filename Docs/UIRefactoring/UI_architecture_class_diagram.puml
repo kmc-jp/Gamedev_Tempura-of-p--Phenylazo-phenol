@@ -1,0 +1,192 @@
+@startuml UIArchitecture
+title UI実装計画（Canvas構成）
+
+skinparam classAttributeIconSize 0
+
+' package "input" {
+'     class InputConfig {
+'         +Setup() *input.Handler
+'     }
+
+'     class InputHandler {
+'         +ActionIsPressed(action)
+'         +ActionIsJustPressed(action)
+'     }
+
+'     InputConfig --> InputHandler : 準備
+' }
+
+package "game" {
+    class Gamedata {
+        +State
+        +Money
+        +Weight
+        +Parts
+    }
+}
+
+package "scene" {
+    interface Scene {
+        +Update(active bool) error
+        +Draw(screen)
+    }
+
+    class PlayScene {
+        -Input : InputHandler
+        -Gamedata : Gamedata
+        -Canvas : PlayCanvasAPI
+        -GameObjects : GameObject
+        +Update(active bool)
+        +Draw(screen)
+    }
+
+    interface PlayCanvasAPI {
+        +Update(active bool) error
+        +Draw(screen)
+        +ShowPartsList()
+        +HidePartsList()
+        +SetState(state)
+    }
+
+    class GameObject {
+        -Components : Component
+        +Update(active bool) error
+    }
+
+    class Component {
+        +Update(active bool) error
+    }
+
+    Scene <|.. PlayScene
+    PlayScene o-- GameObject : ゲーム状態を更新
+    GameObject *-- Component
+}
+
+package "scenecanvas" {
+    class PlayCanvas {
+        -UI : canvas.Canvas
+        -Timer : TimerUI
+        -Money : MoneyUI
+        -PartsList : PartsListUI
+        +Update(active bool) error
+        +Draw(screen)
+        +ShowPartsList()
+        +HidePartsList()
+        +SetState(state)
+    }
+
+    class ResultCanvas
+    class TrainCanvas
+
+    PlayCanvas ..|> scene.PlayCanvasAPI : 実装
+    PlayCanvas *-- canvas.Canvas : 汎用UIコンテナを所有
+    ResultCanvas *-- canvas.Canvas : 汎用UIコンテナを所有
+    TrainCanvas *-- canvas.Canvas : 汎用UIコンテナを所有
+}
+
+package "canvas" {
+    class Canvas {
+        -Items : CanvasItem
+        +Update(active bool) error
+        +Draw(screen)
+        +Show()
+        +Hide()
+    }
+
+    interface CanvasItem {
+        +Update(active bool) error
+        +Draw(screen)
+    }
+
+    Canvas o-- CanvasItem : 個別UIを管理
+}
+
+package "ui" {
+    class Text {
+        +SetText(text string)
+        +Draw(screen)
+    }
+
+    class RichUI {
+        +SetPosition(position)
+        +Draw(screen)
+    }
+
+    class ButtonUI {
+        +SetSelected(selected bool)
+        +Draw(screen)
+    }
+
+    class ScrollUI {
+        +SetOffset(offset int)
+        +Draw(screen)
+    }
+
+    class TimerUI {
+        +Draw(screen)
+    }
+
+    class MoneyUI {
+        +Draw(screen)
+    }
+
+    class PartsListUI {
+        +Draw(screen)
+    }
+
+    CanvasItem <|.. Text
+    CanvasItem <|.. RichUI
+    CanvasItem <|.. ButtonUI
+    CanvasItem <|.. ScrollUI
+    CanvasItem <|.. TimerUI
+    CanvasItem <|.. MoneyUI
+    CanvasItem <|.. PartsListUI
+    ButtonUI *-- RichUI
+    ScrollUI o-- CanvasItem : 内部要素
+}
+
+package "construct" {
+    class SceneConstruct {
+        +NewPlayScene()
+        +NewPlayCanvas()
+    }
+}
+
+' PlayScene --> InputHandler : 入力取得
+PlayScene --> Gamedata : Model更新・参照
+PlayScene o-- scene.PlayCanvasAPI : 契約を保持
+PlayCanvas --> Gamedata : 必要な状態を参照
+PlayCanvas --> canvas.Canvas : 更新・描画を委譲
+canvas.Canvas --> CanvasItem : 更新・描画を委譲
+' Component --> InputHandler : 必要な入力を取得
+Component --> Gamedata : Model更新・参照
+SceneConstruct ..> PlayScene : 生成
+SceneConstruct ..> PlayCanvas : 生成・注入
+SceneConstruct ..> canvas.Canvas : 生成
+SceneConstruct ..> CanvasItem : UIを注入
+
+note left of PlayScene
+Sceneはscene packageに定義された
+PlayCanvasAPI interfaceだけを利用する。
+具体的なscenecanvas実装やUIは知らない。
+end note
+
+note right of canvas.Canvas
+canvas.CanvasはSceneを知らない。
+個別UIの保持、更新、描画、
+表示状態を管理する。
+描画順は各scenecanvasが決める。
+end note
+
+note bottom of Component
+ComponentはGameObject配下の
+ゲーム実装であり、Canvasの管理対象ではない。
+end note
+
+note left of CanvasItem
+CanvasItemはCanvas内部で必要な
+共通抽象を表す。
+Scene packageのElementは使用しない。
+end note
+
+@enduml
