@@ -72,3 +72,12 @@ func (timer *Timer) Resume() {
 func (timer *Timer) GetCurrentTick() uint64 {
 	return timer.tick - timer.startTick
 }
+
+// unit: 0.1sec; 設定済みの計測時間を超過してスキップした場合trueを返す
+func (timer *Timer) Skip(time uint16) bool {
+	timer.tick += uint64(time) * 6
+	if timer.tick-timer.startTick >= uint64(timer.setTime)*6 {
+		return true
+	}
+	return false
+}
