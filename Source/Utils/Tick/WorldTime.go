@@ -20,7 +20,9 @@ const (
 )
 
 func NewWorldTimer() *WorldTimer {
-	return &WorldTimer{Timer: *NewTimer()}
+	t := NewTimer()
+	t.Set(PlayableTime * CountSpeed)
+	return &WorldTimer{Timer: *t, passedTime: 0}
 }
 
 func (wtimer *WorldTimer) syncTime() {
