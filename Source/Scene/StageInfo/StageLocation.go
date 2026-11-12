@@ -25,7 +25,7 @@ var Locations []StageLocation = []StageLocation{
 
 type locations []StageLocation
 
-// とりあえず二乗距離
+// とりあえず二乗距離 引数にscene.Stageを入力
 func (sl locations) Distance(from, to int) float64 {
 	f := sl[from].VectorValue()
 	t := sl[to].VectorValue()
