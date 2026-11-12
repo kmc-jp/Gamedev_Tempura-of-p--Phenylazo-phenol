@@ -11,6 +11,19 @@ type StageLocation struct {
 	accessibility float64 //周辺の交通手段の豊富さ(= 経路の重みづけ; 使うかわからん) デフォルトは 1
 }
 
+const (
+	Stage1 location = iota
+	Red
+	Blue
+	Green
+	Orange
+	Purple
+
+	Departure
+)
+
+type location uint
+
 // 各ステージの相対位置 (数値は適当)
 var Locations []StageLocation = []StageLocation{
 	{0, 0, 1},    //Stage1
