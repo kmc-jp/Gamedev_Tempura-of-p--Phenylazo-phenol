@@ -1,7 +1,6 @@
 package stageinfo
 
 import (
-	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 )
 
@@ -27,7 +26,7 @@ var Locations []StageLocation = []StageLocation{
 type locations []StageLocation
 
 // とりあえず二乗距離
-func (sl locations) Distance(from, to scene.Stage) float64 {
+func (sl locations) Distance(from, to int) float64 {
 	f := sl[from].VectorValue()
 	t := sl[to].VectorValue()
 	return f.DistanceSquared(t) / (sl[from].accessibility * sl[to].accessibility)
