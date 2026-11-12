@@ -23,7 +23,7 @@ type Gamedata struct {
 	Timer *tick.Timer
 
 	//世界時間用のタイマー
-	WorldTimer *tick.Timer
+	WorldTimer *tick.WorldTimer
 
 	Flag []bool
 
@@ -94,7 +94,7 @@ type state uint
 func NewGamedata() *Gamedata {
 	return &Gamedata{
 		Timer:           tick.NewTimer(),
-		WorldTimer:      tick.NewTimer(),
+		WorldTimer:      tick.NewWorldTimer(),
 		Weight:          InitialWeight,
 		Money:           InitialMoney,
 		currentLocation: stageinfo.Departure,
