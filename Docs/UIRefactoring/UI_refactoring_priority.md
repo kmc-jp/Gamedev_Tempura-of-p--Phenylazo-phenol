@@ -65,6 +65,18 @@
 `scene` packageにCanvas API interfaceを定義し、`scenecanvas` packageのScene固有Canvasへ移行する。
 具体的なCanvasは`construct`から注入し、SceneはCanvas APIだけを利用する。
 
+#### 実施タイミング
+
+Canvas基盤（`canvas`、`scenecanvas`、`scene.ResultCanvasAPI`）は、優先度1の完了後、**優先度2（PartsListUIのScene向けAPI整理）の完了後**に、別の変更として実施する。
+
+- 優先度1で`InstalledParts`の公開API（`Start`、`IsFinished`）が確定済みのため、Canvas APIへそのまま取り込める。
+- Canvas APIにはPartsListの操作も含まれる。優先度2で意味ベースAPI（`SelectNext`、`NextTab`など）を確定させてから取り込むことで、Canvas API確定後の作り直しを避ける。
+- 最初の対象は`ResultScene`とする。UIの数が少なく、優先度1・2でAPIが固まっているためである。
+- `PlayScene`、`TrainScene`などの他Sceneは、`ResultScene`のCanvas化で`canvas`基盤の形を確認した後に、Sceneごとに別の変更として移行する。
+- 優先度4（ButtonUI）、5（ScrollUI）は、Canvas基盤の`CanvasItem`を使う側のため、Canvas導入後に進める。
+
+Canvas導入までは、名前付きフィールドの暫定構成を維持する。
+
 ### 4. ButtonUIの入力責務整理
 
 対象:
