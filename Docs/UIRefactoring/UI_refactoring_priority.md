@@ -45,7 +45,7 @@
 `SelectNext`、`SelectPrevious`、`NextTab`などの意味ベースAPIへ移行する。
 詳細は[`PartsListUI_refactoring.md`](./PartsListUI_refactoring.md)を参照する。
 
-### 3. Sceneの`elements[index]`依存の全廃
+### 3. Sceneの`elements[index]`依存の全廃（保留）
 
 対象:
 
@@ -56,7 +56,7 @@
 - UIの追加・削除・順番変更で誤ったUIを更新する
 - 実行時まで検出しにくい
 
-`ResultCanvas`などの名前付きstructへ移行する。
+`ResultCanvas`などの名前付きstructへの移行は、Canvas方針を決定するまで保留する。
 
 ### 4. ButtonUIの入力責務整理
 
@@ -84,7 +84,7 @@
 
 PartsListUIのリファクタ後に、汎用化が必要かを再評価する。
 
-### 6. Gamedata参照の縮小
+### 6. Gamedata参照の縮小（保留）
 
 対象:
 
@@ -97,7 +97,15 @@ PartsListUIのリファクタ後に、汎用化が必要かを再評価する。
 - UIがModel全体へ依存している
 - Modelの型変更が多くのUIへ波及する
 
-ただし、現時点では参照のみであり、優先度は低い。ゲーム仕様が固まった後に必要な情報だけのReaderや表示用データへ移行する。
+UIが`*game.Gamedata`を直接参照することを許容するため、現時点では実施しない。
+Model参照をReaderや表示用データへ縮小する必要が生じた場合に、改めて検討する。
+
+## 現時点の保留事項
+
+- UIのライフサイクルと再生成・リセット方法（UIごとの実装事項として扱い、基本方針では規定しない）
+- 単純なUIと複雑なUIの表示データ更新方式
+- `HogeSceneCanvas`の正式採用
+- Canvas導入後のUI所有関係と描画順
 
 ## 実施上の注意
 
