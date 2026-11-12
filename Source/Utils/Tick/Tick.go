@@ -3,11 +3,13 @@ package tick
 type Timer struct {
 	//unit: 0.1 second
 	//0以外の場合は計測中として扱う
-	Time uint16
+	setTime uint16
 
 	tick      uint64
 	startTick uint64
 	expired   bool
+
+	suspend bool
 }
 
 var timers = map[*Timer]struct{}{}
@@ -15,10 +17,13 @@ var timers = map[*Timer]struct{}{}
 // Tick advances every timer created by NewTimer by one game frame.
 func Tick() {
 	for timer := range timers {
+		if timer.suspend {
+			continue
+		}
 		timer.tick++
-		if timer.Time != 0 && timer.tick >= timer.startTick+uint64(timer.Time)*6 {
+		if timer.setTime != 0 && timer.tick >= timer.startTick+uint64(timer.setTime)*6 {
 			timer.expired = true
-			timer.Time = 0
+			timer.setTime = 0
 		}
 	}
 }
@@ -42,16 +47,37 @@ func (timer *Timer) Expired() bool {
 // Set configures the timer duration in 0.1-second units.
 func (timer *Timer) Set(time uint16) error {
 	if time == 0 {
-		timer.Time = 0
+		timer.setTime = 0
 		timer.expired = false
 		return nil
 	}
 
 	//すでに計測中の場合はTimer設定をスキップ
-	if timer.Time != 0 {
+	if timer.setTime != 0 {
 		return nil
 	}
-	timer.Time = time
+	timer.setTime = time
 	timer.startTick = timer.tick
 	return nil
+}
+
+func (timer *Timer) Suspend() {
+	timer.suspend = true
+}
+
+func (timer *Timer) Resume() {
+	timer.suspend = false
+}
+
+func (timer *Timer) GetCurrentTick() uint64 {
+	return timer.tick - timer.startTick
+}
+
+// unit: 0.1sec; 設定済みの計測時間を超過してスキップした場合trueを返す
+func (timer *Timer) Skip(time uint16) bool {
+	timer.tick += uint64(time) * 6
+	if timer.tick-timer.startTick >= uint64(timer.setTime)*6 {
+		return true
+	}
+	return false
 }
