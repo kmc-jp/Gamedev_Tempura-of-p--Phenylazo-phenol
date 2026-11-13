@@ -23,7 +23,7 @@
 
 `ui` packageが`scene` packageをimportしているため、`scene`側から`resultui`などの具体型は参照できない（循環import）。
 そのため`ResultScene`は`scene`内で定義したinterface型（`installedPartsUI`、`Element`）のフィールドでUIを保持する。
-これはCanvas導入までの暫定構成であり、Canvas化は[`UI_refactoring_priority.md`](./UI_refactoring_priority.md)の優先度3で行う。
+これはCanvas導入までの暫定構成であり、Canvas化は[`UI_refactoring_priority.md`](./UI_refactoring_priority.md)の優先度8（フェーズB）で行う。
 
 ## 目標構成
 
@@ -148,7 +148,7 @@ Source/UI/ResultUI/
 1. （実施済み）`InstalledPartsUI`に`IsFinished()`を追加する。
 2. （実施済み）`InstalledPartsUI.Update()`から`Gamedata.NextState()`を削除する。
 3. （実施済み）`ResultScene.Update()`で`IsFinished()`を確認し、`Gamedata.NextState()`を呼ぶ。
-4. （実施済み・暫定）`ResultScene`の`elements[index]`参照を名前付きフィールドへ置き換える。Canvasへの置き換えは優先度3で行う。
+4. （実施済み・暫定）`ResultScene`の`elements[index]`参照を名前付きフィールドへ置き換える。Canvasへの置き換えは優先度8（フェーズB）で行う。
 5. （実施済み）`InstalledPartsUI`の初期化タイミングを`Start()`へ整理する。
 6. （未実施）必要に応じて内部状態・レコード・カテゴリ変換を別ファイルへ分割する。
 
