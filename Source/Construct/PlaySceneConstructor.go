@@ -83,6 +83,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 
 		partsList, err := ui.NewPartsListUI(
 			Utils.Position{X: 20, Y: 30},
+			gdata,
 			ui.FontFace(gdata.Font, 16),
 			ui.FontFace(gdata.Font, 12),
 		)

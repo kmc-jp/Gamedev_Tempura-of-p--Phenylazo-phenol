@@ -42,7 +42,10 @@ Scene側のCanvas API interface（`scene.XxxCanvasAPI`）の定義と、Sceneへ
 
 最初に`IsFinished()`だけを導入し、状態遷移をSceneへ戻す。
 
-### 2. PartsListUIの意味ベースAPI追加（UI側のみ）
+### 2. PartsListUIの意味ベースAPI追加（UI側のみ）（完了）
+
+意味ベースAPIを`PartsListUI`へ追加し、購入結果型を`game.PurchaseResult`として公開した。
+旧APIは`Deprecated`コメント付きの互換APIとして残しており、Sceneの呼び出し置換と旧APIの削除は8-4で行う。
 
 対象:
 
@@ -59,8 +62,8 @@ Scene側のCanvas API interface（`scene.XxxCanvasAPI`）の定義と、Sceneへ
 `ShowFoundParts`、`ShowParts`、`Show`、`Hide`、`SelectNext`、`SelectPrevious`、`NextTab`、`PreviousTab`、`IsShowingFoundParts`、`BuySelectedPart`を`PartsListUI`へ追加する。
 詳細は[`PartsListUI_refactoring.md`](./PartsListUI_refactoring.md)を参照する。
 
-- 旧API（`MoveSelection`、`MoveTab`、`SelectedIndex`、`SetLists`、`SetVisible`）は互換APIとして残す。旧APIを残すことで、`PlayScene`、`TrainScene`、`ResultScene`は変更せずにビルドできる。
-- `BuySelectedPart`のため、`game`の購入結果型（現在は非公開の`purchase`）を公開し、`PartsListUI`へ`*game.Gamedata`を渡す。
+- 旧API（`MoveSelection`、`MoveTab`、`SelectedIndex`、`SetLists`、`SetParts`、`SetVisible`、`IsFoundTab`、`CurrentTab`）は互換APIとして残す。旧APIを残すことで、`PlayScene`、`TrainScene`、`ResultScene`は変更せずにビルドできる。
+- `BuySelectedPart`のため、`game`の購入結果型を`PurchaseResult`として公開し、`NewPartsListUI`の引数で`*game.Gamedata`を渡す。
 - Sceneの呼び出し置換と旧APIの削除は、8で行う。
 
 ### 3. canvas基盤の導入とUIの`scene`依存除去
@@ -104,7 +107,7 @@ UIは構造的に`scene.Element`も満たし続けるため、既存Sceneと`con
 - スクロール入力の解釈や子要素の座標変換が、将来複数UIへ漏れる可能性がある
 - 現在は主にPartsListUI内部で利用されている
 
-2・3の完了後に、汎用化が必要かを再評価する。
+2（完了）・3の完了後に、汎用化が必要かを再評価する。
 
 ### 6. TitleCanvasの骨組み（`scenecanvas`）
 

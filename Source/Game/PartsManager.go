@@ -104,7 +104,7 @@ func (g *Gamedata) AddPartToPartsList(p *Part) {
 
 // 購入処理結果
 const (
-	Buy purchase = iota
+	Buy PurchaseResult = iota
 
 	Lack_money
 	Lack_weight
@@ -112,9 +112,10 @@ const (
 	NoItem
 )
 
-type purchase uint
+// 購入処理の結果
+type PurchaseResult uint
 
-func (g *Gamedata) BuyPart(index int) purchase {
+func (g *Gamedata) BuyPart(index int) PurchaseResult {
 	if index < 0 || index >= len(g.Found) {
 		return NoItem
 	}

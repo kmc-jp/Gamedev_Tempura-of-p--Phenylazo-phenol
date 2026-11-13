@@ -106,6 +106,20 @@ type PartsList interface {
 - `IsShowingFoundParts`: 現在のタブの意味を確認する
 - `BuySelectedPart`: 現在選択されている発見済みパーツの購入をModelへ依頼する
 
+`ShowFoundParts` / `ShowParts`は一覧を構築するだけで、表示状態は変更しない。表示するには続けて`Show`を呼ぶ。
+
+`IsShowingFoundParts`は、`ShowFoundParts`によるタブ付き一覧で「発見したパーツ」タブを表示しているときだけ`true`を返す。
+`ShowParts`による単一一覧の表示中は`false`を返す（互換APIの`IsFoundTab`は単一一覧でも`true`を返す点が異なる）。
+
+`BuySelectedPart`の挙動:
+
+- 発見タブ以外の表示中、または未選択の場合は`game.NoItem`を返す
+- 選択中のパーツを`Gamedata.Found`内でポインタ比較して位置を解決し、`Gamedata.BuyPart`を呼ぶ（UIのカード順とModelの順の一致に依存しない）
+- 購入に成功した場合は、`Gamedata.Found` / `Gamedata.Parts`で一覧を再構築し、選択位置を範囲内に収めて維持する。Sceneが一覧を再設定する必要はない
+- `error`は一覧の再構築に失敗した場合だけ返す
+
+`NewPartsListUI`は`BuySelectedPart`のため`*game.Gamedata`を引数に取る。
+
 `SelectedIndex`、`MoveSelection(delta)`、`MoveTab(delta)`は、移行完了後にSceneから削除する。
 購入処理でUIの選択インデックスをSceneへ漏らさないため、Sceneは`BuySelectedPart`を利用する。
 
@@ -197,10 +211,10 @@ Scene package内の`partsListUI`インターフェースは、意味ベースの
 
 変更対象の例:
 
-- [`PlayScene`](../Source/Scene/PlayScene.go)
-- [`TrainScene`](../Source/Scene/TrainScene.go)
-- [`ResultScene`](../Source/Scene/ResultScene.go)
-- [`PartsListUI`](../Source/UI/PartsListUI.go)
+- [`PlayScene`](../../Source/Scene/PlayScene.go)
+- [`TrainScene`](../../Source/Scene/TrainScene.go)
+- [`ResultScene`](../../Source/Scene/ResultScene.go)
+- [`PartsListUI`](../../Source/UI/PartsListUI.go)
 
 Sceneの`elements []Element`自体は移行中のみ維持してよい。
 `HogeSceneCanvas`を導入する場合は、Canvasが`PartsListUI`を保持し、SceneはCanvas経由で参照する。
@@ -216,7 +230,7 @@ Sceneは`scene.PlayCanvasAPI`などのCanvas APIだけを保持し、具体Canva
 
 ## 段階的な移行手順
 
-1. `PartsListUI`に意味ベースのメソッドを追加する。
+1. `PartsListUI`に意味ベースのメソッドを追加する。（完了。旧APIは`Deprecated`コメント付きの互換APIとして残している）
 2. `PlayScene`、`TrainScene`、`ResultScene`の呼び出しを新APIへ置き換える。
 3. Scene側の`SelectedIndex`、`MoveSelection`、`MoveTab`への依存を削除する。
 4. 購入処理を`BuySelectedPart`へ置き換える。

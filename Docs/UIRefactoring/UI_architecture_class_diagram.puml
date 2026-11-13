@@ -131,6 +131,19 @@ package "ui" {
     }
 
     class PartsListUI {
+        +ShowFoundParts(found, owned) error
+        +ShowParts(parts) error
+        +Show()
+        +Hide()
+        +Visible() bool
+        +SelectNext()
+        +SelectPrevious()
+        +NextTab() error
+        +PreviousTab() error
+        +SelectedPart() *game.Part
+        +IsShowingFoundParts() bool
+        +BuySelectedPart() (game.PurchaseResult, error)
+        +Update(active) error
         +Draw(screen)
     }
 

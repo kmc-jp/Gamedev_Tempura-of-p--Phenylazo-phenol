@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"image"
 	stdcolor "image/color"
+	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -31,6 +32,7 @@ const (
 
 type PartsListUI struct {
 	position      utils.Position
+	gamedata      *game.Gamedata
 	font          *text.GoTextFace
 	captionFont   *text.GoTextFace
 	scroll        *ScrollUI
@@ -44,7 +46,10 @@ type PartsListUI struct {
 	empty         *Text
 }
 
-func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont *text.GoTextFace) (*PartsListUI, error) {
+func NewPartsListUI(position utils.Position, gamedata *game.Gamedata, font *text.GoTextFace, captionFont *text.GoTextFace) (*PartsListUI, error) {
+	if gamedata == nil {
+		return nil, fmt.Errorf("gamedata が nil です")
+	}
 	if font == nil {
 		return nil, fmt.Errorf("font が nil です")
 	}
@@ -61,6 +66,7 @@ func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont 
 
 	return &PartsListUI{
 		position:      position,
+		gamedata:      gamedata,
 		font:          font,
 		captionFont:   captionFont,
 		scroll:        scroll,
@@ -69,21 +75,142 @@ func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont 
 	}, nil
 }
 
-func (p *PartsListUI) SetParts(parts game.Parts) error {
-	p.showTabs = false
-	p.lists[PartsListFound] = parts
-	return p.rebuild(parts)
-}
+// ---- Sceneに公開する意味ベースAPI ----
 
-func (p *PartsListUI) SetLists(found, owned game.Parts) error {
+// ShowFoundParts は発見したパーツ・所持パーツのタブ付き一覧を構築する。
+// 表示状態は変更しないため、表示するには Show を呼ぶ。
+func (p *PartsListUI) ShowFoundParts(found, owned game.Parts) error {
 	p.showTabs = true
 	p.lists[PartsListFound] = found
 	p.lists[PartsListOwned] = owned
 	p.activeTab = PartsListFound
-	return p.rebuild(found)
+	return p.rebuild(found, 0)
 }
 
+// ShowParts はタブなしの単一パーツ一覧を構築する。
+// 表示状態は変更しないため、表示するには Show を呼ぶ。
+func (p *PartsListUI) ShowParts(parts game.Parts) error {
+	p.showTabs = false
+	p.lists[PartsListFound] = parts
+	return p.rebuild(parts, 0)
+}
+
+func (p *PartsListUI) Show() {
+	p.visible = true
+}
+
+func (p *PartsListUI) Hide() {
+	p.visible = false
+}
+
+func (p *PartsListUI) Visible() bool {
+	return p.visible
+}
+
+func (p *PartsListUI) SelectNext() {
+	p.moveSelection(1)
+}
+
+func (p *PartsListUI) SelectPrevious() {
+	p.moveSelection(-1)
+}
+
+func (p *PartsListUI) NextTab() error {
+	return p.moveTab(1)
+}
+
+func (p *PartsListUI) PreviousTab() error {
+	return p.moveTab(-1)
+}
+
+func (p *PartsListUI) SelectedPart() *game.Part {
+	if p.selected < 0 || p.selected >= len(p.cards) {
+		return nil
+	}
+	return p.cards[p.selected].Part()
+}
+
+// IsShowingFoundParts はタブ付き一覧で「発見したパーツ」タブを表示中かを返す。
+// ShowParts による単一一覧の表示中は false を返す。
+func (p *PartsListUI) IsShowingFoundParts() bool {
+	return p.showTabs && p.activeTab == PartsListFound
+}
+
+// BuySelectedPart は選択中の発見済みパーツの購入をModelへ依頼する。
+// 発見タブ以外の表示中や未選択時は game.NoItem を返す。
+// 購入に成功した場合は Gamedata の Found / Parts で一覧を再構築し、選択位置を維持する。
+func (p *PartsListUI) BuySelectedPart() (game.PurchaseResult, error) {
+	if !p.IsShowingFoundParts() {
+		return game.NoItem, nil
+	}
+	part := p.SelectedPart()
+	if part == nil {
+		return game.NoItem, nil
+	}
+	index := slices.Index(p.gamedata.Found, part)
+	if index < 0 {
+		return game.NoItem, nil
+	}
+
+	result := p.gamedata.BuyPart(index)
+	if result != game.Buy {
+		return result, nil
+	}
+
+	p.lists[PartsListFound] = p.gamedata.Found
+	p.lists[PartsListOwned] = p.gamedata.Parts
+	if err := p.rebuild(p.lists[PartsListFound], p.selected); err != nil {
+		return result, fmt.Errorf("パーツ一覧の再構築に失敗しました: %w", err)
+	}
+	return result, nil
+}
+
+// ---- 互換API（フェーズB-8でSceneの呼び出しを置換後に削除する） ----
+
+// Deprecated: ShowParts を使用する。
+func (p *PartsListUI) SetParts(parts game.Parts) error {
+	return p.ShowParts(parts)
+}
+
+// Deprecated: ShowFoundParts を使用する。
+func (p *PartsListUI) SetLists(found, owned game.Parts) error {
+	return p.ShowFoundParts(found, owned)
+}
+
+// Deprecated: Show / Hide を使用する。
+func (p *PartsListUI) SetVisible(visible bool) {
+	p.visible = visible
+}
+
+// Deprecated: NextTab / PreviousTab を使用する。
 func (p *PartsListUI) MoveTab(delta int) error {
+	return p.moveTab(delta)
+}
+
+// Deprecated: SelectNext / SelectPrevious を使用する。
+func (p *PartsListUI) MoveSelection(delta int) {
+	p.moveSelection(delta)
+}
+
+// Deprecated: 購入処理は BuySelectedPart を使用する。
+func (p *PartsListUI) SelectedIndex() int {
+	return p.selected
+}
+
+// Deprecated: IsShowingFoundParts を使用する。
+func (p *PartsListUI) CurrentTab() PartsListTab {
+	return p.activeTab
+}
+
+// Deprecated: IsShowingFoundParts を使用する。
+// 単一一覧の表示中も true を返す点が IsShowingFoundParts と異なる。
+func (p *PartsListUI) IsFoundTab() bool {
+	return !p.showTabs || p.activeTab == PartsListFound
+}
+
+// ---- 内部実装 ----
+
+func (p *PartsListUI) moveTab(delta int) error {
 	if !p.showTabs || delta == 0 {
 		return nil
 	}
@@ -98,18 +225,11 @@ func (p *PartsListUI) MoveTab(delta int) error {
 		return nil
 	}
 	p.activeTab = PartsListTab(next)
-	return p.rebuild(p.lists[p.activeTab])
+	return p.rebuild(p.lists[p.activeTab], 0)
 }
 
-func (p *PartsListUI) CurrentTab() PartsListTab {
-	return p.activeTab
-}
-
-func (p *PartsListUI) IsFoundTab() bool {
-	return !p.showTabs || p.activeTab == PartsListFound
-}
-
-func (p *PartsListUI) rebuild(parts game.Parts) error {
+// rebuild はパーツカードを作り直し、selected を範囲内にクランプして選択する。
+func (p *PartsListUI) rebuild(parts game.Parts, selected int) error {
 	viewportHeight := p.viewportHeight()
 	contentHeight := viewportHeight
 	if len(parts) > 0 {
@@ -150,8 +270,9 @@ func (p *PartsListUI) rebuild(parts game.Parts) error {
 	p.scroll = scroll
 	p.selected = -1
 	if len(p.cards) > 0 {
-		p.selected = 0
-		p.cards[0].SetSelected(true)
+		p.selected = max(0, min(selected, len(p.cards)-1))
+		p.cards[p.selected].SetSelected(true)
+		p.ensureSelectedVisible()
 	}
 	p.empty = nil
 	if len(parts) == 0 {
@@ -179,19 +300,11 @@ func (p *PartsListUI) viewportHeight() int {
 	return partsListHeight - 60 - p.tabOffset()
 }
 
-func (p *PartsListUI) SetVisible(visible bool) {
-	p.visible = visible
-}
-
-func (p *PartsListUI) Visible() bool {
-	return p.visible
-}
-
 func (p *PartsListUI) Scroll(delta int) {
 	p.scroll.Scroll(delta)
 }
 
-func (p *PartsListUI) MoveSelection(delta int) {
+func (p *PartsListUI) moveSelection(delta int) {
 	if len(p.cards) == 0 || delta == 0 {
 		return
 	}
@@ -213,17 +326,6 @@ func (p *PartsListUI) MoveSelection(delta int) {
 	p.selected = next
 	p.cards[p.selected].SetSelected(true)
 	p.ensureSelectedVisible()
-}
-
-func (p *PartsListUI) SelectedPart() *game.Part {
-	if p.selected < 0 || p.selected >= len(p.cards) {
-		return nil
-	}
-	return p.cards[p.selected].Part()
-}
-
-func (p *PartsListUI) SelectedIndex() int {
-	return p.selected
 }
 
 func (p *PartsListUI) ensureSelectedVisible() {
