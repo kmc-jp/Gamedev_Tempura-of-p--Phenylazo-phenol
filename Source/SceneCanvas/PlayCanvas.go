@@ -57,7 +57,7 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 					return fmt.Sprintf("空き重量: %d", g.Weight)
 				},
 				Font:  ui.FontFace(gdata.Font, 15),
-				Color: color.Black(),
+				Color: color.White(),
 			},
 			{
 				Text: func(g game.Gamedata) string {
@@ -80,7 +80,7 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{timeText, gameDataUI, partsList} {
+	for _, item := range []canvas.CanvasItem{timeText, partsList, gameDataUI} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("プレイ画面のCanvas構築に失敗しました。\n%w", err)
 		}
