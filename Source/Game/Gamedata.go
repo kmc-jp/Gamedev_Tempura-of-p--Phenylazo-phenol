@@ -225,3 +225,9 @@ func (g *Gamedata) SellPart() {
 	g.Weight -= g.sell.Weight
 	g.sell = nil
 }
+
+// 売却するパーツの選択処理
+func (g *Gamedata) ChooseSellPart(idx int) {
+	g.sell = g.parts[idx]
+	g.parts = g.parts.Delete(idx)
+}
