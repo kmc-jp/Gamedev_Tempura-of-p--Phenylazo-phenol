@@ -59,8 +59,8 @@ Scene側のCanvas API interface（`scene.XxxCanvasAPI`）の定義と、Sceneへ
 - 同じUIの操作方法が複数Sceneへ広がっている
 - Canvas APIにはPartsListの操作も含まれるため、Canvas API定義より先に意味ベースAPIを確定させる必要がある
 
-`ShowFoundParts`、`ShowParts`、`Show`、`Hide`、`SelectNext`、`SelectPrevious`、`NextTab`、`PreviousTab`、`IsShowingFoundParts`、`BuySelectedPart`を`PartsListUI`へ追加する。
-詳細は[`PartsListUI_refactoring.md`](./PartsListUI_refactoring.md)を参照する。
+`ShowFoundParts`、`ShowParts`、`Show`、`Hide`、`SelectNext`、`SelectPrevious`、`NextTab`、`PreviousTab`、`IsShowingFoundParts`、`BuySelectedPart`を`PartsListUI`へ追加した（`BuySelectedPart`は10でコメントアウトし、代わりに`RefreshFoundParts`を追加した）。
+現在の公開APIは[`UI_Components.md`](../UI_Components.md)の「PartsListUI」を参照する。
 
 - 旧API（`MoveSelection`、`MoveTab`、`SelectedIndex`、`SetLists`、`SetParts`、`SetVisible`、`IsFoundTab`、`CurrentTab`）は互換APIとして残す。旧APIを残すことで、`PlayScene`、`TrainScene`、`ResultScene`は変更せずにビルドできる。
 - `BuySelectedPart`のため、`game`の購入結果型を`PurchaseResult`として公開し、`NewPartsListUI`の引数で`*game.Gamedata`を渡した。（10で`BuySelectedPart`と`Gamedata`引数を撤去し、購入をSceneへ移した。）
@@ -89,7 +89,7 @@ UIは構造的に`scene.Element`も満たし続けるため、既存Sceneと`con
 ### 4. ButtonUIの入力責務整理（完了）
 
 マウス判定（`IsMouseOver`、`IsButtonPressed`）をコメントアウトし、`SetSelected`、`Selected`と選択枠の描画を追加した。
-旧マウス判定のコメントアウトは、Scene側の入力移行が完了した時点で削除する。
+Scene側の入力移行は8で完了したが、旧マウス判定は再利用の可能性があるため理由付きのコメントアウトで残す。
 
 対象:
 
@@ -226,6 +226,7 @@ Model参照をReaderや表示用データへ縮小する必要が生じた場合
 ## 現時点の保留事項
 
 - UIのライフサイクルと再生成・リセット方法（UIごとの実装事項として扱い、基本方針では規定しない）
+- `PartsListUI`（`PartCard`、選択・タブの状態、レイアウト計算）と`InstalledParts`（1パーツ分のレコード、種別名の変換）のファイル分割。ファイルが大きくなった時点で検討する。分割後もゲームルールやScene遷移はこれらへ移さない。
 
 ## 実施上の注意
 

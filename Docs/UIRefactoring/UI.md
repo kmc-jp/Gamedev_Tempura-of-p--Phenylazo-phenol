@@ -65,8 +65,9 @@ UIは次の処理を担当しない。
 将来的に`input.Handler`を`game.Gamedata`へ移動する場合も、UIへ入力処理を追加しない。
 
 ```go
-if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
-    s.someUI.SetSelected(true)
+// SceneはUIを直接持たず、Canvas APIの入力用APIで意図を伝える
+if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
+    s.canvas.MovePartSelectionDown()
 }
 ```
 
@@ -211,9 +212,9 @@ UIは、表示を成立させるための一時的な状態を保持してよい
 
 これらはUIを再生成したときに初期化されても、ゲームの進行やユーザーの確定結果を変更しない状態とする。
 
-### SceneまたはViewModelが保持する状態
+### Scene・Scene固有Canvasが保持する状態
 
-画面内の操作に意味があるが、ゲーム全体のModelやセーブデータには属さない状態は、Sceneまたは必要に応じてViewModelが保持する。
+画面内の操作に意味があるが、ゲーム全体のModelやセーブデータには属さない状態は、Scene、Scene固有Canvas配下のUI、または必要に応じてViewModelが保持する。
 
 - 選択中の項目
 - 現在のタブ
@@ -222,7 +223,9 @@ UIは、表示を成立させるための一時的な状態を保持してよい
 - 一時的なUIの表示状態
 - 画面内での入力や操作の進行状況
 
-UIはこれらを入力によって直接変更せず、SceneまたはViewModelから渡された状態を表示する。
+UIはこれらを入力によって直接変更しない。Sceneが入力を判定し、Canvas APIの入力用APIを通じて変更を指示する。
+例えば`PartsListUI`は選択中の項目・タブ・表示状態を保持するが、変更は`PlayCanvas`などが`SelectNext`、`NextTab`、`Show`などで行う。
+ゲームルールに関わる画面内の状態（Resultのパーツ種別の進行など）はSceneが保持し、Canvasが観測して表示に反映する。
 
 ### Modelが保持する状態
 
@@ -242,7 +245,7 @@ UIはこれらを入力によって直接変更せず、SceneまたはViewModel�
 > UIを破棄して再生成したとき、その状態が失われるとゲーム上の意味が変わるか。
 
 - 変わらない表示上の状態はUIが保持する。
-- 画面内の操作状態はSceneまたはViewModelが保持する。
+- 画面内の操作状態はScene、Scene固有Canvas配下のUI、またはViewModelが保持する。
 - ゲーム進行や確定結果に関わる状態はModelが保持する。
 
 ## 既存UIとの移行
@@ -260,19 +263,17 @@ UIはこれらを入力によって直接変更せず、SceneまたはViewModel�
 
 ## 実装計画
 
-1. `input.Handler`を入力の唯一の入口として維持する。
-2. 既存Sceneの`Update()`から、UIの表示状態を更新する処理を整理する。
-3. UI要素からマウス入力などの直接入力処理を取り除く。
-4. `scene` packageにSceneごとのCanvas API interfaceを、各Scene構造体と同じファイルに定義する。
-5. `scenecanvas` packageに具体的なCanvasを実装し、`construct`から注入する。
-6. `canvas` packageで個別UIの更新・描画・表示状態を管理する。
-7. 表示変換が複雑な画面だけViewModelまたはPresenterを追加する。
-8. 標準的な部品が不足した場合に限り、Ebiten UIの導入を検討する。
+1. （完了）`input.Handler`を入力の唯一の入口として維持する。
+2. （完了）既存Sceneの`Update()`から、UIの表示状態を更新する処理を整理する。
+3. （完了）UI要素からマウス入力などの直接入力処理を取り除く。
+4. （完了）`scene` packageにSceneごとのCanvas API interfaceを、各Scene構造体と同じファイルに定義する。
+5. （完了）`scenecanvas` packageに具体的なCanvasを実装し、`construct`から注入する。
+6. （完了）`canvas` packageで個別UIの更新・描画・表示状態を管理する。
+7. （必要になった時点で実施）表示変換が複雑な画面だけViewModelまたはPresenterを追加する。
+8. （必要になった時点で実施）標準的な部品が不足した場合に限り、Ebiten UIの導入を検討する。
 
 実装上のクラス関係は[`UI_architecture_class_diagram.puml`](./UI_architecture_class_diagram.puml)を参照する。
 
-複雑なパーツ一覧UIの分割方針は[`PartsListUI_refactoring.md`](./PartsListUI_refactoring.md)を参照する。
-
-InstalledPartsUIの責務分離は[`InstalledPartsUI_refactoring.md`](./InstalledPartsUI_refactoring.md)を参照する。
+個別UI部品（`PartsListUI`、`InstalledParts`など）の公開APIと挙動は[`UI_Components.md`](../UI_Components.md)を参照する。
 
 全体の実施順は[`UI_refactoring_priority.md`](./UI_refactoring_priority.md)を参照する。

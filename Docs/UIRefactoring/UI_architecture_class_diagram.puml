@@ -3,6 +3,10 @@ title UI実装計画（Canvas構成）
 
 skinparam classAttributeIconSize 0
 
+' Xxx は Title / Pause / SelectStage / Play / Train / Result のいずれか。
+' シーンごとに異なる部分は「.. 〜 ..」の区切りで示し、内容は省略する。
+' シーンごとのCanvas APIの違いは UI_refactoring_priority.md の 7 の表を参照する。
+
 ' package "input" {
 '     class InputConfig {
 '         +Setup() *input.Handler
@@ -22,7 +26,10 @@ package "game" {
         +Money
         +Weight
         +Parts
+        +Found
+        +Assemble
         +BuyFoundPart(part) PurchaseResult
+        .. ほか（省略） ..
     }
 }
 
@@ -32,53 +39,33 @@ package "scene" {
         +Draw(screen)
     }
 
-    class PlayScene {
+    class XxxScene {
+        -canvas : XxxCanvasAPI
         -Input : InputHandler
         -Gamedata : Gamedata
-        -canvas : PlayCanvasAPI
-        +SetCanvas(canvas)
-        -GameObjects : GameObject
+        -entities : Entity
         +Update(active bool)
         +Draw(screen)
+        .. Play / Train / Result のみ ..
+        +SetCanvas(canvas XxxCanvasAPI)
+        .. シーン固有（省略） ..
+        Canvasが観測する公開メソッド
+        （例: CandidatesRevision()、IsPartsListRevealed()）
     }
 
-    interface PlayCanvasAPI {
+    interface XxxCanvasAPI {
         +Update(active bool) error
         +Draw(screen)
-        +IsPlayCanvas()
-        +TogglePartsList() error
-        +MovePartSelectionDown()
-        +MovePartSelectionUp()
-        +ShowNextPartsTab() error
-        +ShowPreviousPartsTab() error
-        +IsPartsListOpen() bool
-        +SelectedFoundPart() *game.Part
+        +IsXxxCanvas()
+        .. シーン固有（省略） ..
+        入力用API（例: MovePartSelectionDown()）
+        問い合わせAPI（例: SelectedPart() *game.Part）
     }
 
-    note bottom of PlayCanvasAPI
-    入力用APIはSceneでの意図に合わせた名前にする。
-    TimeUp後の一覧表示はCanvasが
-    Gamedata.Stateを観測して行う。
-    購入はSceneがSelectedFoundPartで受け取った
-    パーツをGamedata.BuyFoundPartへ渡して行う。
-    end note
-
-    class TitleScene {
-        -canvas : TitleCanvasAPI
-        +Update(active bool)
-        +Draw(screen)
-    }
-
-    interface TitleCanvasAPI {
-        +Update(active bool) error
-        +Draw(screen)
-        +IsTitleCanvas()
-    }
-
-    note bottom of TitleCanvasAPI
-    Canvas APIはScene構造体と同じファイルに定義する。
-    IsTitleCanvas()は識別用で処理を持たない。
-    PauseScene / SelectStageSceneも同じ構成。
+    note bottom of XxxCanvasAPI
+    Canvas APIは対応するScene構造体と同じファイルに定義する。
+    IsXxxCanvas()は識別用で処理を持たない。
+    Title / Pause / SelectStage は Update・Draw・識別用メソッドだけ。
     end note
 
     class GameObject {
@@ -90,58 +77,41 @@ package "scene" {
         +Update(active bool) error
     }
 
-    Scene <|.. PlayScene
-    Scene <|.. TitleScene
-    TitleScene o-- TitleCanvasAPI : 契約を保持
-    PlayScene o-- GameObject : ゲーム状態を更新
+    Scene <|.. XxxScene
+    XxxScene o-- XxxCanvasAPI : 契約を保持
+    XxxScene o-- GameObject : ゲーム状態を更新
     GameObject *-- Component
 }
 
 package "scenecanvas" {
-    class PlayCanvas {
+    class XxxCanvas {
         -canvas : canvas.Canvas
+        +Update(active bool) error
+        +Draw(screen)
+        +IsXxxCanvas()
+        .. Play / Train / Result のみ ..
+        -gdata : Gamedata
         -partsList : PartsListUI
-        +Update(active bool) error
-        +Draw(screen)
-        +IsPlayCanvas()
-        +TogglePartsList() error
-        +MovePartSelectionDown()
-        +MovePartSelectionUp()
-        +ShowNextPartsTab() error
-        +ShowPreviousPartsTab() error
-        +IsPartsListOpen() bool
-        +SelectedFoundPart() *game.Part
+        .. Train / Result のみ ..
+        -scene : *scene.XxxScene
+        .. シーン固有（省略） ..
+        保持するUI部品、観測用の前回値、
+        Canvas APIの入力用・問い合わせAPIの実装
     }
 
-    class TitleCanvas {
-        -canvas : canvas.Canvas
-        +Update(active bool) error
-        +Draw(screen)
-        +IsTitleCanvas()
-    }
-
-    class ResultCanvas {
-        -scene : *scene.ResultScene
-    }
-    class TrainCanvas {
-        -scene : *scene.TrainScene
-    }
-    note bottom of ResultCanvas
-    シーン固有の情報が必要なCanvasは
-    Sceneのポインタを持ち、公開メソッドを観測する。
+    note bottom of XxxCanvas
+    Title / Pause / SelectStage は共通ヘルパー newTextCanvas で、
+    案内用のTextを1個だけ持つCanvasを構築する。
+    Play / Train / Result はScene・Gamedataを毎フレーム観測し、
+    前回値との差分で表示を切り替える。
     end note
 
-    PlayCanvas ..|> scene.PlayCanvasAPI : 実装
-    PlayCanvas *-- canvas.Canvas : 汎用UIコンテナを所有
-    TitleCanvas ..|> scene.TitleCanvasAPI : 実装
-    TitleCanvas *-- canvas.Canvas : 汎用UIコンテナを所有
-    ResultCanvas *-- canvas.Canvas : 汎用UIコンテナを所有
-    TrainCanvas *-- canvas.Canvas : 汎用UIコンテナを所有
 }
 
 package "canvas" {
     class Canvas {
-        -Items : CanvasItem
+        -items : CanvasItem
+        -visible : bool
         +Add(item CanvasItem) error
         +Update(active bool) error
         +Draw(screen)
@@ -168,6 +138,13 @@ package "canvas" {
 package "ui" {
     class Text {
         +SetText(text string)
+        +Draw(screen)
+    }
+
+    class AnimatableUI {
+        +SetPathAnimation(...)
+        +IsAnimating() bool
+        +Update(active) error
         +Draw(screen)
     }
 
@@ -212,47 +189,61 @@ package "ui" {
         +Draw(screen)
     }
 
+    package "resultui" {
+        class InstalledParts {
+            +Start() error
+            +IsFinished() bool
+            +Update(active) error
+            +Draw(screen)
+        }
+    }
+
+    note bottom of PartsListUI
+    各UIの公開APIと挙動は UI_Components.md を参照する。
+    ここに載せていないUI・メソッドは省略している。
+    end note
+
     PositionItem <|.. Text
+    PositionItem <|.. AnimatableUI
     CanvasItem <|.. RichUI
     CanvasItem <|.. ButtonUI
     CanvasItem <|.. ScrollUI
     CanvasItem <|.. GameDataText
     CanvasItem <|.. GameDataUI
     CanvasItem <|.. PartsListUI
+    CanvasItem <|.. InstalledParts
     ButtonUI *-- RichUI
     ScrollUI o-- CanvasItem : 内部要素
+    InstalledParts *-- AnimatableUI
 }
 
 package "construct" {
-    class SceneConstruct {
-        +NewPlayScene()
-        +NewPlayCanvas()
-        +NewTitleScene()
-        +NewTitleCanvas()
+    class XxxSceneConstruct {
+        +XxxSceneConstruct() Factory[*scene.XxxScene]
     }
 }
 
-' PlayScene --> InputHandler : 入力取得
-PlayScene --> Gamedata : Model更新・参照
-PlayScene o-- scene.PlayCanvasAPI : 契約を保持
-PlayCanvas --> Gamedata : 必要な状態を参照
-PlayCanvas --> canvas.Canvas : 更新・描画を委譲
-canvas.Canvas --> CanvasItem : 更新・描画を委譲
+' XxxScene --> InputHandler : 入力取得
+XxxScene --> Gamedata : Model更新・参照
+XxxCanvas ..|> XxxCanvasAPI : 実装
+XxxCanvas *-- Canvas : 汎用UIコンテナを所有
+XxxCanvas --> XxxScene : 公開メソッドを観測\n（Train / Result）
+XxxCanvas --> Gamedata : 必要な状態を参照・観測
+Canvas --> CanvasItem : 更新・描画を委譲
 ' Component --> InputHandler : 必要な入力を取得
 Component --> Gamedata : Model更新・参照
-SceneConstruct ..> PlayScene : 生成
-SceneConstruct ..> PlayCanvas : 生成・注入
-SceneConstruct ..> TitleCanvas : 生成・注入
-SceneConstruct ..> canvas.Canvas : 生成
-SceneConstruct ..> CanvasItem : UIを注入
+XxxSceneConstruct ..> XxxScene : 生成
+XxxSceneConstruct ..> XxxCanvas : scenecanvas.NewXxxCanvasで生成・注入
 
-note left of PlayScene
+note left of XxxScene
 Sceneはscene packageに定義された
-PlayCanvasAPI interfaceだけを利用する。
+XxxCanvasAPI interfaceだけを利用する。
 具体的なscenecanvas実装やUIは知らない。
+Title / Pause / SelectStage は NewXxxScene の引数で、
+Play / Train / Result は生成後に SetCanvas でCanvasを注入する。
 end note
 
-note right of canvas.Canvas
+note right of Canvas
 canvas.CanvasはSceneを知らない。
 個別UIの保持、更新、描画、
 表示状態を管理する。

@@ -45,7 +45,7 @@ type PartsListUI struct {
 }
 
 // NewPartsListUI は PartsListUI を生成する。
-// 購入をUIで行わなくなったため、Gamedata 引数は不要になった（コメントアウト）。
+// 購入をUIで行わなくなったため、Gamedata 引数は削除した。
 func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont *text.GoTextFace) (*PartsListUI, error) {
 	if font == nil {
 		return nil, fmt.Errorf("font が nil です")

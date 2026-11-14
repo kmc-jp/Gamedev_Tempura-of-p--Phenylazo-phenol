@@ -4,11 +4,8 @@ import (
 	canvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Canvas"
 	"fmt"
 	stdcolor "image/color"
-	// 入力はScene・Component側（input.Handler）へ集約するため無効化。移行完了後に削除予定。
-	// "image"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	// "github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 const buttonBorderWidth = 3
@@ -18,7 +15,7 @@ const buttonBorderWidth = 3
 type ButtonUI struct {
 	content  *RichUI
 	selected bool
-	// 入力はScene・Component側（input.Handler）へ集約するため無効化。移行完了後に削除予定。
+	// 入力はScene・Component側（input.Handler）へ集約するため無効化。Scene側の入力移行は完了したが、再利用の可能性があるため残している。
 	// hovered bool
 	// pressed bool
 }
@@ -31,7 +28,7 @@ func NewButtonUI(content *RichUI) (*ButtonUI, error) {
 }
 
 func (b *ButtonUI) Update(active bool) error {
-	// 入力はScene・Component側（input.Handler）へ集約するため無効化。移行完了後に削除予定。
+	// 入力はScene・Component側（input.Handler）へ集約するため無効化。Scene側の入力移行は完了したが、再利用の可能性があるため残している。
 	// b.hovered = false
 	// b.pressed = false
 	// if !active {
@@ -80,7 +77,7 @@ func (b *ButtonUI) Selected() bool {
 	return b.selected
 }
 
-// 入力はScene・Component側（input.Handler）へ集約するため無効化。移行完了後に削除予定。
+// 入力はScene・Component側（input.Handler）へ集約するため無効化。Scene側の入力移行は完了したが、再利用の可能性があるため残している。
 // func (b *ButtonUI) IsMouseOver() bool {
 // 	return b.hovered
 // }
