@@ -5,6 +5,7 @@ import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
+	commonui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI/CommonUI"
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
@@ -13,19 +14,26 @@ import (
 )
 
 // PlayCanvas は PlayScene のUI構成である。
-// 残り時間、空き重量・所持金、パーツ一覧を持つ。
+// 残り時間、空き重量・所持金、パーツ一覧、発見パーツのログを持つ。
 // 一覧を開く時点はSceneが決めるため、Sceneのポインタを持って観測する。
 type PlayCanvas struct {
-	scene     *scene.PlayScene
-	gdata     *game.Gamedata
-	canvas    *canvas.Canvas
-	partsList *ui.PartsListUI
+	scene        *scene.PlayScene
+	gdata        *game.Gamedata
+	canvas       *canvas.Canvas
+	partsList    *ui.PartsListUI
+	foundPartLog *commonui.LogWindow
 
 	// shownSelectListRevision は反映済みの PlayScene.SelectListRevision。
 	shownSelectListRevision int
 	// shownPartsRevision は一覧に反映済みの Gamedata.PartsRevision。
 	shownPartsRevision int
 }
+
+const (
+	foundPartLogDuration = 10 // unit: 0.1s
+	foundPartLogOffsetX  = 150
+	foundPartLogOffsetY  = 50
+)
 
 // NewPlayCanvas は PlayCanvas を生成する。
 func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error) {
@@ -79,8 +87,17 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		return nil, err
 	}
 
+	foundPartLog, err := commonui.NewLogWindow(
+		utils.Position{},
+		gdata.Font,
+		foundPartLogDuration,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("generalui.NewLogWindow() でエラーが発生しました。\n%w", err)
+	}
+
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{timeText, partsList, gameDataUI} {
+	for _, item := range []canvas.CanvasItem{timeText, partsList, gameDataUI, foundPartLog} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("プレイ画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -91,6 +108,7 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		gdata:                   gdata,
 		canvas:                  c,
 		partsList:               partsList,
+		foundPartLog:            foundPartLog,
 		shownSelectListRevision: s.SelectListRevision(),
 		shownPartsRevision:      gdata.PartsRevision(),
 	}, nil
@@ -116,8 +134,18 @@ func (c *PlayCanvas) Update(active bool) error {
 	return c.canvas.Update(active)
 }
 
+// ShowFoundPartLog は発見したパーツ名をプレイヤー頭上に表示する。
+func (c *PlayCanvas) ShowFoundPartLog(text string) {
+	c.foundPartLog.SetText(text)
+}
+
 // Draw implements [scene.PlayCanvasAPI].
 func (c *PlayCanvas) Draw(screen *ebiten.Image) {
+	bounds := screen.Bounds()
+	c.foundPartLog.SetPosition(utils.Position{
+		X: float64(bounds.Dx()/2 - foundPartLogOffsetX),
+		Y: float64(bounds.Dy()/2 - foundPartLogOffsetY),
+	})
 	c.canvas.Draw(screen)
 }
 

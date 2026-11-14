@@ -1,4 +1,4 @@
-package generalui
+package commonui
 
 import (
 	canvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Canvas"

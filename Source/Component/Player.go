@@ -99,6 +99,7 @@ func (p *Player) interact() error {
 		}
 		foundPart := parts.RandomPartsFromAll()
 		msg := p.scene.Gamedata.AddPartToFoundList(foundPart)
+		p.scene.ShowFoundPartLog(foundPart)
 		p.scene.ShowPartPopup(foundPart, p.tw.tf.Position())
 		fmt.Print(msg, "\n")
 		var item []string
