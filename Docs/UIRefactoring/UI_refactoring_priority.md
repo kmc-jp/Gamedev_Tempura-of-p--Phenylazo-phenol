@@ -103,18 +103,29 @@ UIは構造的に`scene.Element`も満たし続けるため、既存Sceneと`con
 
 入力をScene・Component側へ集約し、ButtonUIは選択状態などの表示だけを担当する（`SetSelected`、`Selected`）。
 
-### 5. ScrollUIの汎用責務整理（再評価）
+### 5. ScrollUIの汎用責務整理（再評価）（完了）
+
+再評価の結果、`ScrollUI`の汎用化（入力解釈・子要素の座標変換・追加API）は行わないことにした。
+呼び出し元のない`PartsListUI.Scroll`はコメントアウトした。
 
 対象:
 
 - [`ScrollUI.go`](../../Source/UI/ScrollUI.go)
+- [`PartsListUI.go`](../../Source/UI/PartsListUI.go)
 
-理由:
+懸念していた点:
 
 - スクロール入力の解釈や子要素の座標変換が、将来複数UIへ漏れる可能性がある
-- 現在は主にPartsListUI内部で利用されている
 
-2・3は完了したため、汎用化が必要かを再評価する。
+再評価の結果:
+
+- `ScrollUI`は入力を扱っていない。クランプ付きのオフセットを受け取り、描画と子要素の`Update`だけを行うため、UIの入力方針に適合している。
+- 子要素は3で`canvas.CanvasItem`化済みで、`scene`への依存もない。
+- 利用箇所は`PartsListUI`の内部だけで、スクロール位置は`ensureSelectedVisible`による選択追従でUI内部に閉じている。
+- 子要素のマウス座標変換が必要になる要因だった`ButtonUI`のマウス判定は4で無効化済みのため、座標変換は不要になった。
+- `PartsListUI.Scroll`は呼び出し元がなく、Sceneにスクロール量を操作させない方針と矛盾するためコメントアウトした。ホイール等の相対スクロールやヘルパー実装で再利用する可能性があるため、削除はしていない。
+
+`ScrollUI`を利用するUIが2つ目に現れた時点で、選択追従（`ScrollIntoView`相当）や最大オフセットの取得などを`ScrollUI`へ移すか検討する。
 
 ### 6. TitleCanvasの骨組み（`scenecanvas`）
 

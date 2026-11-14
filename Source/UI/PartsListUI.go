@@ -300,9 +300,12 @@ func (p *PartsListUI) viewportHeight() int {
 	return partsListHeight - 60 - p.tabOffset()
 }
 
-func (p *PartsListUI) Scroll(delta int) {
-	p.scroll.Scroll(delta)
-}
+// Scroll はSceneにスクロール量を操作させない方針のため無効化している。
+// スクロール位置は ensureSelectedVisible により PartsListUI 内部で完結させる。
+// 将来ホイール等の相対スクロールやヘルパー実装で再利用する可能性があるため残す。
+// func (p *PartsListUI) Scroll(delta int) {
+// 	p.scroll.Scroll(delta)
+// }
 
 func (p *PartsListUI) moveSelection(delta int) {
 	if len(p.cards) == 0 || delta == 0 {
