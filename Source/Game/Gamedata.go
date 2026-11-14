@@ -218,3 +218,10 @@ func (g *Gamedata) removePart(list *Parts, p *Part) bool {
 	g.partsRevision++
 	return true
 }
+
+// Gamedata.sell をもとに売却処理
+func (g *Gamedata) SellPart() {
+	g.Money += g.sell.Value()
+	g.Weight -= g.sell.Weight
+	g.sell = nil
+}
