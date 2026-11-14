@@ -28,6 +28,9 @@ type PauseScene struct {
 
 	canvas PauseCanvasAPI
 
+	// dimImage は背後の画面を暗くする半透明の画像。毎フレーム作らないようキャッシュし、画面サイズが変わったときだけ作り直す。
+	dimImage *ebiten.Image
+
 	// text        *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
@@ -62,9 +65,15 @@ func (s PauseScene) Name() string {
 }
 
 func (s *PauseScene) Draw(screen *ebiten.Image) {
-	sc := ebiten.NewImage(screen.Bounds().Dx(), screen.Bounds().Dy())
-	sc.Fill(stdcolor.RGBA{100, 100, 100, 200})
-	screen.DrawImage(sc, &ebiten.DrawImageOptions{})
+	w, h := screen.Bounds().Dx(), screen.Bounds().Dy()
+	if s.dimImage == nil || s.dimImage.Bounds().Dx() != w || s.dimImage.Bounds().Dy() != h {
+		if s.dimImage != nil {
+			s.dimImage.Deallocate()
+		}
+		s.dimImage = ebiten.NewImage(w, h)
+		s.dimImage.Fill(stdcolor.RGBA{100, 100, 100, 200})
+	}
+	screen.DrawImage(s.dimImage, &ebiten.DrawImageOptions{})
 
 	s.worldDrawer.Draw(screen, s.entities)
 	s.canvas.Draw(screen)
