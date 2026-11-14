@@ -1,7 +1,7 @@
 package ui
 
 import (
-	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
+	canvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Canvas"
 	"fmt"
 	"image"
 
@@ -53,4 +53,4 @@ func (b *ButtonUI) RichUI() *RichUI {
 	return b.content
 }
 
-var _ scene.Element = (*ButtonUI)(nil)
+var _ canvas.CanvasItem = (*ButtonUI)(nil)

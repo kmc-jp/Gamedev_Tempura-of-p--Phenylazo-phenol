@@ -21,7 +21,8 @@
 
 ### 暫定構成について
 
-`ui` packageが`scene` packageをimportしているため、`scene`側から`resultui`などの具体型は参照できない（循環import）。
+`ui` packageは`scene` packageをimportしなくなった（共通抽象は`canvas.CanvasItem`）。
+ただし、Sceneは具体的なUIやCanvas実装を知らない方針のため、`scene`側から`resultui`などの具体型は参照しない。
 そのため`ResultScene`は`scene`内で定義したinterface型（`installedPartsUI`、`Element`）のフィールドでUIを保持する。
 これはCanvas導入までの暫定構成であり、Canvas化は[`UI_refactoring_priority.md`](./UI_refactoring_priority.md)の優先度8（フェーズB）で行う。
 
@@ -159,6 +160,6 @@ Source/UI/ResultUI/
 - 達成: `InstalledPartsUI`が`Gamedata.NextState()`を呼び出さない。
 - 達成: `InstalledPartsUI`がシーン遷移やゲーム状態を決定しない。
 - 達成: `ResultScene`が`elements[1]`や`elements[2]`でUIを参照しない。
-- 未達（Canvas化で対応）: `InstalledPartsUI`が共通UI要素インターフェースに依存しない。現在は描画のため`scene.Element`を満たす必要がある。
+- 未達（Canvas化で対応）: `InstalledPartsUI`が共通UI要素インターフェースに依存しない。`ui` packageの`scene`依存は除去済みだが、現在はSceneの`elements`で描画するため`scene.Element`を構造的に満たす必要がある。
 - アニメーション完了の検知とゲーム状態の遷移が分離されている。
 - UIの追加・削除・順番変更で、別のUIが誤って更新されない。

@@ -2,14 +2,37 @@
 
 ## 共通仕様
 
-`Source/UI` の UI 要素は、次の `Element` インターフェースを実装する。
+`Source/UI` の UI 要素は、`canvas` package（`Source/Canvas`）の `CanvasItem` インターフェースを実装する。
+位置を持つ UI 要素（`Text`、`AnimatableUI`）は `PositionItem` も実装する。
 
 ```go
-type Element interface {
+type CanvasItem interface {
     Update(active bool) error
     Draw(screen *ebiten.Image)
 }
+
+type PositionItem interface {
+    CanvasItem
+    Position() utils.Position
+    SetPosition(utils.Position)
+}
 ```
+
+`ui` package は `scene` package を import しない。
+移行中は、UI 要素が構造的に `scene.Element` も満たすため、既存 Scene の `elements []Element` へそのまま追加できる。
+
+## Canvas
+
+`canvas.Canvas` は Scene を知らない汎用 UI コンテナであり、追加された `CanvasItem` の更新・描画・表示状態を管理する。
+Scene 固有の構成は `scenecanvas` package の各 Canvas が決める。
+
+- `NewCanvas() *Canvas`: 表示状態の空の Canvas を生成する
+- `Add(item CanvasItem) error`: Item を末尾に追加する。`nil` はエラー
+- `Update(active bool) error`: 追加順に各 Item の `Update` を呼ぶ。非表示の間は何もしない
+- `Draw(screen)`: 追加順に各 Item を描画する（後に追加した Item ほど手前）。非表示の間は何も描画しない
+- `Show()` / `Hide()` / `Visible() bool`: Canvas 全体の表示状態
+
+`Canvas` 自身も `CanvasItem` を満たすため、Canvas を入れ子にできる。
 
 既存の `Text` と `DrawText` は維持し、新しい UI はこれらを利用する。
 
@@ -42,7 +65,7 @@ type Element interface {
 
 ## ScrollUI
 
-`ScrollUI` は複数の `Element` をコンテンツ用オフスクリーン画像へ描画し、ビューポート部分だけを表示する。
+`ScrollUI` は複数の `CanvasItem` をコンテンツ用オフスクリーン画像へ描画し、ビューポート部分だけを表示する。
 
 - `ScrollVertical`: 上下方向
 - `ScrollHorizontal`: 左右方向

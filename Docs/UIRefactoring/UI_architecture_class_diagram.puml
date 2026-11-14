@@ -87,10 +87,12 @@ package "scenecanvas" {
 package "canvas" {
     class Canvas {
         -Items : CanvasItem
+        +Add(item CanvasItem) error
         +Update(active bool) error
         +Draw(screen)
         +Show()
         +Hide()
+        +Visible() bool
     }
 
     interface CanvasItem {
@@ -98,7 +100,14 @@ package "canvas" {
         +Draw(screen)
     }
 
+    interface PositionItem {
+        +Position() Position
+        +SetPosition(position)
+    }
+
     Canvas o-- CanvasItem : 個別UIを管理
+    CanvasItem <|-- PositionItem
+    CanvasItem <|.. Canvas
 }
 
 package "ui" {
@@ -147,7 +156,7 @@ package "ui" {
         +Draw(screen)
     }
 
-    CanvasItem <|.. Text
+    PositionItem <|.. Text
     CanvasItem <|.. RichUI
     CanvasItem <|.. ButtonUI
     CanvasItem <|.. ScrollUI

@@ -66,7 +66,11 @@ Scene側のCanvas API interface（`scene.XxxCanvasAPI`）の定義と、Sceneへ
 - `BuySelectedPart`のため、`game`の購入結果型を`PurchaseResult`として公開し、`NewPartsListUI`の引数で`*game.Gamedata`を渡す。
 - Sceneの呼び出し置換と旧APIの削除は、8で行う。
 
-### 3. canvas基盤の導入とUIの`scene`依存除去
+### 3. canvas基盤の導入とUIの`scene`依存除去（完了）
+
+`canvas.Canvas`、`canvas.CanvasItem`、`canvas.PositionItem`を[`Canvas.go`](../../Source/Canvas/Canvas.go)へ追加した。
+`Source/UI`配下のアサーションと`ScrollUI`の子要素の型を`canvas`の型へ置き換え、`ui` packageから`scene`へのimportを除去した。
+UIは構造的に`scene.Element`も満たし続けるため、既存Sceneと`construct`は変更していない。
 
 対象:
 
@@ -107,7 +111,7 @@ UIは構造的に`scene.Element`も満たし続けるため、既存Sceneと`con
 - スクロール入力の解釈や子要素の座標変換が、将来複数UIへ漏れる可能性がある
 - 現在は主にPartsListUI内部で利用されている
 
-2（完了）・3の完了後に、汎用化が必要かを再評価する。
+2・3は完了したため、汎用化が必要かを再評価する。
 
 ### 6. TitleCanvasの骨組み（`scenecanvas`）
 
