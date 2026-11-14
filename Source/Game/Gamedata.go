@@ -40,6 +40,9 @@ type Gamedata struct {
 	//仮UIでのテスト用テキストデータ
 	Text string
 
+	Message    string //ゲーム内メッセージ用
+	Message_sn uint   //メッセージの変更検知用serial number
+
 	//以下ゲーム用データ
 
 	//持ち運び可能な残り荷物重量
