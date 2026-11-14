@@ -9,19 +9,24 @@ import (
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
+	"image"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 // PlayCanvas は PlayScene のUI構成である。
-// 残り時間、空き重量・所持金、パーツ一覧、発見パーツのログを持つ。
+// 残り時間、空き重量・所持金、パーツ一覧、発見パーツのログ、メッセージウィンドウを持つ。
 // 一覧を開く時点はSceneが決めるため、Sceneのポインタを持って観測する。
 type PlayCanvas struct {
-	scene        *scene.PlayScene
-	gdata        *game.Gamedata
-	canvas       *canvas.Canvas
-	partsList    *ui.PartsListUI
-	foundPartLog *commonui.LogWindow
+	scene             *scene.PlayScene
+	gdata             *game.Gamedata
+	canvas            *canvas.Canvas
+	partsList         *ui.PartsListUI
+	foundPartLog      *commonui.LogWindow
+	messageWindow     *commonui.MessageWindow
+	messageWindowText string
 
 	// shownSelectListRevision は反映済みの PlayScene.SelectListRevision。
 	shownSelectListRevision int
@@ -30,14 +35,20 @@ type PlayCanvas struct {
 }
 
 const (
-	foundPartLogDuration = 10 // unit: 0.1s
-	foundPartLogOffsetX  = 150
-	foundPartLogOffsetY  = 50
-	foundPartLogTextSize = 10
+	foundPartLogDuration      = 10 // unit: 0.1s
+	foundPartLogOffsetX       = 150
+	foundPartLogOffsetY       = 50
+	foundPartLogTextSize      = 10
+	messageWindowTextSize     = 20
+	messageWindowPaddingX     = 10
+	messageWindowPaddingY     = 5
+	messageWindowBottomMargin = 20
 )
 
 var (
-	foundPartLogTextColor = color.Black()
+	foundPartLogTextColor        = color.Black()
+	messageWindowTextColor       = color.White()
+	messageWindowBackgroundColor = color.SemiTransparentBlack()
 )
 
 // NewPlayCanvas は PlayCanvas を生成する。
@@ -100,11 +111,29 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		foundPartLogDuration,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("generalui.NewLogWindow() でエラーが発生しました。\n%w", err)
+		return nil, fmt.Errorf("commonui.NewLogWindow() でエラーが発生しました。\n%w", err)
 	}
 
+	messageFont := ui.FontFace(gdata.Font, messageWindowTextSize)
+	messageWidth, messageHeight := text.Measure("探索終了", messageFont, messageFont.Size*1.5)
+	messageWindow, err := commonui.NewMessageWindow(commonui.MessageWindowConfig{
+		Size: image.Point{
+			X: int(math.Ceil(messageWidth)) + messageWindowPaddingX*2,
+			Y: int(math.Ceil(messageHeight)) + messageWindowPaddingY*2,
+		},
+		Font:            messageFont,
+		TextColor:       messageWindowTextColor,
+		BackgroundColor: messageWindowBackgroundColor,
+		Padding:         image.Point{X: messageWindowPaddingX, Y: messageWindowPaddingY},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("commonui.NewMessageWindow() でエラーが発生しました。\n%w", err)
+	}
+	messageWindow.SetText("探索中")
+	messageWindow.ShowText()
+
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{timeText, partsList, gameDataUI, foundPartLog} {
+	for _, item := range []canvas.CanvasItem{timeText, partsList, gameDataUI, foundPartLog, messageWindow} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("プレイ画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -116,6 +145,8 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		canvas:                  c,
 		partsList:               partsList,
 		foundPartLog:            foundPartLog,
+		messageWindow:           messageWindow,
+		messageWindowText:       "探索中",
 		shownSelectListRevision: s.SelectListRevision(),
 		shownPartsRevision:      gdata.PartsRevision(),
 	}, nil
@@ -138,6 +169,14 @@ func (c *PlayCanvas) Update(active bool) error {
 		}
 		c.shownPartsRevision = c.gdata.PartsRevision()
 	}
+	messageText := "探索終了"
+	if c.gdata.State == game.Play_Explore {
+		messageText = "探索中"
+	}
+	if c.messageWindowText != messageText {
+		c.messageWindow.SetText(messageText)
+		c.messageWindowText = messageText
+	}
 	return c.canvas.Update(active)
 }
 
@@ -152,6 +191,11 @@ func (c *PlayCanvas) Draw(screen *ebiten.Image) {
 	c.foundPartLog.SetPosition(utils.Position{
 		X: float64(bounds.Dx()/2 - foundPartLogOffsetX),
 		Y: float64(bounds.Dy()/2 - foundPartLogOffsetY),
+	})
+	messageSize := c.messageWindow.Size()
+	c.messageWindow.SetPosition(utils.Position{
+		X: float64((bounds.Dx() - messageSize.X) / 2),
+		Y: float64(bounds.Dy() - messageSize.Y - messageWindowBottomMargin),
 	})
 	c.canvas.Draw(screen)
 }
