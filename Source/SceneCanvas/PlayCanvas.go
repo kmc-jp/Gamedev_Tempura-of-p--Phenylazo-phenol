@@ -57,7 +57,7 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 					return fmt.Sprintf("空き重量: %d", g.Weight)
 				},
 				Font:  ui.FontFace(gdata.Font, 15),
-				Color: color.Black(),
+				Color: color.White(),
 			},
 			{
 				Text: func(g game.Gamedata) string {
