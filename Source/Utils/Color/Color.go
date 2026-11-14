@@ -1,11 +1,24 @@
 package color
 
+import (
+	stdcolor "image/color"
+)
+
 // RGBA type
 type Color struct {
 	R float32
 	G float32
 	B float32
 	A float32
+}
+
+func (c *Color) ToRGBA() stdcolor.RGBA {
+	return stdcolor.RGBA{
+		R: uint8(c.R * 255),
+		G: uint8(c.G * 255),
+		B: uint8(c.B * 255),
+		A: uint8(c.A * 255),
+	}
 }
 
 func Red() *Color {
