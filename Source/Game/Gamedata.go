@@ -65,6 +65,9 @@ type Gamedata struct {
 
 	// 組み立てに使うパーツ
 	Assemble Parts
+
+	// PlayScene突入時に売却するパーツ
+	sell *Part
 }
 
 // Gamedata初期値
