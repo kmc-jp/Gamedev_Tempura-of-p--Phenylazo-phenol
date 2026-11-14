@@ -257,7 +257,7 @@ func (pts Parts) SortWithKind() Parts {
 	return eliminated
 }
 
-func (pts Parts) Delete(idx int) Parts {
+func (pts Parts) Remove(idx int) Parts {
 	pts[idx] = nil
 	var deleted Parts
 	for _, v := range pts {

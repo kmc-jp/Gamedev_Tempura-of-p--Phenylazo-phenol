@@ -229,5 +229,5 @@ func (g *Gamedata) SellPart() {
 // 売却するパーツの選択処理
 func (g *Gamedata) ChooseSellPart(idx int) {
 	g.sell = g.parts[idx]
-	g.parts = g.parts.Delete(idx)
+	g.parts = g.parts.Remove(idx)
 }
