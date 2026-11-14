@@ -2,8 +2,8 @@ package ui
 
 import (
 	canvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Canvas"
+	uiutils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI/UIUtils"
 	"fmt"
-	stdcolor "image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -48,25 +48,7 @@ func (b *ButtonUI) Draw(screen *ebiten.Image) {
 	if !b.selected {
 		return
 	}
-	bounds := b.content.Bounds()
-	w, h := bounds.Dx(), bounds.Dy()
-	bw := buttonBorderWidth
-	if w < bw*2 || h < bw*2 {
-		return
-	}
-	borderColor := stdcolor.RGBA{R: 255, G: 165, B: 0, A: 255}
-	for _, edge := range []struct{ x, y, w, h int }{
-		{bounds.Min.X, bounds.Min.Y, w, bw},
-		{bounds.Min.X, bounds.Max.Y - bw, w, bw},
-		{bounds.Min.X, bounds.Min.Y, bw, h},
-		{bounds.Max.X - bw, bounds.Min.Y, bw, h},
-	} {
-		line := ebiten.NewImage(edge.w, edge.h)
-		line.Fill(borderColor)
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(float64(edge.x), float64(edge.y))
-		screen.DrawImage(line, op)
-	}
+	uiutils.DrawBorder(screen, b.content.Bounds(), buttonBorderWidth, uiutils.SelectionBorderColor)
 }
 
 func (b *ButtonUI) SetSelected(selected bool) {

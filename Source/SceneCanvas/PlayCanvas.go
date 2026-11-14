@@ -8,28 +8,30 @@ import (
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
-	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // PlayCanvas は PlayScene のUI構成である。
 // 残り時間、空き重量・所持金、パーツ一覧を持つ。
-// シーン固有の情報は不要なため、Sceneではなく Gamedata だけを参照する。
+// 一覧を開く時点はSceneが決めるため、Sceneのポインタを持って観測する。
 type PlayCanvas struct {
+	scene     *scene.PlayScene
 	gdata     *game.Gamedata
 	canvas    *canvas.Canvas
 	partsList *ui.PartsListUI
 
-	// selectListShown は Play_Select への変化を検知して一覧を表示したか。
-	selectListShown bool
-	// shownFound・shownOwned は一覧に反映済みの Found / Parts。変化の観測に使う。
-	shownFound game.Parts
-	shownOwned game.Parts
+	// shownSelectListRevision は反映済みの PlayScene.SelectListRevision。
+	shownSelectListRevision int
+	// shownPartsRevision は一覧に反映済みの Gamedata.PartsRevision。
+	shownPartsRevision int
 }
 
 // NewPlayCanvas は PlayCanvas を生成する。
-func NewPlayCanvas(gdata *game.Gamedata) (*PlayCanvas, error) {
+func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error) {
+	if s == nil {
+		return nil, fmt.Errorf("PlayScene が nil です")
+	}
 	if gdata == nil {
 		return nil, fmt.Errorf("gdata が nil です")
 	}
@@ -84,31 +86,32 @@ func NewPlayCanvas(gdata *game.Gamedata) (*PlayCanvas, error) {
 		}
 	}
 
-	return &PlayCanvas{gdata: gdata, canvas: c, partsList: partsList}, nil
+	return &PlayCanvas{
+		scene:                   s,
+		gdata:                   gdata,
+		canvas:                  c,
+		partsList:               partsList,
+		shownSelectListRevision: s.SelectListRevision(),
+		shownPartsRevision:      gdata.PartsRevision(),
+	}, nil
 }
 
 // Update implements [scene.PlayCanvasAPI].
-// TimeUp後に Play_Select へ変わったら、発見・所持パーツの一覧を表示する。
+// TimeUp後に Play_Select へ変わったら（SelectListRevision の変化）、発見・所持パーツの一覧を表示する。
 func (c *PlayCanvas) Update(active bool) error {
-	if c.gdata.State == game.Play_Select {
-		if !c.selectListShown {
-			if err := c.openPartsList(); err != nil {
-				return err
-			}
-			c.selectListShown = true
+	if revision := c.scene.SelectListRevision(); revision != c.shownSelectListRevision {
+		if err := c.openPartsList(); err != nil {
+			return err
 		}
-	} else {
-		c.selectListShown = false
+		c.shownSelectListRevision = revision
 	}
 
-	// 購入などで Found / Parts が変化したら、表示中の一覧を再構築する
-	if c.partsList.Visible() &&
-		(!slices.Equal(c.gdata.Found, c.shownFound) || !slices.Equal(c.gdata.Parts, c.shownOwned)) {
+	// 購入や発見で Found / Parts が変化したら、表示中の一覧を再構築する
+	if c.partsList.Visible() && c.gdata.PartsRevision() != c.shownPartsRevision {
 		if err := c.partsList.RefreshFoundParts(c.gdata.Found, c.gdata.Parts); err != nil {
 			return fmt.Errorf("パーツ一覧の更新に失敗しました。\n%w", err)
 		}
-		c.shownFound = slices.Clone(c.gdata.Found)
-		c.shownOwned = slices.Clone(c.gdata.Parts)
+		c.shownPartsRevision = c.gdata.PartsRevision()
 	}
 	return c.canvas.Update(active)
 }
@@ -131,39 +134,31 @@ func (c *PlayCanvas) TogglePartsList() error {
 }
 
 // MovePartSelectionDown implements [scene.PlayCanvasAPI].
+// 一覧の非表示中は PartsListUI が何もしない。
 func (c *PlayCanvas) MovePartSelectionDown() {
-	if c.partsList.Visible() {
-		c.partsList.SelectNext()
-	}
+	c.partsList.SelectNext()
 }
 
 // MovePartSelectionUp implements [scene.PlayCanvasAPI].
 func (c *PlayCanvas) MovePartSelectionUp() {
-	if c.partsList.Visible() {
-		c.partsList.SelectPrevious()
-	}
+	c.partsList.SelectPrevious()
 }
 
 // ShowNextPartsTab implements [scene.PlayCanvasAPI].
 func (c *PlayCanvas) ShowNextPartsTab() error {
-	if !c.partsList.Visible() {
-		return nil
-	}
 	return c.partsList.NextTab()
 }
 
 // ShowPreviousPartsTab implements [scene.PlayCanvasAPI].
 func (c *PlayCanvas) ShowPreviousPartsTab() error {
-	if !c.partsList.Visible() {
-		return nil
-	}
 	return c.partsList.PreviousTab()
 }
 
 // SelectedFoundPart implements [scene.PlayCanvasAPI].
 // 一覧の非表示中、発見タブ以外の表示中、未選択のときは nil を返す。
+// 非表示中は PartsListUI.SelectedPart が nil を返す。
 func (c *PlayCanvas) SelectedFoundPart() *game.Part {
-	if !c.partsList.Visible() || !c.partsList.IsShowingFoundParts() {
+	if !c.partsList.IsShowingFoundParts() {
 		return nil
 	}
 	return c.partsList.SelectedPart()
@@ -179,8 +174,7 @@ func (c *PlayCanvas) openPartsList() error {
 		return fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
 	}
 	c.partsList.Show()
-	c.shownFound = slices.Clone(c.gdata.Found)
-	c.shownOwned = slices.Clone(c.gdata.Parts)
+	c.shownPartsRevision = c.gdata.PartsRevision()
 	return nil
 }
 

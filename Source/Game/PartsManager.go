@@ -95,11 +95,19 @@ func (g *Gamedata) AddPartToFoundList(p *Part) string {
 		return "ごみを見つけた"
 	}
 	g.Found = append(g.Found, p)
+	g.partsRevision++
 	return p.Name + "を見つけた"
 }
 
 func (g *Gamedata) AddPartToPartsList(p *Part) {
 	g.Parts = append(g.Parts, p)
+	g.partsRevision++
+}
+
+// PartsRevision は Parts / Found の版を返す。どちらかが変化するたびに増える。
+// UIはこの値の変化を観測し、変化したときだけ一覧を作り直す。
+func (g *Gamedata) PartsRevision() int {
+	return g.partsRevision
 }
 
 // 購入処理結果
@@ -133,6 +141,7 @@ func (g *Gamedata) BuyPart(index int) PurchaseResult {
 	g.Money -= p.Val
 	g.Weight -= p.Weight
 	g.Found = slices.Delete(g.Found, index, index+1)
+	g.partsRevision++
 	return Buy
 }
 

@@ -13,8 +13,8 @@ import (
 )
 
 // PlayCanvasAPI は PlayScene が利用するCanvasの契約である。
-// 具体的な実装はscenecanvas packageに置き、constructから注入する。
-// TimeUp後（Play_Select）のパーツ一覧の表示は、CanvasがGamedata.Stateを観測して行う。
+// 具体的な実装はscenecanvas packageに置き、constructからコンストラクタ経由で注入する。
+// TimeUp後（Play_Select）のパーツ一覧の表示は、Canvasが PlayScene.SelectListRevision を観測して行う。
 type PlayCanvasAPI interface {
 	Update(active bool) error
 	Draw(screen *ebiten.Image)
@@ -53,6 +53,8 @@ type PlayScene struct {
 	worldDrawer WorldDrawer
 
 	canvas PlayCanvasAPI
+	// selectListRevision は Play_Select に入るたびに増える。Canvasが観測してパーツ一覧を開く。
+	selectListRevision int
 
 	// text       *ui.Text
 	Input      *input.Handler
@@ -62,8 +64,13 @@ type PlayScene struct {
 	cameraCenter Utils.Position
 }
 
-func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes, stage Stage) Utils.Factory[*PlayScene] {
+// NewPlayScene は PlayScene を生成する。
+// CanvasはSceneを参照するため、生成関数 newCanvas を受け取り、Sceneの生成直後に呼んで注入する。
+func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], newCanvas func(*PlayScene) (PlayCanvasAPI, error), Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes, stage Stage) Utils.Factory[*PlayScene] {
 	return func() (*PlayScene, error) {
+		if newCanvas == nil {
+			return &PlayScene{}, fmt.Errorf("PlaySceneのcanvas生成関数が nil です")
+		}
 		camera, err := worldDrawer()
 		if err != nil {
 			return &PlayScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
@@ -77,13 +84,22 @@ func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], Input *input.Handler, 
 			initScenes: initScenes,
 			Stage:      stage,
 		}
+		canvas, err := newCanvas(&ps)
+		if err != nil {
+			return &PlayScene{}, fmt.Errorf("PlaySceneのcanvas生成に失敗しました。\n%w", err)
+		}
+		if canvas == nil {
+			return &PlayScene{}, fmt.Errorf("PlaySceneのcanvas が nil です")
+		}
+		ps.canvas = canvas
 		return &ps, nil
 	}
 }
 
-// SetCanvas はCanvasを注入する。CanvasがSceneを参照できるよう、Sceneの生成後に呼ぶ。
-func (s *PlayScene) SetCanvas(canvas PlayCanvasAPI) {
-	s.canvas = canvas
+// SelectListRevision は Play_Select に入った回数を返す。
+// Canvasはこの値の変化を観測し、変化したときにパーツ一覧を開く。
+func (s *PlayScene) SelectListRevision() int {
+	return s.selectListRevision
 }
 
 // Name implements [Scene].
@@ -94,9 +110,7 @@ func (s PlayScene) Name() string {
 // Draw implements [Scene].
 func (s PlayScene) Draw(screen *ebiten.Image) {
 	s.worldDrawer.Draw(screen, s.entities)
-	if s.canvas != nil {
-		s.canvas.Draw(screen)
-	}
+	s.canvas.Draw(screen)
 }
 
 // Update implements [Scene].
@@ -104,9 +118,6 @@ func (s PlayScene) Draw(screen *ebiten.Image) {
 func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
 	if !active {
 		return
-	}
-	if s.canvas == nil {
-		return nil, transition.None(), fmt.Errorf("PlaySceneのcanvas が設定されていません")
 	}
 
 	nextScene, transitionType, err = s.updateScene(active)
@@ -189,8 +200,9 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 		s.Gamedata.Timer.Set(50)
 		if s.Gamedata.Timer.Expired() {
 			s.Gamedata.Timer.Set(0)
-			// パーツ一覧はCanvasがPlay_Selectへの変化を観測して表示する
+			// パーツ一覧はCanvasが selectListRevision の変化を観測して表示する
 			s.Gamedata.State = game.Play_Select
+			s.selectListRevision++
 		}
 
 		return

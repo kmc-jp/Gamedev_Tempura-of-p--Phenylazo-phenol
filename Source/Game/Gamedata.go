@@ -56,6 +56,10 @@ type Gamedata struct {
 	//発見した品
 	Found Parts
 
+	// partsRevision は Parts / Found が変化するたびに増える。UIが変化を観測するために使う。
+	// Parts / Found を書き換えるときは、Gamedata のメソッドを通して partsRevision を増やすこと。
+	partsRevision int
+
 	// 組み立てに使うパーツ
 	Assemble Parts
 }
@@ -116,6 +120,7 @@ func (g *Gamedata) ForNewStage() {
 func (g *Gamedata) ResetGame() {
 	g.Parts = []*Part{}
 	g.Found = []*Part{}
+	g.partsRevision++
 	g.Assemble = []*Part{}
 	g.Weight = InitialWeight
 	g.Money = InitialMoney

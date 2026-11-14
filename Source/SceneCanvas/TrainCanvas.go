@@ -20,8 +20,10 @@ type TrainCanvas struct {
 	canvas    *canvas.Canvas
 	partsList *ui.PartsListUI
 
-	// revealed は所持パーツ一覧を構築・表示済みか。
-	revealed bool
+	// shownListRevision は反映済みの TrainScene.PartsListRevision。
+	shownListRevision int
+	// shownPartsRevision は一覧に反映済みの Gamedata.PartsRevision。
+	shownPartsRevision int
 }
 
 // NewTrainCanvas は TrainCanvas を生成する。
@@ -59,14 +61,18 @@ func NewTrainCanvas(s *scene.TrainScene, gdata *game.Gamedata) (*TrainCanvas, er
 }
 
 // Update implements [scene.TrainCanvasAPI].
-// Sceneが一覧を表示する時点に達したら、所持パーツで一覧を構築して表示する。
+// Sceneが一覧を表示する時点に達したら（PartsListRevision の変化）、所持パーツで一覧を構築して表示する。
+// 表示後に所持パーツが変化した（PartsRevision の変化）ときも作り直す。
 func (c *TrainCanvas) Update(active bool) error {
-	if !c.revealed && c.scene.IsPartsListRevealed() {
+	listRevision := c.scene.PartsListRevision()
+	partsRevision := c.gdata.PartsRevision()
+	if listRevision > 0 && (listRevision != c.shownListRevision || partsRevision != c.shownPartsRevision) {
 		if err := c.partsList.ShowParts(c.gdata.Parts); err != nil {
 			return fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
 		}
 		c.partsList.Show()
-		c.revealed = true
+		c.shownListRevision = listRevision
+		c.shownPartsRevision = partsRevision
 	}
 	return c.canvas.Update(active)
 }
@@ -81,17 +87,14 @@ func (c *TrainCanvas) IsTrainCanvas() {}
 
 // ScrollPartsListDown implements [scene.TrainCanvasAPI].
 // 選択枠を1つ下へ動かし、スクロールを追従させる。選択結果はどこにも使わない。
+// 一覧の非表示中は PartsListUI が何もしない。
 func (c *TrainCanvas) ScrollPartsListDown() {
-	if c.partsList.Visible() {
-		c.partsList.SelectNext()
-	}
+	c.partsList.SelectNext()
 }
 
 // ScrollPartsListUp implements [scene.TrainCanvasAPI].
 func (c *TrainCanvas) ScrollPartsListUp() {
-	if c.partsList.Visible() {
-		c.partsList.SelectPrevious()
-	}
+	c.partsList.SelectPrevious()
 }
 
 var _ scene.TrainCanvasAPI = (*TrainCanvas)(nil)

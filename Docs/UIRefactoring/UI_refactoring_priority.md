@@ -59,7 +59,7 @@ Scene側のCanvas API interface（`scene.XxxCanvasAPI`）の定義と、Sceneへ
 - 同じUIの操作方法が複数Sceneへ広がっている
 - Canvas APIにはPartsListの操作も含まれるため、Canvas API定義より先に意味ベースAPIを確定させる必要がある
 
-`ShowFoundParts`、`ShowParts`、`Show`、`Hide`、`SelectNext`、`SelectPrevious`、`NextTab`、`PreviousTab`、`IsShowingFoundParts`、`BuySelectedPart`を`PartsListUI`へ追加した（`BuySelectedPart`は10でコメントアウトし、代わりに`RefreshFoundParts`を追加した）。
+`ShowFoundParts`、`ShowParts`、`Show`、`Hide`、`SelectNext`、`SelectPrevious`、`NextTab`、`PreviousTab`、`IsShowingFoundParts`、`BuySelectedPart`を`PartsListUI`へ追加した（`BuySelectedPart`は10でコメントアウトし、代わりに`RefreshFoundParts`を追加した。11で削除した）。
 現在の公開APIは[`UI_Components.md`](../UI_Components.md)の「PartsListUI」を参照する。
 
 - 旧API（`MoveSelection`、`MoveTab`、`SelectedIndex`、`SetLists`、`SetParts`、`SetVisible`、`IsFoundTab`、`CurrentTab`）は互換APIとして残す。旧APIを残すことで、`PlayScene`、`TrainScene`、`ResultScene`は変更せずにビルドできる。
@@ -173,9 +173,11 @@ type TitleCanvasAPI interface {
 | Canvas API | 入力用 | 問い合わせ | Canvasが観測するもの |
 |---|---|---|---|
 | `TitleCanvasAPI` / `PauseCanvasAPI` / `SelectStageCanvasAPI` | なし | なし | なし |
-| `PlayCanvasAPI` | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab` | `IsPartsListOpen`、`SelectedFoundPart` | `Gamedata.State`の`Play_Select`への変化、`Gamedata.Found`・`Parts`の変化 |
-| `TrainCanvasAPI` | `ScrollPartsListDown/Up` | なし | `TrainScene.IsPartsListRevealed` |
+| `PlayCanvasAPI` | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab` | `IsPartsListOpen`、`SelectedFoundPart` | `PlayScene.SelectListRevision`、`Gamedata.PartsRevision` |
+| `TrainCanvasAPI` | `ScrollPartsListDown/Up` | なし | `TrainScene.PartsListRevision`、`Gamedata.PartsRevision` |
 | `ResultCanvasAPI` | `MovePartSelectionDown/Up` | `SelectedPart`、`IsInstalledPartsFinished` | `ResultScene.CandidatesRevision`・`CandidateParts`、`Gamedata.State` |
+
+（観測対象は11でリビジョン番号にそろえた。）
 
 ### 8. Canvas APIの反映とSceneの`elements[index]`依存の全廃（完了）
 
@@ -192,7 +194,7 @@ type TitleCanvasAPI interface {
 実施内容:
 
 1. Title・Pause・SelectStageは、`construct`で生成したCanvasを`NewXxxScene`の引数で注入する。
-2. Play・Train・Resultは、CanvasがSceneのポインタを持つため、Scene生成後に`SetCanvas`で注入する。
+2. Play・Train・Resultは、CanvasがSceneのポインタを持つため、Scene生成後に`SetCanvas`で注入する。（11で、Canvasの生成関数をコンストラクタに渡す方式に変え、`SetCanvas`を削除した。）
 3. Play・Train・Resultの`Update`は本体を`updateScene`へ移し、その後で必ず`canvas.Update`を呼ぶ。Sceneの途中returnがあっても、同じフレームの状態変化をCanvasが観測できる。
 4. CanvasはGamedata.Timerの`Expired()`を呼ばない（通知を消費するため）。タイマー判定はSceneが行い、結果を公開メソッドで渡す。
 5. `PartsListUI`の互換API（`SetParts`、`SetLists`、`SetVisible`、`MoveTab`、`MoveSelection`、`SelectedIndex`、`CurrentTab`、`IsFoundTab`）を削除した。
@@ -220,8 +222,21 @@ Model参照をReaderや表示用データへ縮小する必要が生じた場合
 
 - `PlayCanvasAPI.BuySelectedPart`を削除し、問い合わせAPI`SelectedFoundPart() *game.Part`を追加した。一覧の非表示中、発見タブ以外の表示中、未選択のときは`nil`を返す。
 - `PlayScene`が`SelectedFoundPart`で受け取ったパーツを`Gamedata.BuyFoundPart`へ渡して購入する。`BuyFoundPart`はポインタで`Found`内の位置を解決し、`BuyPart(index)`へ委譲する。
-- `PartsListUI.BuySelectedPart`はコメントアウトし、再構築用の`RefreshFoundParts`を追加した。`NewPartsListUI`の`Gamedata`引数は不要になったため外した。
-- 購入後の一覧の再構築は、`PlayCanvas`が`Gamedata.Found`・`Parts`の変化を`Update`で観測して行う。
+- `PartsListUI.BuySelectedPart`はコメントアウトし、再構築用の`RefreshFoundParts`を追加した（11で削除した）。`NewPartsListUI`の`Gamedata`引数（2で追加したもの）は不要になったため外した。
+- 購入後の一覧の再構築は、`PlayCanvas`が`Gamedata.Found`・`Parts`の変化を`Update`で観測して行う（11で`Gamedata.PartsRevision`の観測に変えた）。
+
+### 11. PR #127 レビュー指摘の反映（完了）
+
+- Canvasの注入: Play・Train・Resultは、Canvasの生成関数（`func(*XxxScene) (XxxCanvasAPI, error)`）を`NewXxxScene`の引数で受け取り、Sceneの生成直後に呼んで注入する。注入忘れや`nil`はScene生成時のエラーになる。`SetCanvas`と、Update・Drawでのcanvasの`nil`判定を削除した。CanvasはSceneの具体型に依存したままにする（別Sceneを誤って受け取らないため）。`PlayCanvas`も`PlayScene`のポインタを持つようにした。
+- 候補のキャッシュ: `ResultScene.CandidateParts`は副作用のない取得APIにした。候補の計算（Trashの生成を含む）は、`refreshCandidates`が候補の変わる時点（シーン開始時、パーツ選択後）に1回だけ行う。
+- 状態変化の検知をリビジョン番号にそろえた。
+  - `Gamedata.PartsRevision`: `Found`・`Parts`を書き換えるGamedataのメソッド（`AddPartToFoundList`、`AddPartToPartsList`、`BuyPart`、`ResetGame`）の中で増やす。Player の拾得のように、Sceneを通らない書き換えでも増やし忘れない。
+  - `PlayScene.SelectListRevision`: `Play_Select`に入ったときに増やす。`PlayCanvas`は`slices.Equal`による比較と`slices.Clone`による複製をやめた。
+  - `TrainScene.PartsListRevision`: `IsPartsListRevealed`の代わり。到着演出のタイマー満了時に1回だけ増やす。
+- 非表示中の操作の判定は`PartsListUI`の`SelectNext`・`SelectPrevious`・`NextTab`・`PreviousTab`・`SelectedPart`に入れ、Canvas側の重複した判定を外した。Resultでも同じ判定が効く。
+- `ResultCanvas`は毎フレーム`Canvas.Update`で全UIを更新する。ベンチマーク案内のアニメーションは、`Result_Benchmark`に変わったときに開始する。`Canvas.Show/Hide/Visible`と`PositionItem`は、後で使う可能性があるため残した。
+- `uiutils`（`Source/UI/UIUtils`）に`FillRect`・`DrawBorder`・`SelectionBorderColor`を追加した。`ButtonUI`と`PartsListUI`の描画で、毎フレームの`ebiten.NewImage`をやめた。
+- 不要になったコードは、方針（実施上の注意を参照）に従い、`PartsListUI.BuySelectedPart`を削除した。`ButtonUI`のマウス判定と`PartsListUI.Scroll`はコメントアウトで残す。
 
 ## 現時点の保留事項
 
@@ -236,6 +251,7 @@ Model参照をReaderや表示用データへ縮小する必要が生じた場合
 - Canvas移行では、Scene側のCanvas API interfaceと具体Canvas実装を分離する。
 - フェーズAでは`scene` packageを変更せず、別担当者の実装と衝突させない。
 - UIの見た目変更と責務変更を同じ変更に詰め込みすぎない。
+- リファクタで不要になったコードは、再利用の可能性がある（マウス操作の復活など）なら理由付きでコメントアウトし、そうでなければ削除する。
 - 各移行の完了時に、関連ドキュメントが実装と設計方針に一致しているか確認する。
 - ドキュメントの陳腐化や、実装済みの内容が移行案のまま残っていないか確認する。
 - 方針変更・API変更・責務変更があった場合は、`UI.md`、`UI_Components.md`、該当するリファクタリング文書、クラス図を同じ変更で更新する。

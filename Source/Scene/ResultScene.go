@@ -13,12 +13,12 @@ import (
 )
 
 // ResultCanvasAPI は ResultScene が利用するCanvasの契約である。
-// 具体的な実装はscenecanvas packageに置き、constructから注入する。
+// 具体的な実装はscenecanvas packageに置き、constructからコンストラクタ経由で注入する。
 //
 // Canvasは次をScene・Gamedataの観測で行う。
 //   - Result_SelectParts 中に CandidatesRevision が変わったら、CandidateParts で一覧を作り直して表示する
 //   - Result_Assembled に変わったら一覧を閉じ、組み立て済みパーツの表示を開始する
-//   - 組み立て済みパーツは Result_Assembled 中だけ、ベンチマーク案内は Result_Benchmark 中だけ更新する
+//   - Result_Benchmark に変わったら、ベンチマーク案内のアニメーションを開始する
 type ResultCanvasAPI interface {
 	Update(active bool) error
 	Draw(screen *ebiten.Image)
@@ -47,6 +47,8 @@ type ResultScene struct {
 
 	canvas        ResultCanvasAPI
 	partKindIndex int
+	// candidates は現在の選択候補。refreshCandidates で計算してキャッシュする。
+	candidates game.Parts
 	// candidatesRevision は選択候補が変わるたびに増える。Canvasが観測して一覧を作り直す。
 	candidatesRevision int
 	// text       *ui.Text
@@ -55,8 +57,13 @@ type ResultScene struct {
 	initScenes *InitializedScenes
 }
 
-func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*ResultScene] {
+// NewResultScene は ResultScene を生成する。
+// CanvasはSceneを参照するため、生成関数 newCanvas を受け取り、Sceneの生成直後に呼んで注入する。
+func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*ResultScene) (ResultCanvasAPI, error), Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*ResultScene] {
 	return func() (*ResultScene, error) {
+		if newCanvas == nil {
+			return &ResultScene{}, fmt.Errorf("ResultSceneのcanvas生成関数が nil です")
+		}
 		camera, err := NewWorldDrawer()
 		if err != nil {
 
@@ -70,14 +77,16 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], Input *input.Hand
 			gamedata:   gdata,
 			initScenes: initScenes,
 		}
-		// なにもしない
+		canvas, err := newCanvas(&ts)
+		if err != nil {
+			return &ResultScene{}, fmt.Errorf("ResultSceneのcanvas生成に失敗しました。\n%w", err)
+		}
+		if canvas == nil {
+			return &ResultScene{}, fmt.Errorf("ResultSceneのcanvas が nil です")
+		}
+		ts.canvas = canvas
 		return &ts, nil
 	}
-}
-
-// SetCanvas はCanvasを注入する。CanvasがSceneを参照できるよう、Sceneの生成後に呼ぶ。
-func (s *ResultScene) SetCanvas(canvas ResultCanvasAPI) {
-	s.canvas = canvas
 }
 
 func (s ResultScene) Name() string {
@@ -86,9 +95,7 @@ func (s ResultScene) Name() string {
 
 func (s *ResultScene) Draw(screen *ebiten.Image) {
 	s.worldDrawer.Draw(screen, s.entities)
-	if s.canvas != nil {
-		s.canvas.Draw(screen)
-	}
+	s.canvas.Draw(screen)
 	// s.text.Draw(screen)
 }
 
@@ -96,9 +103,6 @@ func (s *ResultScene) Draw(screen *ebiten.Image) {
 func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
 	if !active {
 		return
-	}
-	if s.canvas == nil {
-		return nil, transition.None(), fmt.Errorf("ResultSceneのcanvas が設定されていません")
 	}
 
 	nextScene, transitionType, err = s.updateScene(active)
@@ -117,7 +121,9 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 		s.gamedata.InitialProcess = false
 		s.gamedata.Assemble = game.Parts{}
 		s.partKindIndex = 0
-		s.candidatesRevision++
+		if err := s.refreshCandidates(); err != nil {
+			return nil, transition.None(), err
+		}
 		// 候補一覧はこのフレームの最後にCanvasが構築するため、入力は次のフレームから受け付ける
 		return
 	}
@@ -151,7 +157,9 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 			if !s.isSelectingArbitraryParts() {
 				s.partKindIndex++
 			}
-			s.candidatesRevision++
+			if err := s.refreshCandidates(); err != nil {
+				return nil, transition.None(), err
+			}
 		}
 	}
 
@@ -211,9 +219,26 @@ func (s *ResultScene) CandidatesRevision() int {
 }
 
 // CandidateParts は現在のパーツ種別で組み立てに使える候補を返す。
-// 該当する所持パーツがない種別では、その種別のTrashパーツを1つ生成して返すため、
-// 呼び出すたびに新しいTrashが作られる。候補が変わったときだけ呼ぶこと。
-func (s *ResultScene) CandidateParts() (game.Parts, error) {
+// 候補は refreshCandidates でキャッシュした値で、呼び出しに副作用はない。
+func (s *ResultScene) CandidateParts() game.Parts {
+	return s.candidates
+}
+
+// refreshCandidates は現在のパーツ種別の候補を計算してキャッシュし、CandidatesRevision を進める。
+// 候補が変わる時点（シーン開始時、パーツを選んだ後）に1回だけ呼ぶ。
+func (s *ResultScene) refreshCandidates() error {
+	candidates, err := s.computeCandidates()
+	if err != nil {
+		return fmt.Errorf("結果画面のパーツ候補の計算に失敗しました。\n%w", err)
+	}
+	s.candidates = candidates
+	s.candidatesRevision++
+	return nil
+}
+
+// computeCandidates は現在のパーツ種別で組み立てに使える候補を計算する。
+// 該当する所持パーツがない種別では、その種別のTrashパーツを1つ生成して返す。
+func (s *ResultScene) computeCandidates() (game.Parts, error) {
 	if s.partKindIndex < 0 || s.partKindIndex > len(game.AvailableParts) {
 		return nil, fmt.Errorf("パーツ種別の選択位置が不正です: %d", s.partKindIndex)
 	}

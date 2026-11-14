@@ -126,9 +126,11 @@ Canvas APIは`Update`、`Draw`と識別用メソッド（`IsTitleCanvas()`など
 識別用メソッドは処理を持たず、メソッド集合が同じ他SceneのCanvasを誤って注入しないためのもので、`scenecanvas`から実装できるよう公開メソッドとする。
 `Update`・`Draw`だけで完結しないSceneは、次の規則でAPIを追加する。
 
-- 入力起点の操作: Sceneが`input.Handler`で入力を判定し、専用の入力用APIを呼ぶ。名前はUI部品の操作名ではなく、そのSceneでの意図に合わせる（例: Playは`MovePartSelectionDown`、Trainは`ScrollPartsListDown`）。入力用APIは、対象UIが非表示なら何もしない。
-- シーン固有の情報: CanvasはSceneのポインタを持ち、Sceneの公開メソッドで参照する（例: `ResultScene.CandidateParts`）。ゲームルール（候補の絞り込みなど）はSceneに残す。
-- 入力以外の状態変化: Canvasが`Update`でScene・Gamedataを毎フレーム観測し、前回値との差分で反映する（例: `Play_Select`への変化で一覧を開く）。SceneからCanvasへの通知APIは作らない。
+- 入力起点の操作: Sceneが`input.Handler`で入力を判定し、専用の入力用APIを呼ぶ。名前はUI部品の操作名ではなく、そのSceneでの意図に合わせる（例: Playは`MovePartSelectionDown`、Trainは`ScrollPartsListDown`）。入力用APIは、対象UIが非表示なら何もしない。この判定はUI部品（`PartsListUI`など）が持ち、Canvasで重ねて判定しない。
+- シーン固有の情報: CanvasはSceneのポインタを持ち、Sceneの公開メソッドで参照する（例: `ResultScene.CandidateParts`）。ゲームルール（候補の絞り込みなど）はSceneに残す。公開メソッドは副作用を持たない。生成を伴う計算（Trashパーツの生成など）は、Sceneが値の変わる時点で1回だけ行ってキャッシュする。
+- 入力以外の状態変化: Canvasが`Update`でScene・Gamedataのリビジョン番号を毎フレーム観測し、反映済みの番号と違えば反映する（例: `PlayScene.SelectListRevision`の変化で一覧を開く）。SceneからCanvasへの通知APIは作らない。
+  - リビジョン番号は、変化するたびに書き換える側が増やす整数である。シーン固有の変化はSceneが持ち（`SelectListRevision`、`PartsListRevision`、`CandidatesRevision`）、シーンをまたぐModelの変化はGamedataが持つ（`PartsRevision`。Found・Partsを書き換えるGamedataのメソッドの中で増やす）。
+  - 状態に入ったときに1回だけ行う開始処理（Resultの組み立て表示・ベンチマーク案内の開始）は、`Gamedata.State`と開始済みフラグで行う。
 - 問い合わせ: UIの状態を戻り値で返すAPIは、個別に合意したものだけにする（現在は`IsPartsListOpen`、`SelectedFoundPart`、`SelectedPart`、`IsInstalledPartsFinished`）。
 
 ```go
@@ -151,10 +153,10 @@ type PlayCanvasAPI interface {
 
 注意点:
 
-- CanvasがSceneのポインタを持つSceneは、Scene生成後に`SetCanvas`で注入する。
+- CanvasがSceneのポインタを持つScene（Play / Train / Result）は、Canvasの生成関数（`func(*XxxScene) (XxxCanvasAPI, error)`）を`NewXxxScene`の引数で受け取り、Scene自身の生成直後に呼んで注入する。注入忘れや`nil`はScene生成時のエラーになる。CanvasはSceneの具体型に依存する（別Sceneを誤って受け取らないため、interfaceにはしない）。
 - Sceneの`Update`は本体の処理の後で`canvas.Update`を呼び、同じフレームの状態変化をCanvasが観測できるようにする。
 - Canvasは`Gamedata.Timer.Expired()`を呼ばない。通知を消費するため、Sceneが満了を検知できなくなる。タイマー判定はSceneが行い、結果を公開メソッドで渡す。
-- 購入はSceneが行う。Sceneは`SelectedFoundPart`で受け取ったパーツを`Gamedata.BuyFoundPart`へ渡し、購入後の一覧の再構築はCanvasが`Gamedata.Found`・`Parts`の変化を観測して行う。
+- 購入はSceneが行う。Sceneは`SelectedFoundPart`で受け取ったパーツを`Gamedata.BuyFoundPart`へ渡し、購入後の一覧の再構築はCanvasが`Gamedata.PartsRevision`の変化を観測して行う。
 
 Canvasは個別UIを管理し、固定された順序で子UIの`Update()`と`Draw()`を呼び出す。
 描画順はSceneごとのCanvasが決定する。Canvas基盤はSceneを知らない汎用コンテナである。

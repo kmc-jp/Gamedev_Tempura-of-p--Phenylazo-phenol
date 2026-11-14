@@ -28,17 +28,19 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		playscene, err := scene.NewPlayScene(WorldDrawerFactory, inputHandler, gdata, initScenes, stage)()
+		// UI（CanvasはSceneを参照するため、Sceneの生成時に生成関数から作る）
+		newCanvas := func(s *scene.PlayScene) (scene.PlayCanvasAPI, error) {
+			playCanvas, err := scenecanvas.NewPlayCanvas(s, gdata)
+			if err != nil {
+				return nil, fmt.Errorf("scenecanvas.NewPlayCanvas() でエラーが発生しました。\n%w", err)
+			}
+			return playCanvas, nil
+		}
+
+		playscene, err := scene.NewPlayScene(WorldDrawerFactory, newCanvas, inputHandler, gdata, initScenes, stage)()
 		if err != nil {
 			return nil, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
 		}
-
-		// UI
-		playCanvas, err := scenecanvas.NewPlayCanvas(gdata)
-		if err != nil {
-			return nil, fmt.Errorf("scenecanvas.NewPlayCanvas() でエラーが発生しました。\n%w", err)
-		}
-		playscene.SetCanvas(playCanvas)
 
 		// タイルマップ
 		tilemapobj, err := MakeTileMapObj(assetsManager, Stage2URL, stage, playscene)

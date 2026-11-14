@@ -46,11 +46,9 @@ package "scene" {
         -entities : Entity
         +Update(active bool)
         +Draw(screen)
-        .. Play / Train / Result のみ ..
-        +SetCanvas(canvas XxxCanvasAPI)
         .. シーン固有（省略） ..
         Canvasが観測する公開メソッド
-        （例: CandidatesRevision()、IsPartsListRevealed()）
+        （例: CandidatesRevision()、PartsListRevision()）
     }
 
     interface XxxCanvasAPI {
@@ -92,18 +90,17 @@ package "scenecanvas" {
         .. Play / Train / Result のみ ..
         -gdata : Gamedata
         -partsList : PartsListUI
-        .. Train / Result のみ ..
         -scene : *scene.XxxScene
         .. シーン固有（省略） ..
-        保持するUI部品、観測用の前回値、
+        保持するUI部品、反映済みのリビジョン番号、
         Canvas APIの入力用・問い合わせAPIの実装
     }
 
     note bottom of XxxCanvas
     Title / Pause / SelectStage は共通ヘルパー newTextCanvas で、
     案内用のTextを1個だけ持つCanvasを構築する。
-    Play / Train / Result はScene・Gamedataを毎フレーム観測し、
-    前回値との差分で表示を切り替える。
+    Play / Train / Result はScene・Gamedataのリビジョン番号を毎フレーム観測し、
+    反映済みの番号と違えば表示を作り直す。
     end note
 
 }
@@ -189,6 +186,14 @@ package "ui" {
         +Draw(screen)
     }
 
+    package "uiutils" {
+        class Draw <<functions>> {
+            +FillRect(dst, rect, color)
+            +DrawBorder(dst, rect, width, color)
+            +SelectionBorderColor
+        }
+    }
+
     package "resultui" {
         class InstalledParts {
             +Start() error
@@ -215,6 +220,8 @@ package "ui" {
     ButtonUI *-- RichUI
     ScrollUI o-- CanvasItem : 内部要素
     InstalledParts *-- AnimatableUI
+    ButtonUI ..> Draw : 枠の描画
+    PartsListUI ..> Draw : 矩形・枠の描画
 }
 
 package "construct" {
@@ -227,7 +234,7 @@ package "construct" {
 XxxScene --> Gamedata : Model更新・参照
 XxxCanvas ..|> XxxCanvasAPI : 実装
 XxxCanvas *-- Canvas : 汎用UIコンテナを所有
-XxxCanvas --> XxxScene : 公開メソッドを観測\n（Train / Result）
+XxxCanvas --> XxxScene : 公開メソッドを観測\n（Play / Train / Result）
 XxxCanvas --> Gamedata : 必要な状態を参照・観測
 Canvas --> CanvasItem : 更新・描画を委譲
 ' Component --> InputHandler : 必要な入力を取得
@@ -240,7 +247,8 @@ Sceneはscene packageに定義された
 XxxCanvasAPI interfaceだけを利用する。
 具体的なscenecanvas実装やUIは知らない。
 Title / Pause / SelectStage は NewXxxScene の引数で、
-Play / Train / Result は生成後に SetCanvas でCanvasを注入する。
+Play / Train / Result は Canvas の生成関数を NewXxxScene の引数で受け取り、
+Scene の生成直後に呼んで注入する。
 end note
 
 note right of Canvas

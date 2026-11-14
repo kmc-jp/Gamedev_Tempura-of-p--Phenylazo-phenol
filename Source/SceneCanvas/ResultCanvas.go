@@ -21,7 +21,8 @@ type ResultCanvas struct {
 	scene *scene.ResultScene
 	gdata *game.Gamedata
 
-	// canvas は描画順の管理だけに使う。更新は状態に応じて個別に行う。
+	// canvas は全UIを毎フレーム更新・描画する。
+	// 各UIは開始前・非表示中の Update では何もしないため、状態ごとの更新の振り分けは不要。
 	canvas          *canvas.Canvas
 	benchmarkPrompt *ui.AnimatableUI
 	installedParts  *resultui.InstalledParts
@@ -31,7 +32,17 @@ type ResultCanvas struct {
 	shownRevision int
 	// installedStarted は組み立て済みパーツの表示を開始したか。
 	installedStarted bool
+	// benchmarkStarted はベンチマーク案内のアニメーションを開始したか。
+	benchmarkStarted bool
 }
+
+// ベンチマーク案内のアニメーション設定
+var (
+	benchmarkPromptMotion   = utils.Move_Decelerate
+	benchmarkPromptTo       = utils.Vec2{X: 150, Y: 150}
+	benchmarkPromptSpeed    = 360.0
+	benchmarkPromptDuration = uint(10)
+)
 
 // NewResultCanvas は ResultCanvas を生成する。
 func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas, error) {
@@ -70,9 +81,7 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 	if err != nil {
 		return nil, fmt.Errorf("ui.NewAnimatableUI() でエラーが発生しました。\n%w", err)
 	}
-	if err := benchmarkPrompt.SetPathAnimation(utils.Move_Decelerate, utils.Vec2{X: 150, Y: 150}, 360, 10); err != nil {
-		return nil, fmt.Errorf("ベンチマーク案内のアニメーション設定に失敗しました。\n%w", err)
-	}
+	// アニメーションは Result_Benchmark に変わったときに Update で開始する
 
 	installedParts := resultui.NewInstalledParts(
 		utils.Position{X: 30, Y: 30},
@@ -103,16 +112,12 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 }
 
 // Update implements [scene.ResultCanvasAPI].
-// SceneとGamedataの状態を観測して一覧と組み立て表示を切り替え、状態に応じたUIだけを更新する。
+// SceneとGamedataの状態を観測して一覧・組み立て表示・ベンチマーク案内を切り替え、全UIを更新する。
 func (c *ResultCanvas) Update(active bool) error {
 	switch c.gdata.State {
 	case game.Result_SelectParts:
 		if revision := c.scene.CandidatesRevision(); revision != c.shownRevision {
-			parts, err := c.scene.CandidateParts()
-			if err != nil {
-				return fmt.Errorf("結果画面のパーツ候補の取得に失敗しました。\n%w", err)
-			}
-			if err := c.partsList.ShowParts(parts); err != nil {
+			if err := c.partsList.ShowParts(c.scene.CandidateParts()); err != nil {
 				return fmt.Errorf("結果画面のパーツ一覧の構築に失敗しました。\n%w", err)
 			}
 			c.partsList.Show()
@@ -127,16 +132,24 @@ func (c *ResultCanvas) Update(active bool) error {
 			}
 			c.installedStarted = true
 		}
-		if err := c.installedParts.Update(true); err != nil {
-			return fmt.Errorf("InstalledPartsUIの更新に失敗しました。\n%w", err)
-		}
 
 	case game.Result_Benchmark:
-		if err := c.benchmarkPrompt.Update(true); err != nil {
-			return fmt.Errorf("ベンチマーク案内UIの更新に失敗しました。\n%w", err)
+		if !c.benchmarkStarted {
+			if err := c.benchmarkPrompt.SetPathAnimation(
+				benchmarkPromptMotion,
+				benchmarkPromptTo,
+				benchmarkPromptSpeed,
+				benchmarkPromptDuration,
+			); err != nil {
+				return fmt.Errorf("ベンチマーク案内のアニメーション設定に失敗しました。\n%w", err)
+			}
+			c.benchmarkStarted = true
 		}
 	}
-	return nil
+
+	// installedParts は Start 前、benchmarkPrompt はアニメーション開始前、
+	// partsList は非表示中の Update で何もしないため、毎フレーム全UIを更新してよい。
+	return c.canvas.Update(active)
 }
 
 // Draw implements [scene.ResultCanvasAPI].
@@ -148,20 +161,18 @@ func (c *ResultCanvas) Draw(screen *ebiten.Image) {
 func (c *ResultCanvas) IsResultCanvas() {}
 
 // MovePartSelectionDown implements [scene.ResultCanvasAPI].
+// 一覧の非表示中は PartsListUI が何もしない。
 func (c *ResultCanvas) MovePartSelectionDown() {
-	if c.partsList.Visible() {
-		c.partsList.SelectNext()
-	}
+	c.partsList.SelectNext()
 }
 
 // MovePartSelectionUp implements [scene.ResultCanvasAPI].
 func (c *ResultCanvas) MovePartSelectionUp() {
-	if c.partsList.Visible() {
-		c.partsList.SelectPrevious()
-	}
+	c.partsList.SelectPrevious()
 }
 
 // SelectedPart implements [scene.ResultCanvasAPI].
+// 一覧の非表示中は PartsListUI が nil を返す。
 func (c *ResultCanvas) SelectedPart() *game.Part {
 	return c.partsList.SelectedPart()
 }

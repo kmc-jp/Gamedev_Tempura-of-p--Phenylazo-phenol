@@ -18,16 +18,19 @@ func ResultSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inp
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		resultscene, err := scene.NewResultScene(DrawerFactory, inputHandler, gdata, initScenes)()
+		// CanvasはSceneを参照するため、Sceneの生成時に生成関数から作る
+		newCanvas := func(s *scene.ResultScene) (scene.ResultCanvasAPI, error) {
+			resultCanvas, err := scenecanvas.NewResultCanvas(s, gdata)
+			if err != nil {
+				return nil, fmt.Errorf("scenecanvas.NewResultCanvas() でエラーが発生しました。\n%w", err)
+			}
+			return resultCanvas, nil
+		}
+
+		resultscene, err := scene.NewResultScene(DrawerFactory, newCanvas, inputHandler, gdata, initScenes)()
 		if err != nil {
 			return nil, fmt.Errorf("NewResultScene() でエラーが発生しました。\n%w", err)
 		}
-
-		resultCanvas, err := scenecanvas.NewResultCanvas(resultscene, gdata)
-		if err != nil {
-			return nil, fmt.Errorf("scenecanvas.NewResultCanvas() でエラーが発生しました。\n%w", err)
-		}
-		resultscene.SetCanvas(resultCanvas)
 
 		return resultscene, nil
 	}

@@ -13,8 +13,8 @@ import (
 )
 
 // TrainCanvasAPI は TrainScene が利用するCanvasの契約である。
-// 具体的な実装はscenecanvas packageに置き、constructから注入する。
-// 所持パーツ一覧の表示は、Canvasが TrainScene.IsPartsListRevealed を観測して行う。
+// 具体的な実装はscenecanvas packageに置き、constructからコンストラクタ経由で注入する。
+// 所持パーツ一覧の表示は、Canvasが TrainScene.PartsListRevision を観測して行う。
 type TrainCanvasAPI interface {
 	Update(active bool) error
 	Draw(screen *ebiten.Image)
@@ -35,8 +35,9 @@ type TrainScene struct {
 	worldDrawer WorldDrawer
 
 	canvas TrainCanvasAPI
-	// partsListRevealed は所持パーツ一覧を表示する時点に達したか。Canvasが観測する。
-	partsListRevealed bool
+	// partsListRevision は所持パーツ一覧を表示する時点に達するたびに増える。Canvasが観測する。
+	// 0 の間は一覧を表示しない。
+	partsListRevision int
 
 	bgDrawer BackGroundDrawer
 
@@ -46,8 +47,13 @@ type TrainScene struct {
 	initScenes *InitializedScenes
 }
 
-func NewTrainScene(worldDrawer Utils.Factory[WorldDrawer], bgDrawer Utils.Factory[BackGroundDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TrainScene] {
+// NewTrainScene は TrainScene を生成する。
+// CanvasはSceneを参照するため、生成関数 newCanvas を受け取り、Sceneの生成直後に呼んで注入する。
+func NewTrainScene(worldDrawer Utils.Factory[WorldDrawer], bgDrawer Utils.Factory[BackGroundDrawer], newCanvas func(*TrainScene) (TrainCanvasAPI, error), Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TrainScene] {
 	return func() (*TrainScene, error) {
+		if newCanvas == nil {
+			return &TrainScene{}, fmt.Errorf("TrainSceneのcanvas生成関数が nil です")
+		}
 		camera, err := worldDrawer()
 		if err != nil {
 			return &TrainScene{}, fmt.Errorf("worldDrawer() でエラーが発生しました。 \n%w", err)
@@ -65,20 +71,22 @@ func NewTrainScene(worldDrawer Utils.Factory[WorldDrawer], bgDrawer Utils.Factor
 			Gamedata:   gdata,
 			initScenes: initScenes,
 		}
-		// なにもしない
+		canvas, err := newCanvas(&trs)
+		if err != nil {
+			return &TrainScene{}, fmt.Errorf("TrainSceneのcanvas生成に失敗しました。\n%w", err)
+		}
+		if canvas == nil {
+			return &TrainScene{}, fmt.Errorf("TrainSceneのcanvas が nil です")
+		}
+		trs.canvas = canvas
 		return &trs, nil
 	}
 }
 
-// SetCanvas はCanvasを注入する。CanvasがSceneを参照できるよう、Sceneの生成後に呼ぶ。
-func (s *TrainScene) SetCanvas(canvas TrainCanvasAPI) {
-	s.canvas = canvas
-}
-
-// IsPartsListRevealed は所持パーツ一覧を表示する時点に達したかを返す。
-// 到着演出のタイマー満了で true になる。
-func (s *TrainScene) IsPartsListRevealed() bool {
-	return s.partsListRevealed
+// PartsListRevision は所持パーツ一覧を表示する時点に達した回数を返す。
+// 到着演出のタイマー満了で 1 になる。0 の間は一覧を表示しない。
+func (s *TrainScene) PartsListRevision() int {
+	return s.partsListRevision
 }
 
 func (s TrainScene) Name() string {
@@ -88,18 +96,13 @@ func (s TrainScene) Name() string {
 func (s *TrainScene) Draw(screen *ebiten.Image) {
 	s.bgDrawer.Draw(screen, *s.Gamedata)
 	s.worldDrawer.Draw(screen, s.entities)
-	if s.canvas != nil {
-		s.canvas.Draw(screen)
-	}
+	s.canvas.Draw(screen)
 }
 
 // Update はSceneの処理の後でCanvasを更新し、同じフレームの状態変化をCanvasが観測できるようにする。
 func (s *TrainScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
 	if !active {
 		return
-	}
-	if s.canvas == nil {
-		return nil, transition.None(), fmt.Errorf("TrainSceneのcanvas が設定されていません")
 	}
 
 	nextScene, transitionType, err = s.updateScene(active)
@@ -125,8 +128,9 @@ func (s *TrainScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 		s.Gamedata.Timer.Set(50)
 	}
 
-	if s.Gamedata.Timer.Expired() {
-		s.partsListRevealed = true
+	// 到着演出のタイマー満了時に1回だけ、一覧を表示する時点に達したことをCanvasへ伝える
+	if s.Gamedata.Timer.Expired() && s.partsListRevision == 0 {
+		s.partsListRevision++
 	}
 
 	for _, entity := range s.entities {
