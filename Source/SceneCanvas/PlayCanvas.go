@@ -108,7 +108,7 @@ func (c *PlayCanvas) Update(active bool) error {
 
 	// 購入や発見で Found / Parts が変化したら、表示中の一覧を再構築する
 	if c.partsList.Visible() && c.gdata.PartsRevision() != c.shownPartsRevision {
-		if err := c.partsList.RefreshFoundParts(c.gdata.Found, c.gdata.Parts); err != nil {
+		if err := c.partsList.RefreshFoundParts(c.gdata.FoundParts(), c.gdata.OwnedParts()); err != nil {
 			return fmt.Errorf("パーツ一覧の更新に失敗しました。\n%w", err)
 		}
 		c.shownPartsRevision = c.gdata.PartsRevision()
@@ -185,7 +185,7 @@ func (c *PlayCanvas) CurrentPartsTab() scene.PartsListTab {
 }
 
 func (c *PlayCanvas) openPartsList() error {
-	if err := c.partsList.ShowFoundParts(c.gdata.Found, c.gdata.Parts); err != nil {
+	if err := c.partsList.ShowFoundParts(c.gdata.FoundParts(), c.gdata.OwnedParts()); err != nil {
 		return fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
 	}
 	c.partsList.Show()

@@ -246,7 +246,7 @@ func (s *ResultScene) computeCandidates() (game.Parts, error) {
 	available := game.Parts{}
 	if s.isSelectingArbitraryParts() {
 		selected := s.selectedArbitraryParts()
-		for _, part := range s.gamedata.Parts {
+		for _, part := range s.gamedata.OwnedParts() {
 			if part != nil && !s.isAvailablePart(part) && selected[part] == 0 {
 				available = append(available, part)
 			}
@@ -255,7 +255,7 @@ func (s *ResultScene) computeCandidates() (game.Parts, error) {
 	}
 
 	kind := game.AvailableParts[s.partKindIndex]
-	for _, part := range s.gamedata.Parts {
+	for _, part := range s.gamedata.OwnedParts() {
 		if part != nil && part.Kind == kind {
 			available = append(available, part)
 		}

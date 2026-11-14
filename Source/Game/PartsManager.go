@@ -94,17 +94,11 @@ func (g *Gamedata) AddPartToFoundList(p *Part) string {
 	if p == nil {
 		return "ごみを見つけた"
 	}
-	g.Found = append(g.Found, p)
-	g.partsRevision++
+	g.AddFoundParts(p)
 	return p.Name + "を見つけた"
 }
 
-func (g *Gamedata) AddPartToPartsList(p *Part) {
-	g.Parts = append(g.Parts, p)
-	g.partsRevision++
-}
-
-// PartsRevision は Parts / Found の版を返す。どちらかが変化するたびに増える。
+// PartsRevision は所持品 / 発見した品の版を返す。どちらかが変化するたびに増える。
 // UIはこの値の変化を観測し、変化したときだけ一覧を作り直す。
 func (g *Gamedata) PartsRevision() int {
 	return g.partsRevision
@@ -123,13 +117,12 @@ const (
 // 購入処理の結果
 type PurchaseResult uint
 
-func (g *Gamedata) BuyPart(index int) PurchaseResult {
-	if index < 0 || index >= len(g.Found) {
+// BuyFoundPart は発見済みパーツ p を購入し、発見した品から所持品へ移す。
+// p が nil、または発見した品に含まれない場合は NoItem を返す。
+func (g *Gamedata) BuyFoundPart(p *Part) PurchaseResult {
+	if p == nil || !slices.Contains(g.found, p) {
 		return NoItem
 	}
-
-	p := g.Found[index]
-
 	if g.Money < p.Val {
 		return Lack_money
 	}
@@ -137,26 +130,16 @@ func (g *Gamedata) BuyPart(index int) PurchaseResult {
 		return Lack_weight
 	}
 
-	g.AddPartToPartsList(p)
+	g.RemoveFoundParts(p)
+	g.AddParts(p)
 	g.Money -= p.Val
 	g.Weight -= p.Weight
-	g.Found = slices.Delete(g.Found, index, index+1)
-	g.partsRevision++
 	return Buy
-}
-
-// BuyFoundPart は発見済みパーツ p を購入する。
-// p が nil、または Found に含まれない場合は NoItem を返す。
-func (g *Gamedata) BuyFoundPart(p *Part) PurchaseResult {
-	if p == nil {
-		return NoItem
-	}
-	return g.BuyPart(slices.Index(g.Found, p))
 }
 
 func (g *Gamedata) TotalWeight() int {
 	var wg int
-	for _, p := range g.Parts {
+	for _, p := range g.parts {
 		wg += p.Weight
 	}
 	return wg
@@ -170,7 +153,7 @@ func (p *Part) Value() int {
 // 所持品としての価値
 func (g *Gamedata) TotalValue() int {
 	var v int
-	for _, p := range g.Parts {
+	for _, p := range g.parts {
 		v += p.Value()
 	}
 	return v
@@ -178,7 +161,7 @@ func (g *Gamedata) TotalValue() int {
 
 func (g *Gamedata) ExtractFoundPartsName() []string {
 	var names []string
-	for _, p := range g.Found {
+	for _, p := range g.found {
 		names = append(names, p.Name)
 	}
 	return names

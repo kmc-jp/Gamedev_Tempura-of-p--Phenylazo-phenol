@@ -19,6 +19,9 @@ func TrainSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inpu
 		}
 
 		BGDrawerFactory, err := MakeBGDrawerFactory(assetsManager, "みんげー_電車内.png", "みんげー_電車内.json")
+		if err != nil {
+			return nil, fmt.Errorf("MakeBGDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
+		}
 
 		// CanvasはSceneを参照するため、Sceneの生成時に生成関数から作る
 		newCanvas := func(s *scene.TrainScene) (scene.TrainCanvasAPI, error) {
