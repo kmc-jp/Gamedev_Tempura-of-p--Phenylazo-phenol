@@ -33,6 +33,11 @@ const (
 	foundPartLogDuration = 10 // unit: 0.1s
 	foundPartLogOffsetX  = 150
 	foundPartLogOffsetY  = 50
+	foundPartLogTextSize = 10
+)
+
+var (
+	foundPartLogTextColor = color.Black()
 )
 
 // NewPlayCanvas は PlayCanvas を生成する。
@@ -90,6 +95,8 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	foundPartLog, err := commonui.NewLogWindow(
 		utils.Position{},
 		gdata.Font,
+		foundPartLogTextSize,
+		foundPartLogTextColor,
 		foundPartLogDuration,
 	)
 	if err != nil {

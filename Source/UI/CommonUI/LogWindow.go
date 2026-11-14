@@ -22,12 +22,8 @@ type LogWindow struct {
 	timer       *tick.Timer
 }
 
-const TextSize = 30
-
-var TextColor = gamecolor.Black()
-
 // NewLogWindow は指定した表示位置・フォント・表示時間でLogWindowを生成する。
-func NewLogWindow(pos utils.Position, font *text.GoTextFaceSource, displayTime uint16) (*LogWindow, error) {
+func NewLogWindow(pos utils.Position, font *text.GoTextFaceSource, textSize float64, textColor *gamecolor.Color, displayTime uint16) (*LogWindow, error) {
 	if font == nil {
 		return nil, fmt.Errorf("font が nil です")
 	}
@@ -35,7 +31,7 @@ func NewLogWindow(pos utils.Position, font *text.GoTextFaceSource, displayTime u
 		return nil, fmt.Errorf("displayTime は 1 以上である必要があります")
 	}
 
-	t, err := ui.NewText(pos, TextColor, "", ui.FontFace(font, TextSize))
+	t, err := ui.NewText(pos, textColor, "", ui.FontFace(font, textSize))
 	if err != nil {
 		return nil, fmt.Errorf("ui.NewText() でエラーが発生しました: %w", err)
 	}
