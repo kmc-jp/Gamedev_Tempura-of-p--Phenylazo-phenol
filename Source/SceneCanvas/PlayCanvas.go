@@ -169,6 +169,21 @@ func (c *PlayCanvas) IsPartsListOpen() bool {
 	return c.partsList.Visible()
 }
 
+// CurrentPartsTab implements [scene.PlayCanvasAPI].
+// UIのタブ型をSceneのタブ型へ変換して返す。一覧の非表示中は PartsListTabNone を返す。
+func (c *PlayCanvas) CurrentPartsTab() scene.PartsListTab {
+	if !c.partsList.Visible() {
+		return scene.PartsListTabNone
+	}
+	switch c.partsList.ActiveTab() {
+	case ui.PartsListFound:
+		return scene.PartsListTabFound
+	case ui.PartsListOwned:
+		return scene.PartsListTabOwned
+	}
+	return scene.PartsListTabNone
+}
+
 func (c *PlayCanvas) openPartsList() error {
 	if err := c.partsList.ShowFoundParts(c.gdata.Found, c.gdata.Parts); err != nil {
 		return fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)

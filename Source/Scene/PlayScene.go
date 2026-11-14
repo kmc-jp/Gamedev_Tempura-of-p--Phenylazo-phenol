@@ -12,6 +12,19 @@ import (
 	input "github.com/quasilyte/ebitengine-input"
 )
 
+// PartsListTab は PlayScene から見たパーツ一覧のタブである。
+// UIのタブ型とは独立に定義し、Canvasが変換して返す。
+type PartsListTab uint8
+
+const (
+	// PartsListTabNone は一覧の非表示中を表す。
+	PartsListTabNone PartsListTab = iota
+	// PartsListTabFound は「発見したパーツ」タブを表す。
+	PartsListTabFound
+	// PartsListTabOwned は「所持パーツ」タブを表す。
+	PartsListTabOwned
+)
+
 // PlayCanvasAPI は PlayScene が利用するCanvasの契約である。
 // 具体的な実装はscenecanvas packageに置き、constructからコンストラクタ経由で注入する。
 // TimeUp後（Play_Select）のパーツ一覧の表示は、Canvasが PlayScene.SelectListRevision を観測して行う。
@@ -44,6 +57,9 @@ type PlayCanvasAPI interface {
 
 	// IsPartsListOpen はパーツ一覧を表示中かを返す。
 	IsPartsListOpen() bool
+
+	// CurrentPartsTab は表示中のタブを返す。一覧の非表示中は PartsListTabNone を返す。
+	CurrentPartsTab() PartsListTab
 }
 
 // メインの遊べるシーン
@@ -214,6 +230,10 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 		}
 
 		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
+			// 購入できるのは発見タブの表示中だけ
+			if s.canvas.CurrentPartsTab() != PartsListTabFound {
+				return
+			}
 			part := s.canvas.SelectedFoundPart()
 			switch s.Gamedata.BuyFoundPart(part) {
 			case game.NoItem:

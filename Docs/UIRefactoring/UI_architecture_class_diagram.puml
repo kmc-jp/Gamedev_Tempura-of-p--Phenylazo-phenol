@@ -181,6 +181,7 @@ package "ui" {
         +PreviousTab() error
         +SelectedPart() *game.Part
         +IsShowingFoundParts() bool
+        +ActiveTab() PartsListTab
         +RefreshFoundParts(found, owned) error
         +Update(active) error
         +Draw(screen)

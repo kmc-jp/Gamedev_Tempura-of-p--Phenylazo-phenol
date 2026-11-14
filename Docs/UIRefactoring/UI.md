@@ -131,7 +131,7 @@ Canvas APIは`Update`、`Draw`と識別用メソッド（`IsTitleCanvas()`など
 - 入力以外の状態変化: Canvasが`Update`でScene・Gamedataのリビジョン番号を毎フレーム観測し、反映済みの番号と違えば反映する（例: `PlayScene.SelectListRevision`の変化で一覧を開く）。SceneからCanvasへの通知APIは作らない。
   - リビジョン番号は、変化するたびに書き換える側が増やす整数である。シーン固有の変化はSceneが持ち（`SelectListRevision`、`PartsListRevision`、`CandidatesRevision`）、シーンをまたぐModelの変化はGamedataが持つ（`PartsRevision`。Found・Partsを書き換えるGamedataのメソッドの中で増やす）。
   - 状態に入ったときに1回だけ行う開始処理（Resultの組み立て表示・ベンチマーク案内の開始）は、`Gamedata.State`と開始済みフラグで行う。
-- 問い合わせ: UIの状態を戻り値で返すAPIは、個別に合意したものだけにする（現在は`IsPartsListOpen`、`SelectedFoundPart`、`SelectedPart`、`IsInstalledPartsFinished`）。
+- 問い合わせ: UIの状態を戻り値で返すAPIは、個別に合意したものだけにする（現在は`IsPartsListOpen`、`CurrentPartsTab`、`SelectedFoundPart`、`SelectedPart`、`IsInstalledPartsFinished`）。
 
 ```go
 // PlayScene.go
@@ -147,6 +147,7 @@ type PlayCanvasAPI interface {
     ShowPreviousPartsTab() error
     // 問い合わせ
     IsPartsListOpen() bool
+    CurrentPartsTab() PartsListTab // タブのenumはScene側（PlayScene.go）で定義する。非表示中は PartsListTabNone
     SelectedFoundPart() *game.Part // 購入はSceneが Gamedata.BuyFoundPart で行う
 }
 ```
@@ -156,7 +157,7 @@ type PlayCanvasAPI interface {
 - CanvasがSceneのポインタを持つScene（Play / Train / Result）は、Canvasの生成関数（`func(*XxxScene) (XxxCanvasAPI, error)`）を`NewXxxScene`の引数で受け取り、Scene自身の生成直後に呼んで注入する。注入忘れや`nil`はScene生成時のエラーになる。CanvasはSceneの具体型に依存する（別Sceneを誤って受け取らないため、interfaceにはしない）。
 - Sceneの`Update`は本体の処理の後で`canvas.Update`を呼び、同じフレームの状態変化をCanvasが観測できるようにする。
 - Canvasは`Gamedata.Timer.Expired()`を呼ばない。通知を消費するため、Sceneが満了を検知できなくなる。タイマー判定はSceneが行い、結果を公開メソッドで渡す。
-- 購入はSceneが行う。Sceneは`SelectedFoundPart`で受け取ったパーツを`Gamedata.BuyFoundPart`へ渡し、購入後の一覧の再構築はCanvasが`Gamedata.PartsRevision`の変化を観測して行う。
+- 購入はSceneが行う。Sceneは`CurrentPartsTab`で発見タブの表示中かを確かめ、それ以外なら何もしない。発見タブなら`SelectedFoundPart`で受け取ったパーツを`Gamedata.BuyFoundPart`へ渡し、購入後の一覧の再構築はCanvasが`Gamedata.PartsRevision`の変化を観測して行う。
 
 Canvasは個別UIを管理し、固定された順序で子UIの`Update()`と`Draw()`を呼び出す。
 描画順はSceneごとのCanvasが決定する。Canvas基盤はSceneを知らない汎用コンテナである。

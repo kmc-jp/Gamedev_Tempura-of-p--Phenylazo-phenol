@@ -173,7 +173,7 @@ type TitleCanvasAPI interface {
 | Canvas API | 入力用 | 問い合わせ | Canvasが観測するもの |
 |---|---|---|---|
 | `TitleCanvasAPI` / `PauseCanvasAPI` / `SelectStageCanvasAPI` | なし | なし | なし |
-| `PlayCanvasAPI` | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab` | `IsPartsListOpen`、`SelectedFoundPart` | `PlayScene.SelectListRevision`、`Gamedata.PartsRevision` |
+| `PlayCanvasAPI` | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab` | `IsPartsListOpen`、`CurrentPartsTab`、`SelectedFoundPart` | `PlayScene.SelectListRevision`、`Gamedata.PartsRevision` |
 | `TrainCanvasAPI` | `ScrollPartsListDown/Up` | なし | `TrainScene.PartsListRevision`、`Gamedata.PartsRevision` |
 | `ResultCanvasAPI` | `MovePartSelectionDown/Up` | `SelectedPart`、`IsInstalledPartsFinished` | `ResultScene.CandidatesRevision`・`CandidateParts`、`Gamedata.State` |
 
@@ -237,6 +237,7 @@ Model参照をReaderや表示用データへ縮小する必要が生じた場合
 - `ResultCanvas`は毎フレーム`Canvas.Update`で全UIを更新する。ベンチマーク案内のアニメーションは、`Result_Benchmark`に変わったときに開始する。`Canvas.Show/Hide/Visible`と`PositionItem`は、後で使う可能性があるため残した。
 - `uiutils`（`Source/UI/UIUtils`）に`FillRect`・`DrawBorder`・`SelectionBorderColor`を追加した。`ButtonUI`と`PartsListUI`の描画で、毎フレームの`ebiten.NewImage`をやめた。
 - 不要になったコードは、方針（実施上の注意を参照）に従い、`PartsListUI.BuySelectedPart`を削除した。`ButtonUI`のマウス判定と`PartsListUI.Scroll`はコメントアウトで残す。
+- 購入の入力判定: 発見タブ以外でSpaceを押すと「購入可能な商品がありません」と出るようになっていたため、以前と同じく何もしないよう戻した。`PlayScene.go`にタブのenum`PartsListTab`（`PartsListTabNone`・`PartsListTabFound`・`PartsListTabOwned`）を定義し、問い合わせAPI`PlayCanvasAPI.CurrentPartsTab`を追加した。`PlayCanvas`は`PartsListUI.ActiveTab`の値をSceneのenumへ変換して返す。`SelectedFoundPart`内のタブ判定は残す。
 
 ## 現時点の保留事項
 

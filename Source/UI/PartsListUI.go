@@ -155,6 +155,11 @@ func (p *PartsListUI) IsShowingFoundParts() bool {
 	return p.showTabs && p.activeTab == PartsListFound
 }
 
+// ActiveTab は現在のタブを返す。表示状態やタブ表示の有無によらず、最後に選ばれたタブを返す。
+func (p *PartsListUI) ActiveTab() PartsListTab {
+	return p.activeTab
+}
+
 // RefreshFoundParts はタブ付き一覧のデータを差し替え、現在のタブと選択位置を維持して再構築する。
 // 購入などで Found / Parts が変化したときに、Canvasが観測して呼ぶ。
 func (p *PartsListUI) RefreshFoundParts(found, owned game.Parts) error {

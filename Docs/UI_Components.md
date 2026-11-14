@@ -39,7 +39,7 @@ Scene 固有の構成は `scenecanvas` package の各 Canvas が決める。
 `Source/SceneCanvas` の各 Canvas は、対応する Scene のファイルに定義された Canvas API（`scene.TitleCanvasAPI` など）を実装し、`construct` から Scene へ注入される。
 
 - `TitleCanvas` / `PauseCanvas` / `SelectStageCanvas`: 案内用の `Text` 1個だけを持つ。`NewXxxCanvas(font)` で生成し、`NewXxxScene` の引数で注入する
-- `PlayCanvas`: 残り時間（`GameDataText`）、空き重量・所持金（`GameDataUI`）、`PartsListUI`。`NewPlayCanvas(scene, gdata)`。`PlayScene.SelectListRevision` の変化で一覧を開く。購入はSceneが`SelectedFoundPart`と`Gamedata.BuyFoundPart`で行い、購入後の一覧は`Gamedata.PartsRevision`の変化を観測して再構築する
+- `PlayCanvas`: 残り時間（`GameDataText`）、空き重量・所持金（`GameDataUI`）、`PartsListUI`。`NewPlayCanvas(scene, gdata)`。`PlayScene.SelectListRevision` の変化で一覧を開く。購入はSceneが`CurrentPartsTab`で発見タブの表示中かを確かめたうえで、`SelectedFoundPart`と`Gamedata.BuyFoundPart`で行い、購入後の一覧は`Gamedata.PartsRevision`の変化を観測して再構築する
 - `TrainCanvas`: 案内 `Text`、`PartsListUI`。`NewTrainCanvas(scene, gdata)`。`TrainScene.PartsListRevision`（または`Gamedata.PartsRevision`）の変化で所持パーツ一覧を構築・表示する
 - `ResultCanvas`: 案内 `Text`、ベンチマーク案内（`AnimatableUI`）、`InstalledParts`、`PartsListUI`。`NewResultCanvas(scene, gdata)`。全UIを毎フレーム`Canvas.Update`で更新する。組み立て済みパーツの表示は`Result_Assembled`、ベンチマーク案内のアニメーションは`Result_Benchmark`に変わったときに開始する
 
@@ -109,6 +109,7 @@ ScrollUI は表示と子要素の更新だけを担当し、マウスホイー�
 - `NextTab() error` / `PreviousTab() error`: タブを切り替える。単一一覧と非表示中は何もしない
 - `SelectedPart() *game.Part`: 選択中のパーツ。非表示中・未選択なら `nil`
 - `IsShowingFoundParts() bool`: タブ付き一覧で発見タブを表示中か。単一一覧の表示中は `false`
+- `ActiveTab() PartsListTab`: 現在のタブ。表示状態やタブ表示の有無によらず、最後に選ばれたタブを返す
 - `RefreshFoundParts(found, owned game.Parts) error`: タブ付き一覧のデータを差し替え、現在のタブと選択位置を維持して再構築する
 
 非表示中に操作を受け付けない判定は `PartsListUI` が持つため、Canvas 側で `Visible()` を確かめてから呼ぶ必要はない。一覧の構築系（`ShowFoundParts` / `ShowParts` / `RefreshFoundParts`）は、非表示のまま構築してから `Show` できるよう、表示状態によらず動く。
