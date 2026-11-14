@@ -1,8 +1,8 @@
 package ui
 
 import (
+	canvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Canvas"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
-	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
@@ -54,4 +54,4 @@ func (t *GameDataText) SetText(value func(game.Gamedata) string) {
 	t.text = value
 }
 
-var _ scene.Element = (*Text)(nil)
+var _ canvas.CanvasItem = (*GameDataText)(nil)

@@ -1,8 +1,9 @@
 package ui
 
 import (
+	canvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Canvas"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
-	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
+	uiutils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI/UIUtils"
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	gamecolor "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
@@ -20,6 +21,8 @@ const (
 	partCardGap        = 10
 	scrollBarWidth     = 8
 	partsListTabHeight = 32
+	// partsListBorderWidth は選択中のタブ・パーツカードの枠の太さ。
+	partsListBorderWidth = 3
 )
 
 type PartsListTab uint8
@@ -44,6 +47,7 @@ type PartsListUI struct {
 	empty         *Text
 }
 
+// NewPartsListUI は PartsListUI を生成する。
 func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont *text.GoTextFace) (*PartsListUI, error) {
 	if font == nil {
 		return nil, fmt.Errorf("font が nil です")
@@ -69,21 +73,104 @@ func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont 
 	}, nil
 }
 
-func (p *PartsListUI) SetParts(parts game.Parts) error {
-	p.showTabs = false
-	p.lists[PartsListFound] = parts
-	return p.rebuild(parts)
-}
+// ---- Sceneに公開する意味ベースAPI ----
+//
+// 選択・タブ切り替え・選択中パーツの取得（SelectNext / SelectPrevious / NextTab / PreviousTab / SelectedPart）は、
+// 非表示中は受け付けない（何もしない、SelectedPart は nil を返す）。
+// 一覧の構築（ShowFoundParts / ShowParts / RefreshFoundParts）は、非表示のまま構築してから Show できるよう、表示状態によらず行う。
 
-func (p *PartsListUI) SetLists(found, owned game.Parts) error {
+// ShowFoundParts は発見したパーツ・所持パーツのタブ付き一覧を構築する。
+// 表示状態は変更しないため、表示するには Show を呼ぶ。
+func (p *PartsListUI) ShowFoundParts(found, owned game.Parts) error {
 	p.showTabs = true
 	p.lists[PartsListFound] = found
 	p.lists[PartsListOwned] = owned
 	p.activeTab = PartsListFound
-	return p.rebuild(found)
+	return p.rebuild(found, 0)
 }
 
-func (p *PartsListUI) MoveTab(delta int) error {
+// ShowParts はタブなしの単一パーツ一覧を構築する。
+// 表示状態は変更しないため、表示するには Show を呼ぶ。
+func (p *PartsListUI) ShowParts(parts game.Parts) error {
+	p.showTabs = false
+	p.lists[PartsListFound] = parts
+	return p.rebuild(parts, 0)
+}
+
+func (p *PartsListUI) Show() {
+	p.visible = true
+}
+
+func (p *PartsListUI) Hide() {
+	p.visible = false
+}
+
+func (p *PartsListUI) Visible() bool {
+	return p.visible
+}
+
+// SelectNext は選択を1つ下へ移す。非表示中は何もしない。
+func (p *PartsListUI) SelectNext() {
+	if !p.visible {
+		return
+	}
+	p.moveSelection(1)
+}
+
+// SelectPrevious は選択を1つ上へ移す。非表示中は何もしない。
+func (p *PartsListUI) SelectPrevious() {
+	if !p.visible {
+		return
+	}
+	p.moveSelection(-1)
+}
+
+// NextTab はタブを次へ切り替える。非表示中は何もしない。
+func (p *PartsListUI) NextTab() error {
+	if !p.visible {
+		return nil
+	}
+	return p.moveTab(1)
+}
+
+// PreviousTab はタブを前へ切り替える。非表示中は何もしない。
+func (p *PartsListUI) PreviousTab() error {
+	if !p.visible {
+		return nil
+	}
+	return p.moveTab(-1)
+}
+
+// SelectedPart は選択中のパーツを返す。非表示中・未選択のときは nil を返す。
+func (p *PartsListUI) SelectedPart() *game.Part {
+	if !p.visible || p.selected < 0 || p.selected >= len(p.cards) {
+		return nil
+	}
+	return p.cards[p.selected].Part()
+}
+
+// IsShowingFoundParts はタブ付き一覧で「発見したパーツ」タブを表示中かを返す。
+// ShowParts による単一一覧の表示中は false を返す。
+func (p *PartsListUI) IsShowingFoundParts() bool {
+	return p.showTabs && p.activeTab == PartsListFound
+}
+
+// ActiveTab は現在のタブを返す。表示状態やタブ表示の有無によらず、最後に選ばれたタブを返す。
+func (p *PartsListUI) ActiveTab() PartsListTab {
+	return p.activeTab
+}
+
+// RefreshFoundParts はタブ付き一覧のデータを差し替え、現在のタブと選択位置を維持して再構築する。
+// 購入などで Found / Parts が変化したときに、Canvasが観測して呼ぶ。
+func (p *PartsListUI) RefreshFoundParts(found, owned game.Parts) error {
+	p.lists[PartsListFound] = found
+	p.lists[PartsListOwned] = owned
+	return p.rebuild(p.lists[p.activeTab], p.selected)
+}
+
+// ---- 内部実装 ----
+
+func (p *PartsListUI) moveTab(delta int) error {
 	if !p.showTabs || delta == 0 {
 		return nil
 	}
@@ -98,18 +185,11 @@ func (p *PartsListUI) MoveTab(delta int) error {
 		return nil
 	}
 	p.activeTab = PartsListTab(next)
-	return p.rebuild(p.lists[p.activeTab])
+	return p.rebuild(p.lists[p.activeTab], 0)
 }
 
-func (p *PartsListUI) CurrentTab() PartsListTab {
-	return p.activeTab
-}
-
-func (p *PartsListUI) IsFoundTab() bool {
-	return !p.showTabs || p.activeTab == PartsListFound
-}
-
-func (p *PartsListUI) rebuild(parts game.Parts) error {
+// rebuild はパーツカードを作り直し、selected を範囲内にクランプして選択する。
+func (p *PartsListUI) rebuild(parts game.Parts, selected int) error {
 	viewportHeight := p.viewportHeight()
 	contentHeight := viewportHeight
 	if len(parts) > 0 {
@@ -150,8 +230,9 @@ func (p *PartsListUI) rebuild(parts game.Parts) error {
 	p.scroll = scroll
 	p.selected = -1
 	if len(p.cards) > 0 {
-		p.selected = 0
-		p.cards[0].SetSelected(true)
+		p.selected = max(0, min(selected, len(p.cards)-1))
+		p.cards[p.selected].SetSelected(true)
+		p.ensureSelectedVisible()
 	}
 	p.empty = nil
 	if len(parts) == 0 {
@@ -179,19 +260,14 @@ func (p *PartsListUI) viewportHeight() int {
 	return partsListHeight - 60 - p.tabOffset()
 }
 
-func (p *PartsListUI) SetVisible(visible bool) {
-	p.visible = visible
-}
+// Scroll はSceneにスクロール量を操作させない方針のため無効化している。
+// スクロール位置は ensureSelectedVisible により PartsListUI 内部で完結させる。
+// 将来ホイール等の相対スクロールやヘルパー実装で再利用する可能性があるため残す。
+// func (p *PartsListUI) Scroll(delta int) {
+// 	p.scroll.Scroll(delta)
+// }
 
-func (p *PartsListUI) Visible() bool {
-	return p.visible
-}
-
-func (p *PartsListUI) Scroll(delta int) {
-	p.scroll.Scroll(delta)
-}
-
-func (p *PartsListUI) MoveSelection(delta int) {
+func (p *PartsListUI) moveSelection(delta int) {
 	if len(p.cards) == 0 || delta == 0 {
 		return
 	}
@@ -213,17 +289,6 @@ func (p *PartsListUI) MoveSelection(delta int) {
 	p.selected = next
 	p.cards[p.selected].SetSelected(true)
 	p.ensureSelectedVisible()
-}
-
-func (p *PartsListUI) SelectedPart() *game.Part {
-	if p.selected < 0 || p.selected >= len(p.cards) {
-		return nil
-	}
-	return p.cards[p.selected].Part()
-}
-
-func (p *PartsListUI) SelectedIndex() int {
-	return p.selected
 }
 
 func (p *PartsListUI) ensureSelectedVisible() {
@@ -250,15 +315,15 @@ func (p *PartsListUI) Draw(screen *ebiten.Image) {
 		return
 	}
 
-	dim := ebiten.NewImage(screen.Bounds().Dx(), screen.Bounds().Dy())
-	dim.Fill(stdcolor.RGBA{A: 160})
-	screen.DrawImage(dim, nil)
+	// 背景を暗くする
+	uiutils.FillRect(screen, screen.Bounds(), stdcolor.RGBA{A: 160})
 
-	panel := ebiten.NewImage(partsListWidth, partsListHeight)
-	panel.Fill(stdcolor.RGBA{R: 235, G: 235, B: 235, A: 255})
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(p.position.X, p.position.Y)
-	screen.DrawImage(panel, op)
+	panelX, panelY := int(p.position.X), int(p.position.Y)
+	uiutils.FillRect(
+		screen,
+		image.Rect(panelX, panelY, panelX+partsListWidth, panelY+partsListHeight),
+		stdcolor.RGBA{R: 235, G: 235, B: 235, A: 255},
+	)
 
 	DrawText(
 		utils.Position{X: p.position.X + 20, Y: p.position.Y + 12},
@@ -295,17 +360,16 @@ func (p *PartsListUI) drawScrollBar(screen *ebiten.Image) {
 	x := int(p.position.X) + partsListWidth - 20
 	y := int(p.position.Y) + 40 + p.tabOffset()
 
-	track := ebiten.NewImage(scrollBarWidth, trackHeight)
-	track.Fill(stdcolor.RGBA{R: 190, G: 190, B: 190, A: 255})
-	trackOp := &ebiten.DrawImageOptions{}
-	trackOp.GeoM.Translate(float64(x), float64(y))
-	screen.DrawImage(track, trackOp)
-
-	thumb := ebiten.NewImage(scrollBarWidth, thumbHeight)
-	thumb.Fill(stdcolor.RGBA{R: 60, G: 60, B: 60, A: 255})
-	thumbOp := &ebiten.DrawImageOptions{}
-	thumbOp.GeoM.Translate(float64(x), float64(y+thumbOffset))
-	screen.DrawImage(thumb, thumbOp)
+	uiutils.FillRect(
+		screen,
+		image.Rect(x, y, x+scrollBarWidth, y+trackHeight),
+		stdcolor.RGBA{R: 190, G: 190, B: 190, A: 255},
+	)
+	uiutils.FillRect(
+		screen,
+		image.Rect(x, y+thumbOffset, x+scrollBarWidth, y+thumbOffset+thumbHeight),
+		stdcolor.RGBA{R: 60, G: 60, B: 60, A: 255},
+	)
 }
 
 func (p *PartsListUI) drawTabs(screen *ebiten.Image) {
@@ -313,27 +377,10 @@ func (p *PartsListUI) drawTabs(screen *ebiten.Image) {
 	for i, label := range []string{"発見したパーツ", "所持パーツ"} {
 		x := int(p.position.X) + 20 + i*tabWidth
 		y := int(p.position.Y) + 35
-		tab := ebiten.NewImage(tabWidth, partsListTabHeight)
-		tab.Fill(stdcolor.RGBA{R: 220, G: 220, B: 220, A: 255})
-		tabOp := &ebiten.DrawImageOptions{}
-		tabOp.GeoM.Translate(float64(x), float64(y))
-		screen.DrawImage(tab, tabOp)
+		tabRect := image.Rect(x, y, x+tabWidth, y+partsListTabHeight)
+		uiutils.FillRect(screen, tabRect, stdcolor.RGBA{R: 220, G: 220, B: 220, A: 255})
 		if PartsListTab(i) == p.activeTab {
-			borderColor := stdcolor.RGBA{R: 255, G: 165, B: 0, A: 255}
-			for _, edge := range []struct {
-				x, y, width, height int
-			}{
-				{x, y, tabWidth, 3},
-				{x, y + partsListTabHeight - 3, tabWidth, 3},
-				{x, y, 3, partsListTabHeight},
-				{x + tabWidth - 3, y, 3, partsListTabHeight},
-			} {
-				line := ebiten.NewImage(edge.width, edge.height)
-				line.Fill(borderColor)
-				lineOp := &ebiten.DrawImageOptions{}
-				lineOp.GeoM.Translate(float64(edge.x), float64(edge.y))
-				screen.DrawImage(line, lineOp)
-			}
+			uiutils.DrawBorder(screen, tabRect, partsListBorderWidth, uiutils.SelectionBorderColor)
 		}
 		DrawText(utils.Position{X: float64(x + 10), Y: float64(y + 2)}, gamecolor.Black(), label, p.font, screen)
 	}
@@ -370,23 +417,10 @@ func (p *PartCard) Part() *game.Part {
 }
 
 func (p *PartCard) Draw(screen *ebiten.Image) {
-	card := ebiten.NewImage(p.size.X, p.size.Y)
-	card.Fill(stdcolor.White)
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(p.position.X), float64(p.position.Y))
-	screen.DrawImage(card, op)
-
+	cardRect := image.Rectangle{Min: p.position, Max: p.position.Add(p.size)}
+	uiutils.FillRect(screen, cardRect, stdcolor.White)
 	if p.selected {
-		border := ebiten.NewImage(p.size.X, p.size.Y)
-		border.Fill(stdcolor.RGBA{R: 255, G: 165, B: 0, A: 255})
-		inner := ebiten.NewImage(p.size.X-6, p.size.Y-6)
-		inner.Fill(stdcolor.White)
-		borderOp := &ebiten.DrawImageOptions{}
-		borderOp.GeoM.Translate(float64(p.position.X), float64(p.position.Y))
-		screen.DrawImage(border, borderOp)
-		innerOp := &ebiten.DrawImageOptions{}
-		innerOp.GeoM.Translate(float64(p.position.X+3), float64(p.position.Y+3))
-		screen.DrawImage(inner, innerOp)
+		uiutils.DrawBorder(screen, cardRect, partsListBorderWidth, uiutils.SelectionBorderColor)
 	}
 
 	if p.part.Img != nil {
@@ -445,4 +479,4 @@ func kindText(part *game.Part) string {
 	}
 }
 
-var _ scene.Element = (*PartsListUI)(nil)
+var _ canvas.CanvasItem = (*PartsListUI)(nil)

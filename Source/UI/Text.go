@@ -1,7 +1,7 @@
 package ui
 
 import (
-	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
+	canvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Canvas"
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
@@ -58,5 +58,5 @@ func (t *Text) SetPosition(position utils.Position) {
 	t.position = position
 }
 
-var _ scene.Element = (*Text)(nil)
-var _ scene.PositionElement = (*Text)(nil)
+var _ canvas.CanvasItem = (*Text)(nil)
+var _ canvas.PositionItem = (*Text)(nil)

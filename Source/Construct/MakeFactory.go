@@ -33,11 +33,6 @@ func MakeWorldDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[
 	return DrawerFactory, nil
 }
 
-func MakeUIDrawerFactory() (Utils.Factory[scene.UIDrawer], error) {
-	DrawerFactory := Utils.CastFactory[*camera.UICamera, scene.UIDrawer](camera.NewUICamera())
-	return DrawerFactory, nil
-}
-
 func MakeBGDrawerFactory(assetsManager *assets.AssetsManager, pngPath string, jsonPath string) (Utils.Factory[scene.BackGroundDrawer], error) {
 	imageData, err := imageassets.NewImageData("BackGround", pngPath, jsonPath, assetsManager.Image)
 	if err != nil {

@@ -65,8 +65,9 @@ UIは次の処理を担当しない。
 将来的に`input.Handler`を`game.Gamedata`へ移動する場合も、UIへ入力処理を追加しない。
 
 ```go
-if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
-    s.someUI.SetSelected(true)
+// SceneはUIを直接持たず、Canvas APIの入力用APIで意図を伝える
+if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
+    s.canvas.MovePartSelectionDown()
 }
 ```
 
@@ -105,6 +106,7 @@ SceneごとにScene固有Canvasを持たせ、そこにそのSceneで使用す�
 Scene固有Canvasは表示情報のコピーを保持するViewModelではなく、UIの更新・描画・表示状態を管理する構成層である。
 
 Sceneが利用するCanvasの意味ベースAPIは、`scene` packageにinterfaceとして定義する。
+Canvas API interfaceは、Sceneと密接に関連するため、対応するScene構造体と同じファイルに定義する。
 具体的なCanvas実装は`scenecanvas` packageに置き、`construct` packageからSceneへ注入する。
 これにより、Sceneは具体的なCanvas実装や個別UIに依存せず、Canvasの契約だけに依存する。
 
@@ -118,25 +120,44 @@ canvas.Canvas
 ui
 ```
 
-Sceneは`scene.PlayCanvasAPI`だけに依存し、具体的な`scenecanvas`実装や個別UIを直接操作しない。
-具体的なCanvas実装は`scene.PlayCanvasAPI`を実装し、`construct`からSceneへ注入する。
-Canvas実装はSceneの表示に必要な状態を参照してよいが、Scene packageの具体型を参照しない。
-Scene固有の状態を渡す必要がある場合は、interfaceのメソッド引数や状態型など、`scene`側の契約を介して渡す。
+### Canvas APIの構成
+
+Canvas APIは`Update`、`Draw`と識別用メソッド（`IsTitleCanvas()`など）を基本とする。
+識別用メソッドは処理を持たず、メソッド集合が同じ他SceneのCanvasを誤って注入しないためのもので、`scenecanvas`から実装できるよう公開メソッドとする。
+`Update`・`Draw`だけで完結しないSceneは、次の規則でAPIを追加する。
+
+- 入力起点の操作: Sceneが`input.Handler`で入力を判定し、専用の入力用APIを呼ぶ。名前はUI部品の操作名ではなく、そのSceneでの意図に合わせる（例: Playは`MovePartSelectionDown`、Trainは`ScrollPartsListDown`）。入力用APIは、対象UIが非表示なら何もしない。この判定はUI部品（`PartsListUI`など）が持ち、Canvasで重ねて判定しない。
+- シーン固有の情報: CanvasはSceneのポインタを持ち、Sceneの公開メソッドで参照する（例: `ResultScene.CandidateParts`）。ゲームルール（候補の絞り込みなど）はSceneに残す。公開メソッドは副作用を持たない。生成を伴う計算（Trashパーツの生成など）は、Sceneが値の変わる時点で1回だけ行ってキャッシュする。
+- 入力以外の状態変化: Canvasが`Update`でScene・Gamedataのリビジョン番号を毎フレーム観測し、反映済みの番号と違えば反映する（例: `PlayScene.SelectListRevision`の変化で一覧を開く）。SceneからCanvasへの通知APIは作らない。
+  - リビジョン番号は、変化するたびに書き換える側が増やす整数である。シーン固有の変化はSceneが持ち（`SelectListRevision`、`PartsListRevision`、`CandidatesRevision`）、シーンをまたぐModelの変化はGamedataが持つ（`PartsRevision`。Found・Partsを書き換えるGamedataのメソッドの中で増やす）。
+  - 状態に入ったときに1回だけ行う開始処理（Resultの組み立て表示・ベンチマーク案内の開始）は、`Gamedata.State`と開始済みフラグで行う。
+- 問い合わせ: UIの状態を戻り値で返すAPIは、個別に合意したものだけにする（現在は`IsPartsListOpen`、`CurrentPartsTab`、`SelectedFoundPart`、`SelectedPart`、`IsInstalledPartsFinished`）。
 
 ```go
+// PlayScene.go
 type PlayCanvasAPI interface {
     Update(active bool) error
     Draw(screen *ebiten.Image)
-    ShowPartsList()
-    HidePartsList()
-    SetState(state PlayState)
-}
-
-type PlayScene struct {
-    Gamedata *game.Gamedata
-    Canvas   PlayCanvasAPI
+    IsPlayCanvas()
+    // 入力用
+    TogglePartsList() error
+    MovePartSelectionDown()
+    MovePartSelectionUp()
+    ShowNextPartsTab() error
+    ShowPreviousPartsTab() error
+    // 問い合わせ
+    IsPartsListOpen() bool
+    CurrentPartsTab() PartsListTab // タブのenumはScene側（PlayScene.go）で定義する。非表示中は PartsListTabNone
+    SelectedFoundPart() *game.Part // 購入はSceneが Gamedata.BuyFoundPart で行う
 }
 ```
+
+注意点:
+
+- CanvasがSceneのポインタを持つScene（Play / Train / Result）は、Canvasの生成関数（`func(*XxxScene) (XxxCanvasAPI, error)`）を`NewXxxScene`の引数で受け取り、Scene自身の生成直後に呼んで注入する。注入忘れや`nil`はScene生成時のエラーになる。CanvasはSceneの具体型に依存する（別Sceneを誤って受け取らないため、interfaceにはしない）。
+- Sceneの`Update`は本体の処理の後で`canvas.Update`を呼び、同じフレームの状態変化をCanvasが観測できるようにする。
+- Canvasは`Gamedata.Timer.Expired()`を呼ばない。通知を消費するため、Sceneが満了を検知できなくなる。タイマー判定はSceneが行い、結果を公開メソッドで渡す。
+- 購入はSceneが行う。Sceneは`CurrentPartsTab`で発見タブの表示中かを確かめ、それ以外なら何もしない。発見タブなら`SelectedFoundPart`で受け取ったパーツを`Gamedata.BuyFoundPart`へ渡し、購入後の一覧の再構築はCanvasが`Gamedata.PartsRevision`の変化を観測して行う。
 
 Canvasは個別UIを管理し、固定された順序で子UIの`Update()`と`Draw()`を呼び出す。
 描画順はSceneごとのCanvasが決定する。Canvas基盤はSceneを知らない汎用コンテナである。
@@ -194,9 +215,9 @@ UIは、表示を成立させるための一時的な状態を保持してよい
 
 これらはUIを再生成したときに初期化されても、ゲームの進行やユーザーの確定結果を変更しない状態とする。
 
-### SceneまたはViewModelが保持する状態
+### Scene・Scene固有Canvasが保持する状態
 
-画面内の操作に意味があるが、ゲーム全体のModelやセーブデータには属さない状態は、Sceneまたは必要に応じてViewModelが保持する。
+画面内の操作に意味があるが、ゲーム全体のModelやセーブデータには属さない状態は、Scene、Scene固有Canvas配下のUI、または必要に応じてViewModelが保持する。
 
 - 選択中の項目
 - 現在のタブ
@@ -205,7 +226,9 @@ UIは、表示を成立させるための一時的な状態を保持してよい
 - 一時的なUIの表示状態
 - 画面内での入力や操作の進行状況
 
-UIはこれらを入力によって直接変更せず、SceneまたはViewModelから渡された状態を表示する。
+UIはこれらを入力によって直接変更しない。Sceneが入力を判定し、Canvas APIの入力用APIを通じて変更を指示する。
+例えば`PartsListUI`は選択中の項目・タブ・表示状態を保持するが、変更は`PlayCanvas`などが`SelectNext`、`NextTab`、`Show`などで行う。
+ゲームルールに関わる画面内の状態（Resultのパーツ種別の進行など）はSceneが保持し、Canvasが観測して表示に反映する。
 
 ### Modelが保持する状態
 
@@ -225,17 +248,17 @@ UIはこれらを入力によって直接変更せず、SceneまたはViewModel�
 > UIを破棄して再生成したとき、その状態が失われるとゲーム上の意味が変わるか。
 
 - 変わらない表示上の状態はUIが保持する。
-- 画面内の操作状態はSceneまたはViewModelが保持する。
+- 画面内の操作状態はScene、Scene固有Canvas配下のUI、またはViewModelが保持する。
 - ゲーム進行や確定結果に関わる状態はModelが保持する。
 
 ## 既存UIとの移行
 
-既存の`Element`、`ButtonUI`、`ScrollUI`は、Canvas導入に合わせて段階的に移行する。
+既存の`Element`、`ButtonUI`、`ScrollUI`は、Canvas導入に合わせて移行した。
 
-- Scene packageの`Element`、`UIDrawer`、`UICamera`による配列ベースのUI管理をCanvasへ置き換える。
+- Scene packageの`Element`、`UIDrawer`、`UICamera`による配列ベースのUI管理はCanvasへ置き換え、撤去した。
 - Canvas内部で共通処理が必要な場合だけ、Canvas package内の抽象を使用する。
-- `ButtonUI`の押下判定を使う画面は、`input.Handler`による入力へ移行する。
-- `ScrollUI`のスクロール量はSceneまたはScene固有Canvasから設定する。
+- `ButtonUI`は入力処理を持たず、選択状態の表示のみ担当する（移行済み）。押下判定が必要な画面は、`input.Handler`による入力で行う。
+- `ScrollUI`は入力を扱わない表示用コンテナとし、スクロール量は`ScrollUI`を持つUI（`PartsListUI`など）が選択追従などに応じて設定する。Sceneはスクロール量を直接操作しない。
 - 入力処理をSceneとUIで二重に実装しない。
 - SceneごとのUI部品をScene固有Canvasへまとめる。
 - UIは必要なModel参照を受け取り、`Draw()`で状態を取得する。
@@ -243,19 +266,17 @@ UIはこれらを入力によって直接変更せず、SceneまたはViewModel�
 
 ## 実装計画
 
-1. `input.Handler`を入力の唯一の入口として維持する。
-2. 既存Sceneの`Update()`から、UIの表示状態を更新する処理を整理する。
-3. UI要素からマウス入力などの直接入力処理を取り除く。
-4. `scene` packageにSceneごとのCanvas API interfaceを定義する。
-5. `scenecanvas` packageに具体的なCanvasを実装し、`construct`から注入する。
-6. `canvas` packageで個別UIの更新・描画・表示状態を管理する。
-7. 表示変換が複雑な画面だけViewModelまたはPresenterを追加する。
-8. 標準的な部品が不足した場合に限り、Ebiten UIの導入を検討する。
+1. （完了）`input.Handler`を入力の唯一の入口として維持する。
+2. （完了）既存Sceneの`Update()`から、UIの表示状態を更新する処理を整理する。
+3. （完了）UI要素からマウス入力などの直接入力処理を取り除く。
+4. （完了）`scene` packageにSceneごとのCanvas API interfaceを、各Scene構造体と同じファイルに定義する。
+5. （完了）`scenecanvas` packageに具体的なCanvasを実装し、`construct`から注入する。
+6. （完了）`canvas` packageで個別UIの更新・描画・表示状態を管理する。
+7. （必要になった時点で実施）表示変換が複雑な画面だけViewModelまたはPresenterを追加する。
+8. （必要になった時点で実施）標準的な部品が不足した場合に限り、Ebiten UIの導入を検討する。
 
 実装上のクラス関係は[`UI_architecture_class_diagram.puml`](./UI_architecture_class_diagram.puml)を参照する。
 
-複雑なパーツ一覧UIの分割方針は[`PartsListUI_refactoring.md`](./PartsListUI_refactoring.md)を参照する。
-
-InstalledPartsUIの責務分離は[`InstalledPartsUI_refactoring.md`](./InstalledPartsUI_refactoring.md)を参照する。
+個別UI部品（`PartsListUI`、`InstalledParts`など）の公開APIと挙動は[`UI_Components.md`](../UI_Components.md)を参照する。
 
 全体の実施順は[`UI_refactoring_priority.md`](./UI_refactoring_priority.md)を参照する。

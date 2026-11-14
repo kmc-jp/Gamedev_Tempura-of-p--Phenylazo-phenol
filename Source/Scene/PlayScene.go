@@ -12,17 +12,54 @@ import (
 	input "github.com/quasilyte/ebitengine-input"
 )
 
-type partsListUI interface {
-	Element
-	SetParts(game.Parts) error
-	SetLists(game.Parts, game.Parts) error
-	SetVisible(bool)
-	Visible() bool
-	MoveSelection(int)
-	MoveTab(int) error
-	IsFoundTab() bool
-	SelectedPart() *game.Part
-	SelectedIndex() int
+// PartsListTab は PlayScene から見たパーツ一覧のタブである。
+// UIのタブ型とは独立に定義し、Canvasが変換して返す。
+type PartsListTab uint8
+
+const (
+	// PartsListTabNone は一覧の非表示中を表す。
+	PartsListTabNone PartsListTab = iota
+	// PartsListTabFound は「発見したパーツ」タブを表す。
+	PartsListTabFound
+	// PartsListTabOwned は「所持パーツ」タブを表す。
+	PartsListTabOwned
+)
+
+// PlayCanvasAPI は PlayScene が利用するCanvasの契約である。
+// 具体的な実装はscenecanvas packageに置き、constructからコンストラクタ経由で注入する。
+// TimeUp後（Play_Select）のパーツ一覧の表示は、Canvasが PlayScene.SelectListRevision を観測して行う。
+type PlayCanvasAPI interface {
+	Update(active bool) error
+	Draw(screen *ebiten.Image)
+	// IsPlayCanvas は識別用メソッドで、処理を持たない。
+	// メソッド集合が同じ他SceneのCanvasを誤って注入しないためのもの。
+	IsPlayCanvas()
+
+	// ---- 入力用（一覧が非表示のときは何もしない） ----
+
+	// TogglePartsList は、閉じていれば発見・所持パーツで一覧を構築して開き、開いていれば閉じる。
+	TogglePartsList() error
+	// MovePartSelectionDown は購入対象の選択を1つ下へ移す。
+	MovePartSelectionDown()
+	// MovePartSelectionUp は購入対象の選択を1つ上へ移す。
+	MovePartSelectionUp()
+	// ShowNextPartsTab は発見／所持タブを次へ切り替える。
+	ShowNextPartsTab() error
+	// ShowPreviousPartsTab は発見／所持タブを前へ切り替える。
+	ShowPreviousPartsTab() error
+
+	// ---- 問い合わせ ----
+
+	// SelectedFoundPart は選択中の発見済みパーツを返す。
+	// 一覧の非表示中、発見タブ以外の表示中、未選択のときは nil を返す。
+	// 購入はSceneが Gamedata.BuyFoundPart で行い、購入後の一覧の再構築はCanvasが観測して行う。
+	SelectedFoundPart() *game.Part
+
+	// IsPartsListOpen はパーツ一覧を表示中かを返す。
+	IsPartsListOpen() bool
+
+	// CurrentPartsTab は表示中のタブを返す。一覧の非表示中は PartsListTabNone を返す。
+	CurrentPartsTab() PartsListTab
 }
 
 // メインの遊べるシーン
@@ -31,9 +68,9 @@ type PlayScene struct {
 	entities    []Entity
 	worldDrawer WorldDrawer
 
-	elements  []Element
-	uiDrawer  UIDrawer
-	partsList partsListUI
+	canvas PlayCanvasAPI
+	// selectListRevision は Play_Select に入るたびに増える。Canvasが観測してパーツ一覧を開く。
+	selectListRevision int
 
 	// text       *ui.Text
 	Input      *input.Handler
@@ -43,29 +80,42 @@ type PlayScene struct {
 	cameraCenter Utils.Position
 }
 
-func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory[UIDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes, stage Stage) Utils.Factory[*PlayScene] {
+// NewPlayScene は PlayScene を生成する。
+// CanvasはSceneを参照するため、生成関数 newCanvas を受け取り、Sceneの生成直後に呼んで注入する。
+func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], newCanvas func(*PlayScene) (PlayCanvasAPI, error), Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes, stage Stage) Utils.Factory[*PlayScene] {
 	return func() (*PlayScene, error) {
+		if newCanvas == nil {
+			return &PlayScene{}, fmt.Errorf("PlaySceneのcanvas生成関数が nil です")
+		}
 		camera, err := worldDrawer()
 		if err != nil {
 			return &PlayScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-		uiCamera, err := uiDrawer()
-		if err != nil {
-			return &PlayScene{}, fmt.Errorf("uiDrawer() でエラーが発生しました。 \n%w", err)
-		}
 		ps := PlayScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
-			elements:    []Element{},
-			uiDrawer:    uiCamera,
 			// text:       text,
 			Input:      Input,
 			Gamedata:   gdata,
 			initScenes: initScenes,
 			Stage:      stage,
 		}
+		canvas, err := newCanvas(&ps)
+		if err != nil {
+			return &PlayScene{}, fmt.Errorf("PlaySceneのcanvas生成に失敗しました。\n%w", err)
+		}
+		if canvas == nil {
+			return &PlayScene{}, fmt.Errorf("PlaySceneのcanvas が nil です")
+		}
+		ps.canvas = canvas
 		return &ps, nil
 	}
+}
+
+// SelectListRevision は Play_Select に入った回数を返す。
+// Canvasはこの値の変化を観測し、変化したときにパーツ一覧を開く。
+func (s *PlayScene) SelectListRevision() int {
+	return s.selectListRevision
 }
 
 // Name implements [Scene].
@@ -76,15 +126,27 @@ func (s PlayScene) Name() string {
 // Draw implements [Scene].
 func (s PlayScene) Draw(screen *ebiten.Image) {
 	s.worldDrawer.Draw(screen, s.entities)
-	s.uiDrawer.Draw(screen, s.elements)
+	s.canvas.Draw(screen)
 }
 
 // Update implements [Scene].
+// Sceneの処理の後でCanvasを更新し、同じフレームの状態変化をCanvasが観測できるようにする。
 func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
 	if !active {
 		return
 	}
 
+	nextScene, transitionType, err = s.updateScene(active)
+	if err != nil {
+		return nil, transition.None(), err
+	}
+	if err := s.canvas.Update(active); err != nil {
+		return nil, transition.None(), fmt.Errorf("Canvasの更新に失敗しました。\n%w", err)
+	}
+	return
+}
+
+func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
 	if s.Gamedata.InitialProcess {
 		s.Gamedata.InitialProcess = false
 		s.Gamedata.Text = "10"
@@ -93,37 +155,18 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 	}
 
 	if s.Gamedata.State == game.Play_Explore {
-		if s.partsList != nil {
-			if s.Input.ActionIsJustPressed(inputconfig.ActionPartsList) {
-				if s.partsList.Visible() {
-					s.partsList.SetVisible(false)
-				} else {
-					if err := s.partsList.SetLists(s.Gamedata.Found, s.Gamedata.Parts); err != nil {
-						return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
-					}
-					s.partsList.SetVisible(true)
-				}
+		if s.Input.ActionIsJustPressed(inputconfig.ActionPartsList) {
+			if err := s.canvas.TogglePartsList(); err != nil {
+				return nil, transition.None(), fmt.Errorf("パーツ一覧の開閉に失敗しました。\n%w", err)
 			}
+		}
 
-			if s.partsList.Visible() {
-				if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
-					if err := s.partsList.MoveTab(-1); err != nil {
-						return nil, transition.None(), fmt.Errorf("パーツ一覧タブの切り替えに失敗しました。\n%w", err)
-					}
-				}
-				if s.Input.ActionIsJustPressed(inputconfig.ActionMoveRight) {
-					if err := s.partsList.MoveTab(1); err != nil {
-						return nil, transition.None(), fmt.Errorf("パーツ一覧タブの切り替えに失敗しました。\n%w", err)
-					}
-				}
-				if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
-					s.partsList.MoveSelection(-1)
-				}
-				if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
-					s.partsList.MoveSelection(1)
-				}
-				return
+		// 一覧の表示中は一覧の操作だけを受け付け、探索を止める
+		if s.canvas.IsPartsListOpen() {
+			if err := s.handlePartsListInput(); err != nil {
+				return nil, transition.None(), err
 			}
+			return
 		}
 
 		for _, entity := range s.entities {
@@ -173,45 +216,23 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 		s.Gamedata.Timer.Set(50)
 		if s.Gamedata.Timer.Expired() {
 			s.Gamedata.Timer.Set(0)
+			// パーツ一覧はCanvasが selectListRevision の変化を観測して表示する
 			s.Gamedata.State = game.Play_Select
-
-			if err := s.partsList.SetLists(s.Gamedata.Found, s.Gamedata.Parts); err != nil {
-				return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
-			}
-			s.partsList.SetVisible(true)
+			s.selectListRevision++
 		}
 
 		return
 	}
 
 	if s.Gamedata.State == game.Play_Select {
-
-		if s.partsList != nil && s.partsList.Visible() {
-			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
-				if err := s.partsList.MoveTab(-1); err != nil {
-					return nil, transition.None(), fmt.Errorf("パーツ一覧タブの切り替えに失敗しました。\n%w", err)
-				}
-			}
-			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveRight) {
-				if err := s.partsList.MoveTab(1); err != nil {
-					return nil, transition.None(), fmt.Errorf("パーツ一覧タブの切り替えに失敗しました。\n%w", err)
-				}
-			}
-			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
-				s.partsList.MoveSelection(-1)
-			}
-			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
-				s.partsList.MoveSelection(1)
-			}
+		if err := s.handlePartsListInput(); err != nil {
+			return nil, transition.None(), err
 		}
 
-		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
-			if s.partsList == nil || !s.partsList.IsFoundTab() {
-				return
-			}
-			sel := s.partsList.SelectedIndex()
-			res := s.Gamedata.BuyPart(sel)
-			switch res {
+		// 購入できるのは発見タブの表示中だけ
+		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) && s.canvas.CurrentPartsTab() == PartsListTabFound {
+			part := s.canvas.SelectedFoundPart()
+			switch s.Gamedata.BuyFoundPart(part) {
 			case game.NoItem:
 				fmt.Print("購入可能な商品がありません")
 			case game.Lack_money:
@@ -219,17 +240,13 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 			case game.Lack_weight:
 				fmt.Print("重量オーバーです")
 			case game.Buy:
-				fmt.Printf("%s を購入した", s.Gamedata.Parts[len(s.Gamedata.Parts)-1].Name)
+				fmt.Printf("%s を購入した", part.Name)
 			default:
-				fmt.Print("不正な値がBuyPart()から渡されました")
-			}
-			if err := s.partsList.SetLists(s.Gamedata.Found, s.Gamedata.Parts); err != nil {
-				return nil, transition.None(), fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
+				fmt.Print("不正な値がBuyFoundPart()から渡されました")
 			}
 		}
 
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
-			s.partsList.SetVisible(false)
 			return func() (game.Scene, error) {
 				nextScene, err := s.initScenes.InitSelectStageScene()
 				if err != nil {
@@ -244,6 +261,27 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 	}
 
 	return
+}
+
+// handlePartsListInput はパーツ一覧のタブ切り替えと選択移動の入力を処理する。
+func (s *PlayScene) handlePartsListInput() error {
+	if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
+		if err := s.canvas.ShowPreviousPartsTab(); err != nil {
+			return fmt.Errorf("パーツ一覧タブの切り替えに失敗しました。\n%w", err)
+		}
+	}
+	if s.Input.ActionIsJustPressed(inputconfig.ActionMoveRight) {
+		if err := s.canvas.ShowNextPartsTab(); err != nil {
+			return fmt.Errorf("パーツ一覧タブの切り替えに失敗しました。\n%w", err)
+		}
+	}
+	if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
+		s.canvas.MovePartSelectionUp()
+	}
+	if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
+		s.canvas.MovePartSelectionDown()
+	}
+	return nil
 }
 
 func (s *PlayScene) AddEntity(e Entity) {
@@ -267,15 +305,6 @@ func (s *PlayScene) removeExpiredEntities() {
 		active = append(active, entity)
 	}
 	s.entities = active
-}
-
-func (s *PlayScene) AddUIElement(e Element) {
-	s.elements = append(s.elements, e)
-}
-
-func (s *PlayScene) SetPartsList(partsList partsListUI) {
-	s.partsList = partsList
-	s.AddUIElement(partsList)
 }
 
 func (s PlayScene) SetCameraCenter(center Utils.Position) {

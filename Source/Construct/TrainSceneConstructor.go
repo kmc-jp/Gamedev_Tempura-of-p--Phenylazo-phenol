@@ -4,9 +4,8 @@ import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
-	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
+	scenecanvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/SceneCanvas"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
-	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
 
 	input "github.com/quasilyte/ebitengine-input"
@@ -19,39 +18,24 @@ func TrainSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inpu
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		UIDrawerFactory, err := MakeUIDrawerFactory()
+		BGDrawerFactory, err := MakeBGDrawerFactory(assetsManager, "みんげー_電車内.png", "みんげー_電車内.json")
 		if err != nil {
-			return nil, fmt.Errorf("MakeUIDrawerFactory() でエラーが発生しました。\n%w", err)
+			return nil, fmt.Errorf("MakeBGDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		BGDrawerFactory, err := MakeBGDrawerFactory(assetsManager, "みんげー_電車内.png", "みんげー_電車内.json")
+		// CanvasはSceneを参照するため、Sceneの生成時に生成関数から作る
+		newCanvas := func(s *scene.TrainScene) (scene.TrainCanvasAPI, error) {
+			trainCanvas, err := scenecanvas.NewTrainCanvas(s, gdata)
+			if err != nil {
+				return nil, fmt.Errorf("scenecanvas.NewTrainCanvas() でエラーが発生しました。\n%w", err)
+			}
+			return trainCanvas, nil
+		}
 
-		trainscene, err := scene.NewTrainScene(worldDrawerFactory, UIDrawerFactory, BGDrawerFactory, inputHandler, gdata, initScenes)()
+		trainscene, err := scene.NewTrainScene(worldDrawerFactory, BGDrawerFactory, newCanvas, inputHandler, gdata, initScenes)()
 		if err != nil {
 			return nil, fmt.Errorf("NewTrainScene() でエラーが発生しました。\n%w", err)
 		}
-
-		text, err := ui.NewText(
-			Utils.Position{},
-			color.Orange(),
-			"電車で移動中\nESCキーでメニューを開く\nEnterキー で 店に向かう",
-			ui.FontFace(gdata.Font, 15),
-		)
-
-		if err != nil {
-			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
-		}
-		trainscene.AddUIElement(text)
-
-		partsList, err := ui.NewPartsListUI(
-			Utils.Position{X: 20, Y: 30},
-			ui.FontFace(gdata.Font, 16),
-			ui.FontFace(gdata.Font, 12),
-		)
-		if err != nil {
-			return nil, fmt.Errorf("ui.NewPartsListUI() でエラーが発生しました。\n%w", err)
-		}
-		trainscene.SetPartsList(partsList)
 
 		return trainscene, nil
 	}

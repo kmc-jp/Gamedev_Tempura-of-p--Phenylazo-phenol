@@ -1,7 +1,7 @@
 package ui
 
 import (
-	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
+	canvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Canvas"
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 	"image"
@@ -99,5 +99,5 @@ func (a *AnimatableUI) syncTextPosition() {
 	})
 }
 
-var _ scene.Element = (*AnimatableUI)(nil)
-var _ scene.PositionElement = (*AnimatableUI)(nil)
+var _ canvas.CanvasItem = (*AnimatableUI)(nil)
+var _ canvas.PositionItem = (*AnimatableUI)(nil)
