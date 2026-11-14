@@ -11,12 +11,21 @@ import (
 	input "github.com/quasilyte/ebitengine-input"
 )
 
+// SelectStageCanvasAPI は SelectStageScene が利用するCanvasの契約である。
+// 具体的な実装はscenecanvas packageに置き、constructから注入する。
+type SelectStageCanvasAPI interface {
+	Update(active bool) error
+	Draw(screen *ebiten.Image)
+	// IsSelectStageCanvas は識別用メソッドで、処理を持たない。
+	// メソッド集合が同じ他SceneのCanvasを誤って注入しないためのもの。
+	IsSelectStageCanvas()
+}
+
 type SelectStageScene struct {
 	entities    []Entity
 	worldDrawer WorldDrawer
 
-	elements []Element
-	uiDrawer UIDrawer
+	canvas SelectStageCanvasAPI
 
 	// text       *ui.Text
 	Input      *input.Handler
@@ -24,22 +33,20 @@ type SelectStageScene struct {
 	initScenes *InitializedScenes
 }
 
-func NewSelectStageScene(worldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory[UIDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*SelectStageScene] {
+func NewSelectStageScene(worldDrawer Utils.Factory[WorldDrawer], canvas SelectStageCanvasAPI, Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*SelectStageScene] {
 	return func() (*SelectStageScene, error) {
 		camera, err := worldDrawer()
 		if err != nil {
 
 			return &SelectStageScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-		uiCamera, err := uiDrawer()
-		if err != nil {
-			return &SelectStageScene{}, fmt.Errorf("uiDrawer() でエラーが発生しました。 \n%w", err)
+		if canvas == nil {
+			return &SelectStageScene{}, fmt.Errorf("SelectStageSceneのcanvas が nil です")
 		}
 		ts := SelectStageScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
-			elements:    []Element{},
-			uiDrawer:    uiCamera,
+			canvas:      canvas,
 			// text:       text,
 			Input:      Input,
 			gamedata:   gdata,
@@ -56,7 +63,7 @@ func (s SelectStageScene) Name() string {
 
 func (s *SelectStageScene) Draw(screen *ebiten.Image) {
 	s.worldDrawer.Draw(screen, s.entities)
-	s.uiDrawer.Draw(screen, s.elements)
+	s.canvas.Draw(screen)
 }
 
 func (s *SelectStageScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
@@ -72,6 +79,10 @@ func (s *SelectStageScene) Update(active bool) (nextScene Utils.Factory[game.Sce
 
 	for _, entity := range s.entities {
 		entity.Update(active)
+	}
+
+	if err := s.canvas.Update(active); err != nil {
+		return nil, transition.None(), fmt.Errorf("Canvasの更新に失敗しました。\n%w", err)
 	}
 
 	if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
@@ -117,10 +128,6 @@ func (s *SelectStageScene) Update(active bool) (nextScene Utils.Factory[game.Sce
 
 func (s *SelectStageScene) AddEntity(e Entity) {
 	s.entities = append(s.entities, e)
-}
-
-func (s *SelectStageScene) AddUIElement(e Element) {
-	s.elements = append(s.elements, e)
 }
 
 func (s SelectStageScene) SetCameraCenter(center Utils.Position) {

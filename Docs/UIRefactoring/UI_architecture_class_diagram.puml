@@ -34,7 +34,8 @@ package "scene" {
     class PlayScene {
         -Input : InputHandler
         -Gamedata : Gamedata
-        -Canvas : PlayCanvasAPI
+        -canvas : PlayCanvasAPI
+        +SetCanvas(canvas)
         -GameObjects : GameObject
         +Update(active bool)
         +Draw(screen)
@@ -43,10 +44,40 @@ package "scene" {
     interface PlayCanvasAPI {
         +Update(active bool) error
         +Draw(screen)
-        +ShowPartsList()
-        +HidePartsList()
-        +SetState(state)
+        +IsPlayCanvas()
+        +TogglePartsList() error
+        +MovePartSelectionDown()
+        +MovePartSelectionUp()
+        +ShowNextPartsTab() error
+        +ShowPreviousPartsTab() error
+        +BuySelectedPart() (PurchaseResult, error)
+        +IsPartsListOpen() bool
     }
+
+    note bottom of PlayCanvasAPI
+    入力用APIはSceneでの意図に合わせた名前にする。
+    TimeUp後の一覧表示はCanvasが
+    Gamedata.Stateを観測して行う。
+    BuySelectedPartは暫定（UIが購入処理を呼ぶ）。
+    end note
+
+    class TitleScene {
+        -canvas : TitleCanvasAPI
+        +Update(active bool)
+        +Draw(screen)
+    }
+
+    interface TitleCanvasAPI {
+        +Update(active bool) error
+        +Draw(screen)
+        +IsTitleCanvas()
+    }
+
+    note bottom of TitleCanvasAPI
+    Canvas APIはScene構造体と同じファイルに定義する。
+    IsTitleCanvas()は識別用で処理を持たない。
+    PauseScene / SelectStageSceneも同じ構成。
+    end note
 
     class GameObject {
         -Components : Component
@@ -58,28 +89,50 @@ package "scene" {
     }
 
     Scene <|.. PlayScene
+    Scene <|.. TitleScene
+    TitleScene o-- TitleCanvasAPI : 契約を保持
     PlayScene o-- GameObject : ゲーム状態を更新
     GameObject *-- Component
 }
 
 package "scenecanvas" {
     class PlayCanvas {
-        -UI : canvas.Canvas
-        -Timer : TimerUI
-        -Money : MoneyUI
-        -PartsList : PartsListUI
+        -canvas : canvas.Canvas
+        -partsList : PartsListUI
         +Update(active bool) error
         +Draw(screen)
-        +ShowPartsList()
-        +HidePartsList()
-        +SetState(state)
+        +IsPlayCanvas()
+        +TogglePartsList() error
+        +MovePartSelectionDown()
+        +MovePartSelectionUp()
+        +ShowNextPartsTab() error
+        +ShowPreviousPartsTab() error
+        +BuySelectedPart() (PurchaseResult, error)
+        +IsPartsListOpen() bool
     }
 
-    class ResultCanvas
-    class TrainCanvas
+    class TitleCanvas {
+        -canvas : canvas.Canvas
+        +Update(active bool) error
+        +Draw(screen)
+        +IsTitleCanvas()
+    }
+
+    class ResultCanvas {
+        -scene : *scene.ResultScene
+    }
+    class TrainCanvas {
+        -scene : *scene.TrainScene
+    }
+    note bottom of ResultCanvas
+    シーン固有の情報が必要なCanvasは
+    Sceneのポインタを持ち、公開メソッドを観測する。
+    end note
 
     PlayCanvas ..|> scene.PlayCanvasAPI : 実装
     PlayCanvas *-- canvas.Canvas : 汎用UIコンテナを所有
+    TitleCanvas ..|> scene.TitleCanvasAPI : 実装
+    TitleCanvas *-- canvas.Canvas : 汎用UIコンテナを所有
     ResultCanvas *-- canvas.Canvas : 汎用UIコンテナを所有
     TrainCanvas *-- canvas.Canvas : 汎用UIコンテナを所有
 }
@@ -132,11 +185,11 @@ package "ui" {
         +Draw(screen)
     }
 
-    class TimerUI {
+    class GameDataText {
         +Draw(screen)
     }
 
-    class MoneyUI {
+    class GameDataUI {
         +Draw(screen)
     }
 
@@ -161,8 +214,8 @@ package "ui" {
     CanvasItem <|.. RichUI
     CanvasItem <|.. ButtonUI
     CanvasItem <|.. ScrollUI
-    CanvasItem <|.. TimerUI
-    CanvasItem <|.. MoneyUI
+    CanvasItem <|.. GameDataText
+    CanvasItem <|.. GameDataUI
     CanvasItem <|.. PartsListUI
     ButtonUI *-- RichUI
     ScrollUI o-- CanvasItem : 内部要素
@@ -172,6 +225,8 @@ package "construct" {
     class SceneConstruct {
         +NewPlayScene()
         +NewPlayCanvas()
+        +NewTitleScene()
+        +NewTitleCanvas()
     }
 }
 
@@ -185,6 +240,7 @@ canvas.Canvas --> CanvasItem : 更新・描画を委譲
 Component --> Gamedata : Model更新・参照
 SceneConstruct ..> PlayScene : 生成
 SceneConstruct ..> PlayCanvas : 生成・注入
+SceneConstruct ..> TitleCanvas : 生成・注入
 SceneConstruct ..> canvas.Canvas : 生成
 SceneConstruct ..> CanvasItem : UIを注入
 

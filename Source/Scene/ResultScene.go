@@ -12,45 +12,59 @@ import (
 	input "github.com/quasilyte/ebitengine-input"
 )
 
-// installedPartsUI は組み立て済みパーツの表示UI。
-// 表示開始と表示完了の通知だけを公開し、ゲーム状態の遷移はSceneが行う。
-type installedPartsUI interface {
-	Element
-	Start() error
-	IsFinished() bool
+// ResultCanvasAPI は ResultScene が利用するCanvasの契約である。
+// 具体的な実装はscenecanvas packageに置き、constructから注入する。
+//
+// Canvasは次をScene・Gamedataの観測で行う。
+//   - Result_SelectParts 中に CandidatesRevision が変わったら、CandidateParts で一覧を作り直して表示する
+//   - Result_Assembled に変わったら一覧を閉じ、組み立て済みパーツの表示を開始する
+//   - 組み立て済みパーツは Result_Assembled 中だけ、ベンチマーク案内は Result_Benchmark 中だけ更新する
+type ResultCanvasAPI interface {
+	Update(active bool) error
+	Draw(screen *ebiten.Image)
+	// IsResultCanvas は識別用メソッドで、処理を持たない。
+	// メソッド集合が同じ他SceneのCanvasを誤って注入しないためのもの。
+	IsResultCanvas()
+
+	// ---- 入力用（一覧が非表示のときは何もしない） ----
+
+	// MovePartSelectionDown は組み立てに使うパーツの選択を1つ下へ移す。
+	MovePartSelectionDown()
+	// MovePartSelectionUp は組み立てに使うパーツの選択を1つ上へ移す。
+	MovePartSelectionUp()
+
+	// ---- 問い合わせ ----
+
+	// SelectedPart は選択中のパーツを返す。未選択なら nil。
+	SelectedPart() *game.Part
+	// IsInstalledPartsFinished は組み立て済みパーツの表示アニメーションが完了したかを返す。
+	IsInstalledPartsFinished() bool
 }
 
 type ResultScene struct {
 	entities    []Entity
 	worldDrawer WorldDrawer
 
-	elements        []Element
-	uiDrawer        UIDrawer
-	partsList       partsListUI
-	installedParts  installedPartsUI
-	benchmarkPrompt Element
-	partKindIndex   int
+	canvas        ResultCanvasAPI
+	partKindIndex int
+	// candidatesRevision は選択候補が変わるたびに増える。Canvasが観測して一覧を作り直す。
+	candidatesRevision int
 	// text       *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
 }
 
-func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Factory[UIDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*ResultScene] {
+func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*ResultScene] {
 	return func() (*ResultScene, error) {
 		camera, err := NewWorldDrawer()
 		if err != nil {
 
 			return &ResultScene{}, fmt.Errorf("NewDrawer() でエラーが発生しました。 \n%w", err)
 		}
-		uiCamera, err := uiDrawer()
-		if err != nil {
-			return &ResultScene{}, fmt.Errorf("NewDrawer() でエラーが発生しました。\n%w", err)
-		}
 		ts := ResultScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
-			uiDrawer:    uiCamera,
 			// text:        text,
 			Input:      Input,
 			gamedata:   gdata,
@@ -61,29 +75,51 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], uiDrawer Utils.Fa
 	}
 }
 
+// SetCanvas はCanvasを注入する。CanvasがSceneを参照できるよう、Sceneの生成後に呼ぶ。
+func (s *ResultScene) SetCanvas(canvas ResultCanvasAPI) {
+	s.canvas = canvas
+}
+
 func (s ResultScene) Name() string {
 	return fmt.Sprintf("%T", s)
 }
 
 func (s *ResultScene) Draw(screen *ebiten.Image) {
 	s.worldDrawer.Draw(screen, s.entities)
-	s.uiDrawer.Draw(screen, s.elements)
+	if s.canvas != nil {
+		s.canvas.Draw(screen)
+	}
 	// s.text.Draw(screen)
 }
 
+// Update はSceneの処理の後でCanvasを更新し、同じフレームの状態変化をCanvasが観測できるようにする。
 func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
 	if !active {
 		return
 	}
+	if s.canvas == nil {
+		return nil, transition.None(), fmt.Errorf("ResultSceneのcanvas が設定されていません")
+	}
 
+	nextScene, transitionType, err = s.updateScene(active)
+	if err != nil {
+		return nil, transition.None(), err
+	}
+	if err := s.canvas.Update(active); err != nil {
+		return nil, transition.None(), fmt.Errorf("Canvasの更新に失敗しました。\n%w", err)
+	}
+	return
+}
+
+func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
 	if s.gamedata.InitialProcess {
 		//シーン起動時処理
 		s.gamedata.InitialProcess = false
 		s.gamedata.Assemble = game.Parts{}
 		s.partKindIndex = 0
-		if err := s.setCurrentPartsList(); err != nil {
-			return nil, transition.None(), fmt.Errorf("結果画面のパーツ一覧の構築に失敗しました。\n%w", err)
-		}
+		s.candidatesRevision++
+		// 候補一覧はこのフレームの最後にCanvasが構築するため、入力は次のフレームから受け付ける
+		return
 	}
 
 	for _, entity := range s.entities {
@@ -92,44 +128,30 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 
 	if s.gamedata.State == game.Result_SelectParts {
 		//組み立てに使うパーツを選択
-		if s.partsList != nil && s.partsList.Visible() {
-			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
-				s.partsList.MoveSelection(-1)
-			}
-			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
-				s.partsList.MoveSelection(1)
-			}
-			if s.isSelectingArbitraryParts() && s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
-				if s.installedParts == nil {
-					return nil, transition.None(), fmt.Errorf("InstalledPartsUIが設定されていません")
-				}
-				if err := s.installedParts.Start(); err != nil {
-					return nil, transition.None(), fmt.Errorf("InstalledPartsUIの開始に失敗しました。\n%w", err)
-				}
-				s.partsList.SetVisible(false)
-				s.gamedata.State = game.Result_Assembled
-				return
-			}
-			if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
-				part := s.partsList.SelectedPart()
-				if part == nil {
-					if s.isSelectingArbitraryParts() {
-						return
-					}
-					return nil, transition.None(), fmt.Errorf("選択されたパーツがありません")
-				}
-				s.gamedata.Assemble = append(s.gamedata.Assemble, part)
+		if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
+			s.canvas.MovePartSelectionUp()
+		}
+		if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
+			s.canvas.MovePartSelectionDown()
+		}
+		if s.isSelectingArbitraryParts() && s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+			// 一覧を閉じて組み立て済みパーツの表示を開始するのは、Canvasが状態変化を観測して行う
+			s.gamedata.State = game.Result_Assembled
+			return
+		}
+		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
+			part := s.canvas.SelectedPart()
+			if part == nil {
 				if s.isSelectingArbitraryParts() {
-					if err := s.setCurrentPartsList(); err != nil {
-						return nil, transition.None(), fmt.Errorf("任意パーツ一覧の更新に失敗しました。\n%w", err)
-					}
 					return
 				}
-				s.partKindIndex++
-				if err := s.setCurrentPartsList(); err != nil {
-					return nil, transition.None(), fmt.Errorf("結果画面のパーツ一覧の更新に失敗しました。\n%w", err)
-				}
+				return nil, transition.None(), fmt.Errorf("選択されたパーツがありません")
 			}
+			s.gamedata.Assemble = append(s.gamedata.Assemble, part)
+			if !s.isSelectingArbitraryParts() {
+				s.partKindIndex++
+			}
+			s.candidatesRevision++
 		}
 	}
 
@@ -138,10 +160,7 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 		//所持パーツをもとに利用する絵を決定
 		//完成PCを表示
 
-		if err := s.installedParts.Update(true); err != nil {
-			return nil, transition.None(), fmt.Errorf("InstalledPartsUIの更新に失敗しました。\n%w", err)
-		}
-		if s.installedParts.IsFinished() {
+		if s.canvas.IsInstalledPartsFinished() {
 			if err := s.gamedata.NextState(); err != nil {
 				return nil, transition.None(), fmt.Errorf("InstalledPartsUI完了後の状態遷移に失敗しました: %w", err)
 			}
@@ -150,10 +169,6 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 
 	// ベンチマークフェーズ
 	if s.gamedata.State == game.Result_Benchmark {
-		if err := s.benchmarkPrompt.Update(true); err != nil {
-			return nil, transition.None(), fmt.Errorf("ベンチマーク案内UIの更新に失敗しました。\n%w", err)
-		}
-
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 			var score float32
 			for _, v := range s.gamedata.Assemble {
@@ -189,32 +204,18 @@ func (s *ResultScene) AddEntity(e Entity) {
 	s.entities = append(s.entities, e)
 }
 
-func (s *ResultScene) AddUIElement(e Element) {
-	s.elements = append(s.elements, e)
+// CandidatesRevision は選択候補の版を返す。候補が変わるたびに増える。
+// Canvasはこの値の変化を観測し、変化したときだけ CandidateParts で一覧を作り直す。
+func (s *ResultScene) CandidatesRevision() int {
+	return s.candidatesRevision
 }
 
-func (s *ResultScene) SetInstalledParts(ip installedPartsUI) {
-	s.installedParts = ip
-	s.AddUIElement(ip)
-}
-
-func (s *ResultScene) SetBenchmarkPrompt(e Element) {
-	s.benchmarkPrompt = e
-	s.AddUIElement(e)
-}
-
-func (s *ResultScene) SetPartsList(partsList partsListUI) {
-	s.partsList = partsList
-	partsList.SetVisible(false)
-	s.AddUIElement(partsList)
-}
-
-func (s *ResultScene) setCurrentPartsList() error {
-	if s.partsList == nil {
-		return fmt.Errorf("パーツ一覧が設定されていません")
-	}
+// CandidateParts は現在のパーツ種別で組み立てに使える候補を返す。
+// 該当する所持パーツがない種別では、その種別のTrashパーツを1つ生成して返すため、
+// 呼び出すたびに新しいTrashが作られる。候補が変わったときだけ呼ぶこと。
+func (s *ResultScene) CandidateParts() (game.Parts, error) {
 	if s.partKindIndex < 0 || s.partKindIndex > len(game.AvailableParts) {
-		return fmt.Errorf("パーツ種別の選択位置が不正です: %d", s.partKindIndex)
+		return nil, fmt.Errorf("パーツ種別の選択位置が不正です: %d", s.partKindIndex)
 	}
 
 	available := game.Parts{}
@@ -225,28 +226,24 @@ func (s *ResultScene) setCurrentPartsList() error {
 				available = append(available, part)
 			}
 		}
-	} else {
-		kind := game.AvailableParts[s.partKindIndex]
-		for _, part := range s.gamedata.Parts {
-			if part != nil && part.Kind == kind {
-				available = append(available, part)
-			}
-		}
-		if len(available) == 0 {
-			trash := partsdata.Trash()
-			if trash == nil {
-				return fmt.Errorf("Trashパーツの生成に失敗しました")
-			}
-			trash.Kind = kind
-			available = append(available, trash)
-		}
+		return available, nil
 	}
 
-	if err := s.partsList.SetParts(available); err != nil {
-		return err
+	kind := game.AvailableParts[s.partKindIndex]
+	for _, part := range s.gamedata.Parts {
+		if part != nil && part.Kind == kind {
+			available = append(available, part)
+		}
 	}
-	s.partsList.SetVisible(true)
-	return nil
+	if len(available) == 0 {
+		trash := partsdata.Trash()
+		if trash == nil {
+			return nil, fmt.Errorf("Trashパーツの生成に失敗しました")
+		}
+		trash.Kind = kind
+		available = append(available, trash)
+	}
+	return available, nil
 }
 
 func (s *ResultScene) selectedArbitraryParts() map[*game.Part]int {

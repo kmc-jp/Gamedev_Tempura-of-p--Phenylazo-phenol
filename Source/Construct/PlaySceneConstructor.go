@@ -8,10 +8,9 @@ import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
+	scenecanvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/SceneCanvas"
 	tilemap "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/TileMap"
-	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
-	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
 	"reflect"
 
@@ -29,68 +28,17 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		// UIカメラ
-		UIDrawerFactory, err := MakeUIDrawerFactory()
-		if err != nil {
-			return nil, fmt.Errorf("MakeUIDrawerFactory() でエラーが発生しました。\n%w", err)
-		}
-
-		playscene, err := scene.NewPlayScene(WorldDrawerFactory, UIDrawerFactory, inputHandler, gdata, initScenes, stage)()
+		playscene, err := scene.NewPlayScene(WorldDrawerFactory, inputHandler, gdata, initScenes, stage)()
 		if err != nil {
 			return nil, fmt.Errorf("NewPlayScene() でエラーが発生しました。\n%w", err)
 		}
 
 		// UI
-		text, err := ui.NewGameDataText(
-			Utils.Position{X: 0, Y: 0},
-			color.Red(),
-			gdata,
-			func(g game.Gamedata) string {
-				return fmt.Sprintf("探索フェーズ 残り時間: %s", g.Text)
-			},
-			ui.FontFace(gdata.Font, 15),
-		)
+		playCanvas, err := scenecanvas.NewPlayCanvas(gdata)
 		if err != nil {
-			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
+			return nil, fmt.Errorf("scenecanvas.NewPlayCanvas() でエラーが発生しました。\n%w", err)
 		}
-		playscene.AddUIElement(text)
-
-		gameDataUI, err := ui.NewGameDataUI(
-			gdata,
-			[]ui.GameDataUIItem{
-				{
-					Text: func(g game.Gamedata) string {
-						return fmt.Sprintf("空き重量: %d", g.Weight)
-					},
-					Font:  ui.FontFace(gdata.Font, 15),
-					Color: color.Black(),
-				},
-				{
-					Text: func(g game.Gamedata) string {
-						return fmt.Sprintf("所持金: %d", g.Money)
-					},
-					Font:  ui.FontFace(gdata.Font, 15),
-					Color: color.Black(),
-				},
-			},
-			10,
-			20,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("ui.NewGameDataUI() でエラーが発生しました。\n%w", err)
-		}
-		playscene.AddUIElement(gameDataUI)
-
-		partsList, err := ui.NewPartsListUI(
-			Utils.Position{X: 20, Y: 30},
-			gdata,
-			ui.FontFace(gdata.Font, 16),
-			ui.FontFace(gdata.Font, 12),
-		)
-		if err != nil {
-			return nil, fmt.Errorf("ui.NewPartsListUI() でエラーが発生しました。\n%w", err)
-		}
-		playscene.SetPartsList(partsList)
+		playscene.SetCanvas(playCanvas)
 
 		// タイルマップ
 		tilemapobj, err := MakeTileMapObj(assetsManager, Stage2URL, stage, playscene)

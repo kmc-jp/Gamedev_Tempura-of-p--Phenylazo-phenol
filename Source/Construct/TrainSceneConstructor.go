@@ -4,9 +4,8 @@ import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
-	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
+	scenecanvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/SceneCanvas"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
-	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
 
 	input "github.com/quasilyte/ebitengine-input"
@@ -19,40 +18,18 @@ func TrainSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inpu
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		UIDrawerFactory, err := MakeUIDrawerFactory()
-		if err != nil {
-			return nil, fmt.Errorf("MakeUIDrawerFactory() でエラーが発生しました。\n%w", err)
-		}
-
 		BGDrawerFactory, err := MakeBGDrawerFactory(assetsManager, "みんげー_電車内.png", "みんげー_電車内.json")
 
-		trainscene, err := scene.NewTrainScene(worldDrawerFactory, UIDrawerFactory, BGDrawerFactory, inputHandler, gdata, initScenes)()
+		trainscene, err := scene.NewTrainScene(worldDrawerFactory, BGDrawerFactory, inputHandler, gdata, initScenes)()
 		if err != nil {
 			return nil, fmt.Errorf("NewTrainScene() でエラーが発生しました。\n%w", err)
 		}
 
-		text, err := ui.NewText(
-			Utils.Position{},
-			color.Orange(),
-			"電車で移動中\nESCキーでメニューを開く\nEnterキー で 店に向かう",
-			ui.FontFace(gdata.Font, 15),
-		)
-
+		trainCanvas, err := scenecanvas.NewTrainCanvas(trainscene, gdata)
 		if err != nil {
-			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
+			return nil, fmt.Errorf("scenecanvas.NewTrainCanvas() でエラーが発生しました。\n%w", err)
 		}
-		trainscene.AddUIElement(text)
-
-		partsList, err := ui.NewPartsListUI(
-			Utils.Position{X: 20, Y: 30},
-			gdata,
-			ui.FontFace(gdata.Font, 16),
-			ui.FontFace(gdata.Font, 12),
-		)
-		if err != nil {
-			return nil, fmt.Errorf("ui.NewPartsListUI() でエラーが発生しました。\n%w", err)
-		}
-		trainscene.SetPartsList(partsList)
+		trainscene.SetCanvas(trainCanvas)
 
 		return trainscene, nil
 	}

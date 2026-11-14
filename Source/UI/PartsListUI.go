@@ -165,49 +165,6 @@ func (p *PartsListUI) BuySelectedPart() (game.PurchaseResult, error) {
 	return result, nil
 }
 
-// ---- 互換API（フェーズB-8でSceneの呼び出しを置換後に削除する） ----
-
-// Deprecated: ShowParts を使用する。
-func (p *PartsListUI) SetParts(parts game.Parts) error {
-	return p.ShowParts(parts)
-}
-
-// Deprecated: ShowFoundParts を使用する。
-func (p *PartsListUI) SetLists(found, owned game.Parts) error {
-	return p.ShowFoundParts(found, owned)
-}
-
-// Deprecated: Show / Hide を使用する。
-func (p *PartsListUI) SetVisible(visible bool) {
-	p.visible = visible
-}
-
-// Deprecated: NextTab / PreviousTab を使用する。
-func (p *PartsListUI) MoveTab(delta int) error {
-	return p.moveTab(delta)
-}
-
-// Deprecated: SelectNext / SelectPrevious を使用する。
-func (p *PartsListUI) MoveSelection(delta int) {
-	p.moveSelection(delta)
-}
-
-// Deprecated: 購入処理は BuySelectedPart を使用する。
-func (p *PartsListUI) SelectedIndex() int {
-	return p.selected
-}
-
-// Deprecated: IsShowingFoundParts を使用する。
-func (p *PartsListUI) CurrentTab() PartsListTab {
-	return p.activeTab
-}
-
-// Deprecated: IsShowingFoundParts を使用する。
-// 単一一覧の表示中も true を返す点が IsShowingFoundParts と異なる。
-func (p *PartsListUI) IsFoundTab() bool {
-	return !p.showTabs || p.activeTab == PartsListFound
-}
-
 // ---- 内部実装 ----
 
 func (p *PartsListUI) moveTab(delta int) error {

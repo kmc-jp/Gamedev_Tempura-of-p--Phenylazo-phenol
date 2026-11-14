@@ -27,7 +27,7 @@ Scene側のCanvas API interface（`scene.XxxCanvasAPI`）の定義と、Sceneへ
 ### 1. InstalledPartsUIの責務分離（完了）
 
 `IsFinished()`と`Start()`を導入し、状態遷移を`ResultScene`へ移した。
-添字参照は`scene` package内の名前付きフィールドへ置き換え済み（Canvas化は8で実施）。
+添字参照は`scene` package内の名前付きフィールドへ置き換え済み。8で`ResultCanvas`へ移行し、名前付きフィールドも撤去した。
 
 対象:
 
@@ -45,7 +45,7 @@ Scene側のCanvas API interface（`scene.XxxCanvasAPI`）の定義と、Sceneへ
 ### 2. PartsListUIの意味ベースAPI追加（UI側のみ）（完了）
 
 意味ベースAPIを`PartsListUI`へ追加し、購入結果型を`game.PurchaseResult`として公開した。
-旧APIは`Deprecated`コメント付きの互換APIとして残しており、Sceneの呼び出し置換と旧APIの削除は8-4で行う。
+旧APIは一時的に`Deprecated`の互換APIとして残し、8でSceneの呼び出しを置換して削除した。
 
 対象:
 
@@ -64,7 +64,7 @@ Scene側のCanvas API interface（`scene.XxxCanvasAPI`）の定義と、Sceneへ
 
 - 旧API（`MoveSelection`、`MoveTab`、`SelectedIndex`、`SetLists`、`SetParts`、`SetVisible`、`IsFoundTab`、`CurrentTab`）は互換APIとして残す。旧APIを残すことで、`PlayScene`、`TrainScene`、`ResultScene`は変更せずにビルドできる。
 - `BuySelectedPart`のため、`game`の購入結果型を`PurchaseResult`として公開し、`NewPartsListUI`の引数で`*game.Gamedata`を渡す。
-- Sceneの呼び出し置換と旧APIの削除は、8で行う。
+- Sceneの呼び出し置換と旧APIの削除は、8で実施済み。
 
 ### 3. canvas基盤の導入とUIの`scene`依存除去（完了）
 
@@ -127,60 +127,76 @@ UIは構造的に`scene.Element`も満たし続けるため、既存Sceneと`con
 
 `ScrollUI`を利用するUIが2つ目に現れた時点で、選択追従（`ScrollIntoView`相当）や最大オフセットの取得などを`ScrollUI`へ移すか検討する。
 
-### 6. TitleCanvasの骨組み（`scenecanvas`）
+### 6. TitleCanvasの骨組み（`scenecanvas`）（完了。7・8-1と同時に実施）
+
+Canvas APIを`Update`・`Draw`・識別用メソッドだけで構成する方針が決まったため、7・8-1と同時に実施した。
+`TitleScene`と同じく静的な`ui.Text`1個だけの`PauseScene`、`SelectStageScene`も同時に移行した。
 
 対象:
 
-- `scenecanvas` package（新規）
-- [`TitleScene.go`](../../Source/Scene/TitleScene.go)（参照のみ。変更しない）
+- `scenecanvas` package（新規、[`Source/SceneCanvas`](../../Source/SceneCanvas/)）
+- [`TitleScene.go`](../../Source/Scene/TitleScene.go)、[`PauseScene.go`](../../Source/Scene/PauseScene.go)、[`SelectStageScene.go`](../../Source/Scene/SelectStageScene.go)
+- `construct`の各Scene生成箇所
 
-理由:
-
-- `TitleScene`のUIは静的な`ui.Text`1個だけで、Sceneの`Update()`からUIを操作していない
-- Canvas APIは`Update`と`Draw`だけになることが自明であり、API確定前に作っても手戻りが少ない
-- Canvas基盤の形を、最も単純なSceneで先に確認できる
-
-`scenecanvas.TitleCanvas`を作成し、`canvas.Canvas`へタイトル表示の`ui.Text`を追加して`Update`、`Draw`を委譲する。
-`scene.TitleCanvasAPI`への適合宣言と`construct`からの注入は、TODOとして8へ回す。
-`PauseScene`、`SelectStageScene`も同じ構成だが、まずは`TitleScene`だけで形を確認する。
+`scenecanvas.TitleCanvas`、`PauseCanvas`、`SelectStageCanvas`を作成し、`canvas.Canvas`へ案内用の`ui.Text`を追加して`Update`、`Draw`を委譲する。
+3つのCanvasは共通ヘルパー`newTextCanvas`で構築する。
 
 ## フェーズB: Scene側Canvas API interfaceに依存する作業
 
-### 7. Scene側Canvas API interfaceの定義（別担当者）
+### 7. Scene側Canvas API interfaceの定義（完了）
 
 対象:
 
 - `scene` package
 
-`scene.TitleCanvasAPI`、`scene.ResultCanvasAPI`などのCanvas API interfaceを定義する。
-フェーズAで確定した`InstalledParts`の公開API（`Start`、`IsFinished`）と、PartsListの意味ベースAPI（`SelectNext`、`NextTab`など）を取り込む。
+各Canvas API interfaceは、対応するScene構造体と同じファイルに定義する。
+基本は`Update`、`Draw`と識別用メソッドだけで構成する。
+識別用メソッド（`IsTitleCanvas()`など）は処理を持たず、メソッド集合が同じ他SceneのCanvasを誤って注入しないためのものである。
+`scenecanvas` packageから実装できるよう、識別用メソッドは公開メソッドとする（非公開メソッドは別packageから実装できない）。
 
-### 8. Canvas APIの反映とSceneの`elements[index]`依存の全廃
+```go
+// TitleScene.go
+type TitleCanvasAPI interface {
+    Update(active bool) error
+    Draw(screen *ebiten.Image)
+    IsTitleCanvas()
+}
+```
+
+`Update`・`Draw`だけで完結しないSceneは、次の規則でAPIを追加する。
+
+- 入力起点の操作は、そのSceneでの意図に合わせた名前の入力用APIにする（例: `MovePartSelectionDown`、`ScrollPartsListDown`）。UI部品の操作名（`SelectNext`など）をそのまま出さない。
+- シーン固有の情報が必要な場合、CanvasはSceneのポインタを持ち、Sceneの公開メソッドで参照する。
+- 入力以外の状態変化（TimeUp、タイマー満了、パーツ種別の進行など）は、Canvasが`Update`でScene・Gamedataを観測して反映する。SceneからCanvasへの通知APIは作らない。
+- 戻り値でUIの状態を返す問い合わせAPIは、個別に合意したものだけにする。
+
+| Canvas API | 入力用 | 問い合わせ | Canvasが観測するもの |
+|---|---|---|---|
+| `TitleCanvasAPI` / `PauseCanvasAPI` / `SelectStageCanvasAPI` | なし | なし | なし |
+| `PlayCanvasAPI` | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab`、`BuySelectedPart`（暫定） | `IsPartsListOpen` | `Gamedata.State`の`Play_Select`への変化 |
+| `TrainCanvasAPI` | `ScrollPartsListDown/Up` | なし | `TrainScene.IsPartsListRevealed` |
+| `ResultCanvasAPI` | `MovePartSelectionDown/Up` | `SelectedPart`、`IsInstalledPartsFinished` | `ResultScene.CandidatesRevision`・`CandidateParts`、`Gamedata.State` |
+
+### 8. Canvas APIの反映とSceneの`elements[index]`依存の全廃（完了）
 
 対象:
 
 - `scene` package、`scenecanvas` package、`construct` package
-- [`ResultScene.go`](../../Source/Scene/ResultScene.go)
-- [`PlayScene.go`](../../Source/Scene/PlayScene.go)
-- [`TrainScene.go`](../../Source/Scene/TrainScene.go)
+- 全Scene
 
 理由:
 
 - UIの追加・削除・順番変更で誤ったUIを更新する
 - 実行時まで検出しにくい
 
-現状: `ResultScene`の`elements[index]`による更新は、名前付きフィールドへ暫定移行済み。
-具体的なCanvasは`construct`から注入し、SceneはCanvas APIだけを利用する。
+実施内容:
 
-7の完了後、次の順で進める。
-
-1. `TitleCanvas`へ`scene.TitleCanvasAPI`の適合宣言を追加し、`construct`から注入する（最初の接続対象）。
-2. `ResultCanvas`を実装し、`ResultScene`をCanvas化する。UIの数が少なく、1・2でAPIが固まっているため、本格移行の最初の対象とする。
-3. `PlayScene`、`TrainScene`などの他Sceneを、Sceneごとに別の変更として移行する。
-4. Scene内のPartsList呼び出しを意味ベースAPIへ置き換え、`scene.partsListUI`を`PartsList`へ変更し、旧APIを削除する（2の残り）。
-5. `scene.Element`、Sceneの`elements []Element`、`UIDrawer`、`UICamera`を撤去する。
-
-8の完了までは、名前付きフィールドの暫定構成を維持する。
+1. Title・Pause・SelectStageは、`construct`で生成したCanvasを`NewXxxScene`の引数で注入する。
+2. Play・Train・Resultは、CanvasがSceneのポインタを持つため、Scene生成後に`SetCanvas`で注入する。
+3. Play・Train・Resultの`Update`は本体を`updateScene`へ移し、その後で必ず`canvas.Update`を呼ぶ。Sceneの途中returnがあっても、同じフレームの状態変化をCanvasが観測できる。
+4. CanvasはGamedata.Timerの`Expired()`を呼ばない（通知を消費するため）。タイマー判定はSceneが行い、結果を公開メソッドで渡す。
+5. `PartsListUI`の互換API（`SetParts`、`SetLists`、`SetVisible`、`MoveTab`、`MoveSelection`、`SelectedIndex`、`CurrentTab`、`IsFoundTab`）を削除した。
+6. `scene.Element`、`PositionElement`、`UIDrawer`、`camera.UICamera`、`construct.MakeUIDrawerFactory`、Sceneの`elements`・`AddUIElement`・`partsListUI`・`installedPartsUI`を削除した。
 
 ### 9. Gamedata参照の縮小（保留）
 
@@ -201,6 +217,7 @@ Model参照をReaderや表示用データへ縮小する必要が生じた場合
 ## 現時点の保留事項
 
 - UIのライフサイクルと再生成・リセット方法（UIごとの実装事項として扱い、基本方針では規定しない）
+- 購入処理がUIからModel更新を呼んでいる。`PlayCanvasAPI.BuySelectedPart`は`PartsListUI.BuySelectedPart`へ委譲し、UIが`Gamedata.BuyPart`を呼ぶ。後でリファクタする。その際は`ResultScene`の`SelectedPart`と同じ形にそろえる。つまり、問い合わせAPI（例: `SelectedFoundPart() *game.Part`）で選択中の発見済みパーツを受け取り、SceneがModelの購入処理を呼ぶ（Model側にポインタで購入できるAPIを追加する）。購入後の一覧の再構築は、CanvasがFound/Partsの変化を観測して行う。
 
 ## 実施上の注意
 

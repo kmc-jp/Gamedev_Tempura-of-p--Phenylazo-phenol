@@ -9,7 +9,7 @@ Scene側がこのUIの内部操作を直接扱うと、SceneがUIの実装詳細
 
 ## 現状の問題
 
-現在のScene側の`partsListUI`インターフェースには、UIの内部操作が漏れている。
+移行前のScene側の`partsListUI`インターフェースには、UIの内部操作が漏れていた（移行済み）。
 
 ```go
 type partsListUI interface {
@@ -109,7 +109,7 @@ type PartsList interface {
 `ShowFoundParts` / `ShowParts`は一覧を構築するだけで、表示状態は変更しない。表示するには続けて`Show`を呼ぶ。
 
 `IsShowingFoundParts`は、`ShowFoundParts`によるタブ付き一覧で「発見したパーツ」タブを表示しているときだけ`true`を返す。
-`ShowParts`による単一一覧の表示中は`false`を返す（互換APIの`IsFoundTab`は単一一覧でも`true`を返す点が異なる）。
+`ShowParts`による単一一覧の表示中は`false`を返す。
 
 `BuySelectedPart`の挙動:
 
@@ -120,7 +120,7 @@ type PartsList interface {
 
 `NewPartsListUI`は`BuySelectedPart`のため`*game.Gamedata`を引数に取る。
 
-`SelectedIndex`、`MoveSelection(delta)`、`MoveTab(delta)`は、移行完了後にSceneから削除する。
+`SelectedIndex`、`MoveSelection(delta)`、`MoveTab(delta)`は削除済みである。
 購入処理でUIの選択インデックスをSceneへ漏らさないため、Sceneは`BuySelectedPart`を利用する。
 
 ## 入力処理
@@ -204,46 +204,33 @@ Source/UI/
 
 ゲームルールやシーン遷移は、これらのファイルへ移さない。
 
-## Scene側の変更
+## Scene側の変更（完了）
 
-Scene package内の`partsListUI`インターフェースは、意味ベースの`PartsList`インターフェースへ置き換える。
-同じインターフェースを`PlayScene`、`TrainScene`、`ResultScene`で共有する。
+Sceneは`PartsListUI`を直接持たない。`PartsListUI`は各Scene固有Canvas（`scenecanvas.PlayCanvas`、`TrainCanvas`、`ResultCanvas`）が保持する。
+Sceneは各Canvas APIの、意図に合わせた名前のAPIだけを利用する。
 
-変更対象の例:
+| Scene | Canvas API | 内部で呼ぶ`PartsListUI`のAPI |
+|---|---|---|
+| Play | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab`、`BuySelectedPart`、`IsPartsListOpen` | `ShowFoundParts`、`Show`、`Hide`、`SelectNext/Previous`、`NextTab/PreviousTab`、`BuySelectedPart`、`Visible` |
+| Train | `ScrollPartsListDown/Up` | `ShowParts`、`Show`、`SelectNext/Previous` |
+| Result | `MovePartSelectionDown/Up`、`SelectedPart` | `ShowParts`、`Show`、`Hide`、`SelectNext/Previous`、`SelectedPart` |
 
-- [`PlayScene`](../../Source/Scene/PlayScene.go)
-- [`TrainScene`](../../Source/Scene/TrainScene.go)
-- [`ResultScene`](../../Source/Scene/ResultScene.go)
-- [`PartsListUI`](../../Source/UI/PartsListUI.go)
+一覧の構築・表示は、CanvasがScene・Gamedataの状態変化を観測して行う（Playの`Play_Select`への変化、Trainの`IsPartsListRevealed`、Resultの`CandidatesRevision`）。
 
-Sceneの`elements []Element`自体は移行中のみ維持してよい。
-`HogeSceneCanvas`を導入する場合は、Canvasが`PartsListUI`を保持し、SceneはCanvas経由で参照する。
-
-```go
-type PlaySceneCanvas struct {
-    PartsList *ui.PartsListUI
-}
-```
-
-この構造体は具体Canvasの内部実装例であり、Sceneから直接参照する型ではない。
-Sceneは`scene.PlayCanvasAPI`などのCanvas APIだけを保持し、具体Canvasや個別UIの構成を知らない。
+購入は暫定でUIがModelの購入処理を呼んでいる（`BuySelectedPart`）。後でSceneが購入する形へ移す（[`UI_refactoring_priority.md`](./UI_refactoring_priority.md)の保留事項）。
 
 ## 段階的な移行手順
 
-1. `PartsListUI`に意味ベースのメソッドを追加する。（完了。旧APIは`Deprecated`コメント付きの互換APIとして残している）
-2. `PlayScene`、`TrainScene`、`ResultScene`の呼び出しを新APIへ置き換える。
-3. Scene側の`SelectedIndex`、`MoveSelection`、`MoveTab`への依存を削除する。
-4. 購入処理を`BuySelectedPart`へ置き換える。
-5. `partsListUI`インターフェースを`PartsList`へ変更する。
-6. 既存の低レベルAPIを削除する。
-7. 必要に応じて`PartCard`、状態、レイアウト計算を別ファイルへ分割する。
-8. `HogeSceneCanvas`へUI部品を移す。
-9. Canvas移行完了後、`scene.Element`、Sceneの`elements []Element`、`UIDrawer`、`UICamera`などの
-   配列ベースUI管理をコメントアウトまたは削除する。
-10. ソース全体を検索し、廃止対象の型・フィールド・メソッドが残っておらず、
-    新規コードから再利用されていないことを確認する。
-
-移行中は互換メソッドを残してもよいが、新規コードでは意味ベースのAPIだけを使用する。
+1. （完了）`PartsListUI`に意味ベースのメソッドを追加する。
+2. （完了）`PlayScene`、`TrainScene`、`ResultScene`の呼び出しをCanvas API経由へ置き換える。
+3. （完了）Scene側の`SelectedIndex`、`MoveSelection`、`MoveTab`への依存を削除する。
+4. （完了・暫定）購入処理を`BuySelectedPart`へ置き換える。
+5. （完了）Scene側の`partsListUI`インターフェースを削除し、各Canvas APIへ置き換える。
+6. （完了）互換API（`SetParts`、`SetLists`、`SetVisible`、`MoveTab`、`MoveSelection`、`SelectedIndex`、`CurrentTab`、`IsFoundTab`）を削除する。
+7. （未実施）必要に応じて`PartCard`、状態、レイアウト計算を別ファイルへ分割する。
+8. （完了）Scene固有CanvasへUI部品を移す。
+9. （完了）`scene.Element`、Sceneの`elements []Element`、`UIDrawer`、`UICamera`などの配列ベースUI管理を削除する。
+10. （完了）ソース全体を検索し、廃止対象の型・フィールド・メソッドが残っていないことを確認する。
 
 ## 完了条件
 

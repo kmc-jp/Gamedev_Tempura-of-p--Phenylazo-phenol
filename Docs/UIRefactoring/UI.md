@@ -105,6 +105,7 @@ SceneごとにScene固有Canvasを持たせ、そこにそのSceneで使用す�
 Scene固有Canvasは表示情報のコピーを保持するViewModelではなく、UIの更新・描画・表示状態を管理する構成層である。
 
 Sceneが利用するCanvasの意味ベースAPIは、`scene` packageにinterfaceとして定義する。
+Canvas API interfaceは、Sceneと密接に関連するため、対応するScene構造体と同じファイルに定義する。
 具体的なCanvas実装は`scenecanvas` packageに置き、`construct` packageからSceneへ注入する。
 これにより、Sceneは具体的なCanvas実装や個別UIに依存せず、Canvasの契約だけに依存する。
 
@@ -118,25 +119,41 @@ canvas.Canvas
 ui
 ```
 
-Sceneは`scene.PlayCanvasAPI`だけに依存し、具体的な`scenecanvas`実装や個別UIを直接操作しない。
-具体的なCanvas実装は`scene.PlayCanvasAPI`を実装し、`construct`からSceneへ注入する。
-Canvas実装はSceneの表示に必要な状態を参照してよいが、Scene packageの具体型を参照しない。
-Scene固有の状態を渡す必要がある場合は、interfaceのメソッド引数や状態型など、`scene`側の契約を介して渡す。
+### Canvas APIの構成
+
+Canvas APIは`Update`、`Draw`と識別用メソッド（`IsTitleCanvas()`など）を基本とする。
+識別用メソッドは処理を持たず、メソッド集合が同じ他SceneのCanvasを誤って注入しないためのもので、`scenecanvas`から実装できるよう公開メソッドとする。
+`Update`・`Draw`だけで完結しないSceneは、次の規則でAPIを追加する。
+
+- 入力起点の操作: Sceneが`input.Handler`で入力を判定し、専用の入力用APIを呼ぶ。名前はUI部品の操作名ではなく、そのSceneでの意図に合わせる（例: Playは`MovePartSelectionDown`、Trainは`ScrollPartsListDown`）。入力用APIは、対象UIが非表示なら何もしない。
+- シーン固有の情報: CanvasはSceneのポインタを持ち、Sceneの公開メソッドで参照する（例: `ResultScene.CandidateParts`）。ゲームルール（候補の絞り込みなど）はSceneに残す。
+- 入力以外の状態変化: Canvasが`Update`でScene・Gamedataを毎フレーム観測し、前回値との差分で反映する（例: `Play_Select`への変化で一覧を開く）。SceneからCanvasへの通知APIは作らない。
+- 問い合わせ: UIの状態を戻り値で返すAPIは、個別に合意したものだけにする（現在は`IsPartsListOpen`、`SelectedPart`、`IsInstalledPartsFinished`）。
 
 ```go
+// PlayScene.go
 type PlayCanvasAPI interface {
     Update(active bool) error
     Draw(screen *ebiten.Image)
-    ShowPartsList()
-    HidePartsList()
-    SetState(state PlayState)
-}
-
-type PlayScene struct {
-    Gamedata *game.Gamedata
-    Canvas   PlayCanvasAPI
+    IsPlayCanvas()
+    // 入力用
+    TogglePartsList() error
+    MovePartSelectionDown()
+    MovePartSelectionUp()
+    ShowNextPartsTab() error
+    ShowPreviousPartsTab() error
+    BuySelectedPart() (game.PurchaseResult, error) // 暫定: UIが購入処理を呼ぶ
+    // 問い合わせ
+    IsPartsListOpen() bool
 }
 ```
+
+注意点:
+
+- CanvasがSceneのポインタを持つSceneは、Scene生成後に`SetCanvas`で注入する。
+- Sceneの`Update`は本体の処理の後で`canvas.Update`を呼び、同じフレームの状態変化をCanvasが観測できるようにする。
+- Canvasは`Gamedata.Timer.Expired()`を呼ばない。通知を消費するため、Sceneが満了を検知できなくなる。タイマー判定はSceneが行い、結果を公開メソッドで渡す。
+- 購入処理は暫定でUI（`PartsListUI.BuySelectedPart`）がModelの購入処理を呼んでいる。後でSceneが購入する形へ移す（[`UI_refactoring_priority.md`](./UI_refactoring_priority.md)の保留事項）。
 
 Canvasは個別UIを管理し、固定された順序で子UIの`Update()`と`Draw()`を呼び出す。
 描画順はSceneごとのCanvasが決定する。Canvas基盤はSceneを知らない汎用コンテナである。
@@ -230,9 +247,9 @@ UIはこれらを入力によって直接変更せず、SceneまたはViewModel�
 
 ## 既存UIとの移行
 
-既存の`Element`、`ButtonUI`、`ScrollUI`は、Canvas導入に合わせて段階的に移行する。
+既存の`Element`、`ButtonUI`、`ScrollUI`は、Canvas導入に合わせて移行した。
 
-- Scene packageの`Element`、`UIDrawer`、`UICamera`による配列ベースのUI管理をCanvasへ置き換える。
+- Scene packageの`Element`、`UIDrawer`、`UICamera`による配列ベースのUI管理はCanvasへ置き換え、撤去した。
 - Canvas内部で共通処理が必要な場合だけ、Canvas package内の抽象を使用する。
 - `ButtonUI`は入力処理を持たず、選択状態の表示のみ担当する（移行済み）。押下判定が必要な画面は、`input.Handler`による入力で行う。
 - `ScrollUI`は入力を扱わない表示用コンテナとし、スクロール量は`ScrollUI`を持つUI（`PartsListUI`など）が選択追従などに応じて設定する。Sceneはスクロール量を直接操作しない。
@@ -246,7 +263,7 @@ UIはこれらを入力によって直接変更せず、SceneまたはViewModel�
 1. `input.Handler`を入力の唯一の入口として維持する。
 2. 既存Sceneの`Update()`から、UIの表示状態を更新する処理を整理する。
 3. UI要素からマウス入力などの直接入力処理を取り除く。
-4. `scene` packageにSceneごとのCanvas API interfaceを定義する。
+4. `scene` packageにSceneごとのCanvas API interfaceを、各Scene構造体と同じファイルに定義する。
 5. `scenecanvas` packageに具体的なCanvasを実装し、`construct`から注入する。
 6. `canvas` packageで個別UIの更新・描画・表示状態を管理する。
 7. 表示変換が複雑な画面だけViewModelまたはPresenterを追加する。

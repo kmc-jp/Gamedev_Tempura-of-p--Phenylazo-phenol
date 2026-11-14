@@ -19,12 +19,23 @@ type PositionItem interface {
 ```
 
 `ui` package は `scene` package を import しない。
-移行中は、UI 要素が構造的に `scene.Element` も満たすため、既存 Scene の `elements []Element` へそのまま追加できる。
+UI 要素は Scene 固有 Canvas（`scenecanvas`）が保持し、Scene から直接は参照されない。
 
 ## Canvas
 
 `canvas.Canvas` は Scene を知らない汎用 UI コンテナであり、追加された `CanvasItem` の更新・描画・表示状態を管理する。
 Scene 固有の構成は `scenecanvas` package の各 Canvas が決める。
+
+## Scene 固有 Canvas（`scenecanvas`）
+
+`Source/SceneCanvas` の各 Canvas は、対応する Scene のファイルに定義された Canvas API（`scene.TitleCanvasAPI` など）を実装し、`construct` から Scene へ注入される。
+
+- `TitleCanvas` / `PauseCanvas` / `SelectStageCanvas`: 案内用の `Text` 1個だけを持つ。`NewXxxCanvas(font)` で生成し、`NewXxxScene` の引数で注入する
+- `PlayCanvas`: 残り時間（`GameDataText`）、空き重量・所持金（`GameDataUI`）、`PartsListUI`。`NewPlayCanvas(gdata)`
+- `TrainCanvas`: 案内 `Text`、`PartsListUI`。`NewTrainCanvas(scene, gdata)`
+- `ResultCanvas`: 案内 `Text`、ベンチマーク案内（`AnimatableUI`）、`InstalledParts`、`PartsListUI`。`NewResultCanvas(scene, gdata)`
+
+Play / Train / Result の Canvas は Scene のポインタや Gamedata を観測して表示を切り替えるため、Scene 生成後に `SetCanvas` で注入する。
 
 - `NewCanvas() *Canvas`: 表示状態の空の Canvas を生成する
 - `Add(item CanvasItem) error`: Item を末尾に追加する。`nil` はエラー
