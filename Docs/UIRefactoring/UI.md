@@ -128,7 +128,7 @@ Canvas APIは`Update`、`Draw`と識別用メソッド（`IsTitleCanvas()`など
 - 入力起点の操作: Sceneが`input.Handler`で入力を判定し、専用の入力用APIを呼ぶ。名前はUI部品の操作名ではなく、そのSceneでの意図に合わせる（例: Playは`MovePartSelectionDown`、Trainは`ScrollPartsListDown`）。入力用APIは、対象UIが非表示なら何もしない。
 - シーン固有の情報: CanvasはSceneのポインタを持ち、Sceneの公開メソッドで参照する（例: `ResultScene.CandidateParts`）。ゲームルール（候補の絞り込みなど）はSceneに残す。
 - 入力以外の状態変化: Canvasが`Update`でScene・Gamedataを毎フレーム観測し、前回値との差分で反映する（例: `Play_Select`への変化で一覧を開く）。SceneからCanvasへの通知APIは作らない。
-- 問い合わせ: UIの状態を戻り値で返すAPIは、個別に合意したものだけにする（現在は`IsPartsListOpen`、`SelectedPart`、`IsInstalledPartsFinished`）。
+- 問い合わせ: UIの状態を戻り値で返すAPIは、個別に合意したものだけにする（現在は`IsPartsListOpen`、`SelectedFoundPart`、`SelectedPart`、`IsInstalledPartsFinished`）。
 
 ```go
 // PlayScene.go
@@ -142,9 +142,9 @@ type PlayCanvasAPI interface {
     MovePartSelectionUp()
     ShowNextPartsTab() error
     ShowPreviousPartsTab() error
-    BuySelectedPart() (game.PurchaseResult, error) // 暫定: UIが購入処理を呼ぶ
     // 問い合わせ
     IsPartsListOpen() bool
+    SelectedFoundPart() *game.Part // 購入はSceneが Gamedata.BuyFoundPart で行う
 }
 ```
 
@@ -153,7 +153,7 @@ type PlayCanvasAPI interface {
 - CanvasがSceneのポインタを持つSceneは、Scene生成後に`SetCanvas`で注入する。
 - Sceneの`Update`は本体の処理の後で`canvas.Update`を呼び、同じフレームの状態変化をCanvasが観測できるようにする。
 - Canvasは`Gamedata.Timer.Expired()`を呼ばない。通知を消費するため、Sceneが満了を検知できなくなる。タイマー判定はSceneが行い、結果を公開メソッドで渡す。
-- 購入処理は暫定でUI（`PartsListUI.BuySelectedPart`）がModelの購入処理を呼んでいる。後でSceneが購入する形へ移す（[`UI_refactoring_priority.md`](./UI_refactoring_priority.md)の保留事項）。
+- 購入はSceneが行う。Sceneは`SelectedFoundPart`で受け取ったパーツを`Gamedata.BuyFoundPart`へ渡し、購入後の一覧の再構築はCanvasが`Gamedata.Found`・`Parts`の変化を観測して行う。
 
 Canvasは個別UIを管理し、固定された順序で子UIの`Update()`と`Draw()`を呼び出す。
 描画順はSceneごとのCanvasが決定する。Canvas基盤はSceneを知らない汎用コンテナである。

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"image"
 	stdcolor "image/color"
-	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -32,7 +31,6 @@ const (
 
 type PartsListUI struct {
 	position      utils.Position
-	gamedata      *game.Gamedata
 	font          *text.GoTextFace
 	captionFont   *text.GoTextFace
 	scroll        *ScrollUI
@@ -46,10 +44,9 @@ type PartsListUI struct {
 	empty         *Text
 }
 
-func NewPartsListUI(position utils.Position, gamedata *game.Gamedata, font *text.GoTextFace, captionFont *text.GoTextFace) (*PartsListUI, error) {
-	if gamedata == nil {
-		return nil, fmt.Errorf("gamedata が nil です")
-	}
+// NewPartsListUI は PartsListUI を生成する。
+// 購入をUIで行わなくなったため、Gamedata 引数は不要になった（コメントアウト）。
+func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont *text.GoTextFace) (*PartsListUI, error) {
 	if font == nil {
 		return nil, fmt.Errorf("font が nil です")
 	}
@@ -66,7 +63,6 @@ func NewPartsListUI(position utils.Position, gamedata *game.Gamedata, font *text
 
 	return &PartsListUI{
 		position:      position,
-		gamedata:      gamedata,
 		font:          font,
 		captionFont:   captionFont,
 		scroll:        scroll,
@@ -136,34 +132,42 @@ func (p *PartsListUI) IsShowingFoundParts() bool {
 	return p.showTabs && p.activeTab == PartsListFound
 }
 
-// BuySelectedPart は選択中の発見済みパーツの購入をModelへ依頼する。
-// 発見タブ以外の表示中や未選択時は game.NoItem を返す。
-// 購入に成功した場合は Gamedata の Found / Parts で一覧を再構築し、選択位置を維持する。
-func (p *PartsListUI) BuySelectedPart() (game.PurchaseResult, error) {
-	if !p.IsShowingFoundParts() {
-		return game.NoItem, nil
-	}
-	part := p.SelectedPart()
-	if part == nil {
-		return game.NoItem, nil
-	}
-	index := slices.Index(p.gamedata.Found, part)
-	if index < 0 {
-		return game.NoItem, nil
-	}
-
-	result := p.gamedata.BuyPart(index)
-	if result != game.Buy {
-		return result, nil
-	}
-
-	p.lists[PartsListFound] = p.gamedata.Found
-	p.lists[PartsListOwned] = p.gamedata.Parts
-	if err := p.rebuild(p.lists[PartsListFound], p.selected); err != nil {
-		return result, fmt.Errorf("パーツ一覧の再構築に失敗しました: %w", err)
-	}
-	return result, nil
+// RefreshFoundParts はタブ付き一覧のデータを差し替え、現在のタブと選択位置を維持して再構築する。
+// 購入などで Found / Parts が変化したときに、Canvasが観測して呼ぶ。
+func (p *PartsListUI) RefreshFoundParts(found, owned game.Parts) error {
+	p.lists[PartsListFound] = found
+	p.lists[PartsListOwned] = owned
+	return p.rebuild(p.lists[p.activeTab], p.selected)
 }
+
+// BuySelectedPart は、UIからModel更新（Gamedata.BuyPart）を呼ばない方針のためコメントアウトした。
+// 購入はSceneが SelectedPart で受け取ったパーツを Gamedata.BuyFoundPart へ渡して行い、
+// 購入後の一覧の再構築は RefreshFoundParts で行う。
+// func (p *PartsListUI) BuySelectedPart() (game.PurchaseResult, error) {
+// 	if !p.IsShowingFoundParts() {
+// 		return game.NoItem, nil
+// 	}
+// 	part := p.SelectedPart()
+// 	if part == nil {
+// 		return game.NoItem, nil
+// 	}
+// 	index := slices.Index(p.gamedata.Found, part)
+// 	if index < 0 {
+// 		return game.NoItem, nil
+// 	}
+//
+// 	result := p.gamedata.BuyPart(index)
+// 	if result != game.Buy {
+// 		return result, nil
+// 	}
+//
+// 	p.lists[PartsListFound] = p.gamedata.Found
+// 	p.lists[PartsListOwned] = p.gamedata.Parts
+// 	if err := p.rebuild(p.lists[PartsListFound], p.selected); err != nil {
+// 		return result, fmt.Errorf("パーツ一覧の再構築に失敗しました: %w", err)
+// 	}
+// 	return result, nil
+// }
 
 // ---- 内部実装 ----
 

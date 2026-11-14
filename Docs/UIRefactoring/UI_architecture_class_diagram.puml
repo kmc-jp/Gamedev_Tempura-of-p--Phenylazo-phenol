@@ -22,6 +22,7 @@ package "game" {
         +Money
         +Weight
         +Parts
+        +BuyFoundPart(part) PurchaseResult
     }
 }
 
@@ -50,15 +51,16 @@ package "scene" {
         +MovePartSelectionUp()
         +ShowNextPartsTab() error
         +ShowPreviousPartsTab() error
-        +BuySelectedPart() (PurchaseResult, error)
         +IsPartsListOpen() bool
+        +SelectedFoundPart() *game.Part
     }
 
     note bottom of PlayCanvasAPI
     入力用APIはSceneでの意図に合わせた名前にする。
     TimeUp後の一覧表示はCanvasが
     Gamedata.Stateを観測して行う。
-    BuySelectedPartは暫定（UIが購入処理を呼ぶ）。
+    購入はSceneがSelectedFoundPartで受け取った
+    パーツをGamedata.BuyFoundPartへ渡して行う。
     end note
 
     class TitleScene {
@@ -107,8 +109,8 @@ package "scenecanvas" {
         +MovePartSelectionUp()
         +ShowNextPartsTab() error
         +ShowPreviousPartsTab() error
-        +BuySelectedPart() (PurchaseResult, error)
         +IsPartsListOpen() bool
+        +SelectedFoundPart() *game.Part
     }
 
     class TitleCanvas {
@@ -205,7 +207,7 @@ package "ui" {
         +PreviousTab() error
         +SelectedPart() *game.Part
         +IsShowingFoundParts() bool
-        +BuySelectedPart() (game.PurchaseResult, error)
+        +RefreshFoundParts(found, owned) error
         +Update(active) error
         +Draw(screen)
     }

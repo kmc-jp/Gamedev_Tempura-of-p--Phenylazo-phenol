@@ -91,7 +91,7 @@ type PartsList interface {
 
     SelectedPart() *game.Part
     IsShowingFoundParts() bool
-    BuySelectedPart() (game.PurchaseResult, error)
+    RefreshFoundParts(found, owned game.Parts) error
 }
 ```
 
@@ -104,24 +104,21 @@ type PartsList interface {
 - `NextTab` / `PreviousTab`: タブを切り替える
 - `SelectedPart`: 現在選択されているModelのパーツを取得する
 - `IsShowingFoundParts`: 現在のタブの意味を確認する
-- `BuySelectedPart`: 現在選択されている発見済みパーツの購入をModelへ依頼する
+- `RefreshFoundParts`: Found / Parts の変化後に、現在のタブと選択位置を維持して一覧を再構築する
 
 `ShowFoundParts` / `ShowParts`は一覧を構築するだけで、表示状態は変更しない。表示するには続けて`Show`を呼ぶ。
 
 `IsShowingFoundParts`は、`ShowFoundParts`によるタブ付き一覧で「発見したパーツ」タブを表示しているときだけ`true`を返す。
 `ShowParts`による単一一覧の表示中は`false`を返す。
 
-`BuySelectedPart`の挙動:
-
-- 発見タブ以外の表示中、または未選択の場合は`game.NoItem`を返す
-- 選択中のパーツを`Gamedata.Found`内でポインタ比較して位置を解決し、`Gamedata.BuyPart`を呼ぶ（UIのカード順とModelの順の一致に依存しない）
-- 購入に成功した場合は、`Gamedata.Found` / `Gamedata.Parts`で一覧を再構築し、選択位置を範囲内に収めて維持する。Sceneが一覧を再設定する必要はない
-- `error`は一覧の再構築に失敗した場合だけ返す
-
-`NewPartsListUI`は`BuySelectedPart`のため`*game.Gamedata`を引数に取る。
+`PartsListUI`は購入処理（Modelの更新）を行わない。`BuySelectedPart`はコメントアウトした。
+購入は、Sceneが`SelectedPart`（Canvas経由では`SelectedFoundPart`）で受け取ったパーツを`Gamedata.BuyFoundPart`へ渡して行う。
+`BuyFoundPart`はポインタで`Gamedata.Found`内の位置を解決するため、UIのカード順とModelの順の一致に依存しない。
+購入後の一覧は、Canvasが`Gamedata.Found` / `Parts`の変化を観測して`RefreshFoundParts`で再構築する。
+`NewPartsListUI`は`*game.Gamedata`を引数に取らない。
 
 `SelectedIndex`、`MoveSelection(delta)`、`MoveTab(delta)`は削除済みである。
-購入処理でUIの選択インデックスをSceneへ漏らさないため、Sceneは`BuySelectedPart`を利用する。
+購入処理でUIの選択インデックスをSceneへ漏らさないため、Sceneはパーツそのもの（`SelectedPart`）を受け取る。
 
 ## 入力処理
 
@@ -165,16 +162,13 @@ s.partsList.Show()
 ```
 
 `PartsListUI`は受け取ったパーツを表示用に利用するが、パーツのゲームルール上の状態を変更しない。
-選択されたパーツの購入処理は、Sceneが`BuySelectedPart`へ委譲する。
-`BuySelectedPart`は選択状態を内部で解決し、Modelの購入処理を呼び出す。
-購入結果の扱いとエラー表示はSceneが担当する。
+選択されたパーツの購入処理は、Sceneが行う。
+Sceneは選択中のパーツを問い合わせ、Modelの購入処理（`Gamedata.BuyFoundPart`）へ渡す。
+購入結果の扱いとエラー表示もSceneが担当する。
 
 ```go
-result, err := s.partsList.BuySelectedPart()
-if err != nil {
-    return nil, transition.None(), err
-}
-switch result {
+part := s.canvas.SelectedFoundPart()
+switch s.Gamedata.BuyFoundPart(part) {
 case game.Buy:
     // 購入成功時の処理
 case game.NoItem, game.Lack_money, game.Lack_weight:
@@ -211,20 +205,20 @@ Sceneは各Canvas APIの、意図に合わせた名前のAPIだけを利用す�
 
 | Scene | Canvas API | 内部で呼ぶ`PartsListUI`のAPI |
 |---|---|---|
-| Play | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab`、`BuySelectedPart`、`IsPartsListOpen` | `ShowFoundParts`、`Show`、`Hide`、`SelectNext/Previous`、`NextTab/PreviousTab`、`BuySelectedPart`、`Visible` |
+| Play | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab`、`IsPartsListOpen`、`SelectedFoundPart` | `ShowFoundParts`、`RefreshFoundParts`、`Show`、`Hide`、`SelectNext/Previous`、`NextTab/PreviousTab`、`IsShowingFoundParts`、`SelectedPart`、`Visible` |
 | Train | `ScrollPartsListDown/Up` | `ShowParts`、`Show`、`SelectNext/Previous` |
 | Result | `MovePartSelectionDown/Up`、`SelectedPart` | `ShowParts`、`Show`、`Hide`、`SelectNext/Previous`、`SelectedPart` |
 
 一覧の構築・表示は、CanvasがScene・Gamedataの状態変化を観測して行う（Playの`Play_Select`への変化、Trainの`IsPartsListRevealed`、Resultの`CandidatesRevision`）。
 
-購入は暫定でUIがModelの購入処理を呼んでいる（`BuySelectedPart`）。後でSceneが購入する形へ移す（[`UI_refactoring_priority.md`](./UI_refactoring_priority.md)の保留事項）。
+購入はSceneが`Gamedata.BuyFoundPart`で行い、購入後の一覧の再構築はCanvasが`Gamedata.Found`・`Parts`の変化を観測して行う。
 
 ## 段階的な移行手順
 
 1. （完了）`PartsListUI`に意味ベースのメソッドを追加する。
 2. （完了）`PlayScene`、`TrainScene`、`ResultScene`の呼び出しをCanvas API経由へ置き換える。
 3. （完了）Scene側の`SelectedIndex`、`MoveSelection`、`MoveTab`への依存を削除する。
-4. （完了・暫定）購入処理を`BuySelectedPart`へ置き換える。
+4. （完了）購入処理をSceneへ移す（`SelectedFoundPart`と`Gamedata.BuyFoundPart`）。
 5. （完了）Scene側の`partsListUI`インターフェースを削除し、各Canvas APIへ置き換える。
 6. （完了）互換API（`SetParts`、`SetLists`、`SetVisible`、`MoveTab`、`MoveSelection`、`SelectedIndex`、`CurrentTab`、`IsFoundTab`）を削除する。
 7. （未実施）必要に応じて`PartCard`、状態、レイアウト計算を別ファイルへ分割する。

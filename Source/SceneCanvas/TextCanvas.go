@@ -45,7 +45,6 @@ func newTextCanvas(
 func newPartsList(gdata *game.Gamedata) (*ui.PartsListUI, error) {
 	partsList, err := ui.NewPartsListUI(
 		utils.Position{X: 20, Y: 30},
-		gdata,
 		ui.FontFace(gdata.Font, 16),
 		ui.FontFace(gdata.Font, 12),
 	)

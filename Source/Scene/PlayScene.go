@@ -34,11 +34,13 @@ type PlayCanvasAPI interface {
 	ShowNextPartsTab() error
 	// ShowPreviousPartsTab は発見／所持タブを前へ切り替える。
 	ShowPreviousPartsTab() error
-	// BuySelectedPart は選択中の発見済みパーツを購入する。
-	// 暫定: UIからModelの購入処理を呼んでいる。後でSceneが購入する形へリファクタする。
-	BuySelectedPart() (game.PurchaseResult, error)
 
 	// ---- 問い合わせ ----
+
+	// SelectedFoundPart は選択中の発見済みパーツを返す。
+	// 一覧の非表示中、発見タブ以外の表示中、未選択のときは nil を返す。
+	// 購入はSceneが Gamedata.BuyFoundPart で行い、購入後の一覧の再構築はCanvasが観測して行う。
+	SelectedFoundPart() *game.Part
 
 	// IsPartsListOpen はパーツ一覧を表示中かを返す。
 	IsPartsListOpen() bool
@@ -200,11 +202,8 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 		}
 
 		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
-			res, err := s.canvas.BuySelectedPart()
-			if err != nil {
-				return nil, transition.None(), fmt.Errorf("パーツの購入に失敗しました。\n%w", err)
-			}
-			switch res {
+			part := s.canvas.SelectedFoundPart()
+			switch s.Gamedata.BuyFoundPart(part) {
 			case game.NoItem:
 				fmt.Print("購入可能な商品がありません")
 			case game.Lack_money:
@@ -212,9 +211,9 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 			case game.Lack_weight:
 				fmt.Print("重量オーバーです")
 			case game.Buy:
-				fmt.Printf("%s を購入した", s.Gamedata.Parts[len(s.Gamedata.Parts)-1].Name)
+				fmt.Printf("%s を購入した", part.Name)
 			default:
-				fmt.Print("不正な値がBuySelectedPart()から渡されました")
+				fmt.Print("不正な値がBuyFoundPart()から渡されました")
 			}
 		}
 

@@ -8,6 +8,7 @@ import (
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
+	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -22,6 +23,9 @@ type PlayCanvas struct {
 
 	// selectListShown は Play_Select への変化を検知して一覧を表示したか。
 	selectListShown bool
+	// shownFound・shownOwned は一覧に反映済みの Found / Parts。変化の観測に使う。
+	shownFound game.Parts
+	shownOwned game.Parts
 }
 
 // NewPlayCanvas は PlayCanvas を生成する。
@@ -96,6 +100,16 @@ func (c *PlayCanvas) Update(active bool) error {
 	} else {
 		c.selectListShown = false
 	}
+
+	// 購入などで Found / Parts が変化したら、表示中の一覧を再構築する
+	if c.partsList.Visible() &&
+		(!slices.Equal(c.gdata.Found, c.shownFound) || !slices.Equal(c.gdata.Parts, c.shownOwned)) {
+		if err := c.partsList.RefreshFoundParts(c.gdata.Found, c.gdata.Parts); err != nil {
+			return fmt.Errorf("パーツ一覧の更新に失敗しました。\n%w", err)
+		}
+		c.shownFound = slices.Clone(c.gdata.Found)
+		c.shownOwned = slices.Clone(c.gdata.Parts)
+	}
 	return c.canvas.Update(active)
 }
 
@@ -146,13 +160,13 @@ func (c *PlayCanvas) ShowPreviousPartsTab() error {
 	return c.partsList.PreviousTab()
 }
 
-// BuySelectedPart implements [scene.PlayCanvasAPI].
-// 暫定: UIからModelの購入処理を呼んでいる。一覧が非表示なら game.NoItem を返す。
-func (c *PlayCanvas) BuySelectedPart() (game.PurchaseResult, error) {
-	if !c.partsList.Visible() {
-		return game.NoItem, nil
+// SelectedFoundPart implements [scene.PlayCanvasAPI].
+// 一覧の非表示中、発見タブ以外の表示中、未選択のときは nil を返す。
+func (c *PlayCanvas) SelectedFoundPart() *game.Part {
+	if !c.partsList.Visible() || !c.partsList.IsShowingFoundParts() {
+		return nil
 	}
-	return c.partsList.BuySelectedPart()
+	return c.partsList.SelectedPart()
 }
 
 // IsPartsListOpen implements [scene.PlayCanvasAPI].
@@ -165,6 +179,8 @@ func (c *PlayCanvas) openPartsList() error {
 		return fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
 	}
 	c.partsList.Show()
+	c.shownFound = slices.Clone(c.gdata.Found)
+	c.shownOwned = slices.Clone(c.gdata.Parts)
 	return nil
 }
 

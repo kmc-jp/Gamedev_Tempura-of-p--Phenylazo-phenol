@@ -63,7 +63,7 @@ Scene側のCanvas API interface（`scene.XxxCanvasAPI`）の定義と、Sceneへ
 詳細は[`PartsListUI_refactoring.md`](./PartsListUI_refactoring.md)を参照する。
 
 - 旧API（`MoveSelection`、`MoveTab`、`SelectedIndex`、`SetLists`、`SetParts`、`SetVisible`、`IsFoundTab`、`CurrentTab`）は互換APIとして残す。旧APIを残すことで、`PlayScene`、`TrainScene`、`ResultScene`は変更せずにビルドできる。
-- `BuySelectedPart`のため、`game`の購入結果型を`PurchaseResult`として公開し、`NewPartsListUI`の引数で`*game.Gamedata`を渡す。
+- `BuySelectedPart`のため、`game`の購入結果型を`PurchaseResult`として公開し、`NewPartsListUI`の引数で`*game.Gamedata`を渡した。（10で`BuySelectedPart`と`Gamedata`引数を撤去し、購入をSceneへ移した。）
 - Sceneの呼び出し置換と旧APIの削除は、8で実施済み。
 
 ### 3. canvas基盤の導入とUIの`scene`依存除去（完了）
@@ -173,7 +173,7 @@ type TitleCanvasAPI interface {
 | Canvas API | 入力用 | 問い合わせ | Canvasが観測するもの |
 |---|---|---|---|
 | `TitleCanvasAPI` / `PauseCanvasAPI` / `SelectStageCanvasAPI` | なし | なし | なし |
-| `PlayCanvasAPI` | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab`、`BuySelectedPart`（暫定） | `IsPartsListOpen` | `Gamedata.State`の`Play_Select`への変化 |
+| `PlayCanvasAPI` | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab` | `IsPartsListOpen`、`SelectedFoundPart` | `Gamedata.State`の`Play_Select`への変化、`Gamedata.Found`・`Parts`の変化 |
 | `TrainCanvasAPI` | `ScrollPartsListDown/Up` | なし | `TrainScene.IsPartsListRevealed` |
 | `ResultCanvasAPI` | `MovePartSelectionDown/Up` | `SelectedPart`、`IsInstalledPartsFinished` | `ResultScene.CandidatesRevision`・`CandidateParts`、`Gamedata.State` |
 
@@ -214,10 +214,18 @@ type TitleCanvasAPI interface {
 UIが`*game.Gamedata`を直接参照することを許容するため、現時点では実施しない。
 Model参照をReaderや表示用データへ縮小する必要が生じた場合に、改めて検討する。
 
+### 10. 購入処理のScene移行（完了）
+
+購入処理をUIからSceneへ移した。`ResultScene`の`SelectedPart`と同じ形にそろえた。
+
+- `PlayCanvasAPI.BuySelectedPart`を削除し、問い合わせAPI`SelectedFoundPart() *game.Part`を追加した。一覧の非表示中、発見タブ以外の表示中、未選択のときは`nil`を返す。
+- `PlayScene`が`SelectedFoundPart`で受け取ったパーツを`Gamedata.BuyFoundPart`へ渡して購入する。`BuyFoundPart`はポインタで`Found`内の位置を解決し、`BuyPart(index)`へ委譲する。
+- `PartsListUI.BuySelectedPart`はコメントアウトし、再構築用の`RefreshFoundParts`を追加した。`NewPartsListUI`の`Gamedata`引数は不要になったため外した。
+- 購入後の一覧の再構築は、`PlayCanvas`が`Gamedata.Found`・`Parts`の変化を`Update`で観測して行う。
+
 ## 現時点の保留事項
 
 - UIのライフサイクルと再生成・リセット方法（UIごとの実装事項として扱い、基本方針では規定しない）
-- 購入処理がUIからModel更新を呼んでいる。`PlayCanvasAPI.BuySelectedPart`は`PartsListUI.BuySelectedPart`へ委譲し、UIが`Gamedata.BuyPart`を呼ぶ。後でリファクタする。その際は`ResultScene`の`SelectedPart`と同じ形にそろえる。つまり、問い合わせAPI（例: `SelectedFoundPart() *game.Part`）で選択中の発見済みパーツを受け取り、SceneがModelの購入処理を呼ぶ（Model側にポインタで購入できるAPIを追加する）。購入後の一覧の再構築は、CanvasがFound/Partsの変化を観測して行う。
 
 ## 実施上の注意
 

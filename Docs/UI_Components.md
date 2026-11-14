@@ -31,7 +31,7 @@ Scene 固有の構成は `scenecanvas` package の各 Canvas が決める。
 `Source/SceneCanvas` の各 Canvas は、対応する Scene のファイルに定義された Canvas API（`scene.TitleCanvasAPI` など）を実装し、`construct` から Scene へ注入される。
 
 - `TitleCanvas` / `PauseCanvas` / `SelectStageCanvas`: 案内用の `Text` 1個だけを持つ。`NewXxxCanvas(font)` で生成し、`NewXxxScene` の引数で注入する
-- `PlayCanvas`: 残り時間（`GameDataText`）、空き重量・所持金（`GameDataUI`）、`PartsListUI`。`NewPlayCanvas(gdata)`
+- `PlayCanvas`: 残り時間（`GameDataText`）、空き重量・所持金（`GameDataUI`）、`PartsListUI`。`NewPlayCanvas(gdata)`。購入はSceneが`SelectedFoundPart`と`Gamedata.BuyFoundPart`で行い、購入後の一覧は`Gamedata.Found`・`Parts`の変化を観測して再構築する
 - `TrainCanvas`: 案内 `Text`、`PartsListUI`。`NewTrainCanvas(scene, gdata)`
 - `ResultCanvas`: 案内 `Text`、ベンチマーク案内（`AnimatableUI`）、`InstalledParts`、`PartsListUI`。`NewResultCanvas(scene, gdata)`
 

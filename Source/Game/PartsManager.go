@@ -136,6 +136,15 @@ func (g *Gamedata) BuyPart(index int) PurchaseResult {
 	return Buy
 }
 
+// BuyFoundPart は発見済みパーツ p を購入する。
+// p が nil、または Found に含まれない場合は NoItem を返す。
+func (g *Gamedata) BuyFoundPart(p *Part) PurchaseResult {
+	if p == nil {
+		return NoItem
+	}
+	return g.BuyPart(slices.Index(g.Found, p))
+}
+
 func (g *Gamedata) TotalWeight() int {
 	var wg int
 	for _, p := range g.Parts {
