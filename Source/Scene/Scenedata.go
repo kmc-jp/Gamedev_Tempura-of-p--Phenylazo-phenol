@@ -5,9 +5,10 @@ import (
 )
 
 type InitializedScenes struct {
-	InitTitleScene  Utils.Factory[*TitleScene]
-	InitPlayScene   map[Stage]Utils.Factory[*PlayScene]
-	InitPauseScene  Utils.Factory[*PauseScene]
-	InitTrainScene  Utils.Factory[*TrainScene]
-	InitResultScene Utils.Factory[*ResultScene]
+	InitTitleScene       Utils.Factory[*TitleScene]
+	InitSelectStageScene Utils.Factory[*SelectStageScene]
+	InitPlayScene        map[Stage]Utils.Factory[*PlayScene]
+	InitPauseScene       Utils.Factory[*PauseScene]
+	InitTrainScene       Utils.Factory[*TrainScene]
+	InitResultScene      Utils.Factory[*ResultScene]
 }

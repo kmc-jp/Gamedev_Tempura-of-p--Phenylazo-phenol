@@ -4,9 +4,8 @@ import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
-	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
+	scenecanvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/SceneCanvas"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
-	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
 
 	input "github.com/quasilyte/ebitengine-input"
@@ -19,26 +18,15 @@ func TitleSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inpu
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		UIDrawerFactory, err := MakeUIDrawerFactory()
+		titleCanvas, err := scenecanvas.NewTitleCanvas(gdata.Font)
 		if err != nil {
-			return nil, fmt.Errorf("MakeUIDrawerFactory() でエラーが発生しました。\n%w", err)
+			return nil, fmt.Errorf("scenecanvas.NewTitleCanvas() でエラーが発生しました。\n%w", err)
 		}
 
-		titlescene, err := scene.NewTitleScene(DrawerFactory, UIDrawerFactory, inputHandler, gdata, initScenes)()
+		titlescene, err := scene.NewTitleScene(DrawerFactory, titleCanvas, inputHandler, gdata, initScenes)()
 		if err != nil {
 			return nil, fmt.Errorf("NewTitleScene() でエラーが発生しました。\n%w", err)
 		}
-
-		text, err := ui.NewText(
-			Utils.Position{},
-			color.Orange(),
-			"Title\nPress Space Key to Start\nPress 1 Key to Start Stage1\nPress 2 Key to Start Stage2\nPress 3 Key to Start Stage3",
-			ui.FontFace(gdata.Font, 15),
-		)
-		if err != nil {
-			return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
-		}
-		titlescene.AddUIElement(text)
 
 		return titlescene, nil
 	}

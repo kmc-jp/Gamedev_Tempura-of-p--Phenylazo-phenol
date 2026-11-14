@@ -18,14 +18,14 @@ type InstalledParts struct {
 	pos        *Utils.Position
 	recordSize image.Point
 
-	gdata *game.Gamedata
+	gdata *game.Gamedata // 読み取り専用。UIからModelを書き換えない
 
 	timer *tick.Timer
 
 	active []bool
 	newest uint
 
-	ready bool
+	started bool
 }
 
 type installedPart struct {
@@ -67,11 +67,30 @@ func NewInstalledParts(pos Utils.Position, recordSize image.Point, gdata *game.G
 		timer:      tick.NewTimer(),
 		active:     []bool{},
 		newest:     0,
-		ready:      false,
+		started:    false,
 	}
 }
 
-func (ips *InstalledParts) SetPartsInfo() error {
+// Start は現在のGamedata.Assembleをもとに表示とアニメーションを初期化し、開始する。
+func (ips *InstalledParts) Start() error {
+	ips.parts = []installedPart{}
+	ips.active = []bool{}
+	ips.newest = 0
+	ips.timer.Set(0)
+	ips.started = false
+	if err := ips.buildRecords(); err != nil {
+		return fmt.Errorf("InstalledParts の初期化に失敗しました: %w", err)
+	}
+	ips.started = true
+	return nil
+}
+
+// IsFinished は全要素の表示アニメーションが完了したかを返す。
+func (ips *InstalledParts) IsFinished() bool {
+	return ips.started && ips.newest == uint(len(ips.active)) && ips.allAnimationsFinished()
+}
+
+func (ips *InstalledParts) buildRecords() error {
 	for i, v := range ips.gdata.Assemble {
 		targetPosition := Utils.Position{
 			X: ips.pos.X,
@@ -92,7 +111,7 @@ func (ips *InstalledParts) SetPartsInfo() error {
 				ui.FontFace(ips.gdata.Font, CategorySize),
 			)
 			if err != nil {
-				return fmt.Errorf("SetPartsInfo()の種別テキスト生成に失敗しました\n%w\n", err)
+				return fmt.Errorf("buildRecords()の種別テキスト生成に失敗しました\n%w\n", err)
 			}
 			categoryUI, err = ui.NewAnimatableUI(
 				startPosition,
@@ -101,7 +120,7 @@ func (ips *InstalledParts) SetPartsInfo() error {
 				categoryText,
 			)
 			if err != nil {
-				return fmt.Errorf("SetPartsInfo()の種別AnimatableUI生成に失敗しました\n%w\n", err)
+				return fmt.Errorf("buildRecords()の種別AnimatableUI生成に失敗しました\n%w\n", err)
 			}
 			if err := categoryUI.SetPathAnimation(
 				Utils.Move_Walk_timeBased,
@@ -123,7 +142,7 @@ func (ips *InstalledParts) SetPartsInfo() error {
 		}
 		t, err := ui.NewText(namePosition, color.Orange(), v.Name, ui.FontFace(ips.gdata.Font, TextSize))
 		if err != nil {
-			return fmt.Errorf("SetPartsInfo()のテキスト生成NewText()でエラーが発生しました\n%w\n", err)
+			return fmt.Errorf("buildRecords()のテキスト生成NewText()でエラーが発生しました\n%w\n", err)
 		}
 		aui, err := ui.NewAnimatableUI(
 			namePosition,
@@ -132,7 +151,7 @@ func (ips *InstalledParts) SetPartsInfo() error {
 			t,
 		)
 		if err != nil {
-			return fmt.Errorf("SetPartsInfo()のAnimatableUI生成NewAnimatableUI()でエラーが発生しました\n%w\n", err)
+			return fmt.Errorf("buildRecords()のAnimatableUI生成NewAnimatableUI()でエラーが発生しました\n%w\n", err)
 		}
 		if err := aui.SetPathAnimation(
 			Utils.Move_Walk_timeBased,
@@ -163,11 +182,7 @@ func (i *InstalledParts) Draw(screen *ebiten.Image) {
 }
 
 func (i *InstalledParts) Update(active bool) error {
-	if i.ready == false {
-		if err := i.SetPartsInfo(); err != nil {
-			return fmt.Errorf("InstalledParts の初期化に失敗しました: %w", err)
-		}
-		i.ready = true
+	if !i.started {
 		return nil
 	}
 	if i.newest < uint(len(i.active)) {
@@ -180,12 +195,6 @@ func (i *InstalledParts) Update(active bool) error {
 	for idx, actv := range i.active {
 		if err := i.parts[idx].Update(actv); err != nil {
 			return fmt.Errorf("InstalledParts.Update()でエラーが発生しました\n%w\n", err)
-		}
-	}
-
-	if i.newest == uint(len(i.active)) && i.allAnimationsFinished() {
-		if err := i.gdata.NextState(); err != nil {
-			return err
 		}
 	}
 	return nil

@@ -102,7 +102,7 @@ func (p *Player) interact() error {
 		p.scene.ShowPartPopup(foundPart, p.tw.tf.Position())
 		fmt.Print(msg, "\n")
 		var item []string
-		for _, pt := range p.scene.Gamedata.Found {
+		for _, pt := range p.scene.Gamedata.FoundParts() {
 			item = append(item, pt.Name+" ")
 		}
 		fmt.Print(item, "\n")
@@ -113,7 +113,6 @@ func (p *Player) interact() error {
 
 func (p *Player) TryMove(Direction Utils.Vec2Int) bool {
 	if p.tw.IsMoving() {
-		fmt.Println("IsMoving = true")
 		return false
 	}
 

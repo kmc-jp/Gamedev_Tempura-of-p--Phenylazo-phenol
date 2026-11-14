@@ -14,7 +14,7 @@
 シーンが保持するワールド要素とUI要素を描画する。
 
 - WorldDrawer に Entity の描画を委譲する
-- UIDrawer に Element の描画を委譲する
+- Canvas API（`scene.PlayCanvasAPI` など）に UI の描画を委譲する
 
 ## scene.Camera.Draw(screen *ebiten.Image, objects []Entity) : WorldDrawer
 
@@ -33,10 +33,12 @@
 自分の画像を返す
 (実装はRenderが持っている)
 
-## scene.UICamera.Draw(screen *ebiten.Image, elements []Element) : UIDrawer
+## scenecanvas.XxxCanvas.Draw(screen *ebiten.Image) : scene.XxxCanvasAPI
 
 ### やること
-受け取った elements の中身の .Draw() を呼ぶ
+保持している UI 部品を、Canvas が決めた順に `.Draw()` する（`canvas.Canvas` に委譲）
 
-### Element.Draw(screen *ebiten.Image) に期待すること
+### canvas.CanvasItem.Draw(screen *ebiten.Image) に期待すること
 いい感じの場所に自分のUIを設置すること
+
+UI の構成と Canvas API の詳細は [UIRefactoring/UI.md](./UIRefactoring/UI.md) を参照する。

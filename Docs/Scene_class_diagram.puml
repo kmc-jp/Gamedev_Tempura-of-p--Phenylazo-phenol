@@ -16,14 +16,17 @@ package scene {
         + SetCenter(center Utils.Position)
     }
 
-    interface UIDrawer {
-        + Draw(screen *ebiten.Image, objects []Element)
-    }
-
-    interface Element {
+    interface "XxxCanvasAPI" as CanvasAPI {
         + Update(active bool) error
         + Draw(screen *ebiten.Image)
+        + IsXxxCanvas()
     }
+
+    note right of CanvasAPI
+    各Sceneのファイルに定義する
+    （TitleCanvasAPI、PlayCanvasAPIなど）。
+    Sceneによっては入力用・問い合わせAPIを持つ。
+    end note
 
     interface Entity {
         + Name() string
@@ -34,9 +37,8 @@ package scene {
 
     class "各種Scene" as HogeScene {
         - entities []Entity
-        - elements []Element
         - worldDrawer WorldDrawer
-        - uiDrawer UIDrawer
+        - canvas XxxCanvasAPI
         + Name() string
         + Update(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error)
         + Draw(screen *ebiten.Image)
@@ -56,10 +58,6 @@ package scene {
         - layers map[string]int
         + Draw(screen *ebiten.Image, objects []Entity)
         + SetCenter(center Utils.Position)
-    }
-
-    class UICamera {
-        + Draw(screen *ebiten.Image, objects []Element)
     }
 }
 
@@ -98,19 +96,17 @@ package component {
     }
 }
 
-package ui {
-    class "UI実装" as UIImpl
+package scenecanvas {
+    class "XxxCanvas" as CanvasImpl
 }
 
 scene.HogeScene .up.|> game.Scene
 
 scene.HogeScene "1" *-down- "0..*" scene.Entity
-scene.HogeScene "1" *-down- "0..*" scene.Element
 scene.HogeScene -down-> scene.WorldDrawer
-scene.HogeScene -down-> scene.UIDrawer
+scene.HogeScene -down-> scene.CanvasAPI
 
 scene.Camera .up.|> scene.WorldDrawer
-scene.UICamera .up.|> scene.UIDrawer
 
 gameObject.GameObject ..up..|> scene.Entity
 gameObject.GameObject *-down- gameObject.Transform
@@ -119,6 +115,6 @@ gameObject.GameObject "1" *-down- "0..*" gameObject.Component
 
 component.CompImpl .up.|> gameObject.Component
 
-ui.UIImpl ..up..|> scene.Element
+scenecanvas.CanvasImpl ..up..|> scene.CanvasAPI
 
 @enduml
