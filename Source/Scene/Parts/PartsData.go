@@ -24,7 +24,7 @@ var (
 			Rank:        game.A,
 			Performance: 1000,
 			Detail:      "CPU の仮パーツデータ",
-			ImgName:     "みんげー_CPU",
+			ImgName:     "Parts/みんげー_CPU",
 		}
 	})
 
@@ -38,7 +38,7 @@ var (
 			Rank:        game.C,
 			Performance: 1000,
 			Detail:      "GPU の仮パーツデータ",
-			ImgName:     "みんげー_グラボ",
+			ImgName:     "Parts/みんげー_グラボ",
 		}
 	})
 
@@ -52,7 +52,7 @@ var (
 			Rank:        game.B,
 			Performance: 1000,
 			Detail:      "RAM の仮パーツデータ",
-			ImgName:     "みんげー_メモリ",
+			ImgName:     "Parts/みんげー_メモリ",
 		}
 	})
 
@@ -65,7 +65,7 @@ var (
 			Rank:        game.C,
 			Performance: 1000,
 			Detail:      "MB の仮パーツデータ",
-			ImgName:     "みんげー_マザボ",
+			ImgName:     "Parts/みんげー_マザボ",
 		}
 	})
 
@@ -78,7 +78,7 @@ var (
 			Rank:        game.B,
 			Performance: 1000,
 			Detail:      "ケースの仮データ",
-			ImgName:     "完成版pc見本",
+			ImgName:     "Assemble/完成版pc見本", //本当はこれを使うわけではない
 		}
 	})
 
