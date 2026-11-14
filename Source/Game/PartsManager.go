@@ -256,3 +256,15 @@ func (pts Parts) SortWithKind() Parts {
 	}
 	return eliminated
 }
+
+func (pts Parts) Remove(idx int) Parts {
+	pts[idx] = nil
+	var deleted Parts
+	for _, v := range pts {
+		if v == nil {
+			continue
+		}
+		deleted = append(deleted, v)
+	}
+	return deleted
+}

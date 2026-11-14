@@ -65,6 +65,9 @@ type Gamedata struct {
 
 	// 組み立てに使うパーツ
 	Assemble Parts
+
+	// PlayScene突入時に売却するパーツ
+	sell *Part
 }
 
 // Gamedata初期値
@@ -214,4 +217,17 @@ func (g *Gamedata) removePart(list *Parts, p *Part) bool {
 	*list = slices.Delete(*list, index, index+1)
 	g.partsRevision++
 	return true
+}
+
+// Gamedata.sell をもとに売却処理
+func (g *Gamedata) SellPart() {
+	g.Money += g.sell.Value()
+	g.Weight -= g.sell.Weight
+	g.sell = nil
+}
+
+// 売却するパーツの選択処理
+func (g *Gamedata) ChooseSellPart(idx int) {
+	g.sell = g.parts[idx]
+	g.parts = g.parts.Remove(idx)
 }
