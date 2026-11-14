@@ -123,6 +123,7 @@ package "ui" {
 
     class ButtonUI {
         +SetSelected(selected bool)
+        +Selected() bool
         +Draw(screen)
     }
 

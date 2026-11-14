@@ -234,7 +234,7 @@ UIはこれらを入力によって直接変更せず、SceneまたはViewModel�
 
 - Scene packageの`Element`、`UIDrawer`、`UICamera`による配列ベースのUI管理をCanvasへ置き換える。
 - Canvas内部で共通処理が必要な場合だけ、Canvas package内の抽象を使用する。
-- `ButtonUI`の押下判定を使う画面は、`input.Handler`による入力へ移行する。
+- `ButtonUI`は入力処理を持たず、選択状態の表示のみ担当する（移行済み）。押下判定が必要な画面は、`input.Handler`による入力で行う。
 - `ScrollUI`のスクロール量はSceneまたはScene固有Canvasから設定する。
 - 入力処理をSceneとUIで二重に実装しない。
 - SceneごとのUI部品をScene固有Canvasへまとめる。

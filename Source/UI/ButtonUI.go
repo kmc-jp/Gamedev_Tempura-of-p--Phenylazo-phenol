@@ -3,16 +3,24 @@ package ui
 import (
 	canvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Canvas"
 	"fmt"
-	"image"
+	stdcolor "image/color"
+	// 入力はScene・Component側（input.Handler）へ集約するため無効化。移行完了後に削除予定。
+	// "image"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	// "github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
+const buttonBorderWidth = 3
+
+// ButtonUI は RichUI をラップし、選択状態の表示だけを担当する。
+// 入力の判定は Scene・Component 側が input.Handler で行い、結果を SetSelected で渡す。
 type ButtonUI struct {
-	content *RichUI
-	hovered bool
-	pressed bool
+	content  *RichUI
+	selected bool
+	// 入力はScene・Component側（input.Handler）へ集約するため無効化。移行完了後に削除予定。
+	// hovered bool
+	// pressed bool
 }
 
 func NewButtonUI(content *RichUI) (*ButtonUI, error) {
@@ -23,31 +31,63 @@ func NewButtonUI(content *RichUI) (*ButtonUI, error) {
 }
 
 func (b *ButtonUI) Update(active bool) error {
-	b.hovered = false
-	b.pressed = false
-	if !active {
-		return nil
-	}
-
-	x, y := ebiten.CursorPosition()
-	if image.Pt(x, y).In(b.content.Bounds()) {
-		b.hovered = true
-		b.pressed = inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
-	}
+	// 入力はScene・Component側（input.Handler）へ集約するため無効化。移行完了後に削除予定。
+	// b.hovered = false
+	// b.pressed = false
+	// if !active {
+	// 	return nil
+	// }
+	//
+	// x, y := ebiten.CursorPosition()
+	// if image.Pt(x, y).In(b.content.Bounds()) {
+	// 	b.hovered = true
+	// 	b.pressed = inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
+	// }
 	return b.content.Update(active)
 }
 
 func (b *ButtonUI) Draw(screen *ebiten.Image) {
 	b.content.Draw(screen)
+	if !b.selected {
+		return
+	}
+	bounds := b.content.Bounds()
+	w, h := bounds.Dx(), bounds.Dy()
+	bw := buttonBorderWidth
+	if w < bw*2 || h < bw*2 {
+		return
+	}
+	borderColor := stdcolor.RGBA{R: 255, G: 165, B: 0, A: 255}
+	for _, edge := range []struct{ x, y, w, h int }{
+		{bounds.Min.X, bounds.Min.Y, w, bw},
+		{bounds.Min.X, bounds.Max.Y - bw, w, bw},
+		{bounds.Min.X, bounds.Min.Y, bw, h},
+		{bounds.Max.X - bw, bounds.Min.Y, bw, h},
+	} {
+		line := ebiten.NewImage(edge.w, edge.h)
+		line.Fill(borderColor)
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(edge.x), float64(edge.y))
+		screen.DrawImage(line, op)
+	}
 }
 
-func (b *ButtonUI) IsMouseOver() bool {
-	return b.hovered
+func (b *ButtonUI) SetSelected(selected bool) {
+	b.selected = selected
 }
 
-func (b *ButtonUI) IsButtonPressed() bool {
-	return b.pressed
+func (b *ButtonUI) Selected() bool {
+	return b.selected
 }
+
+// 入力はScene・Component側（input.Handler）へ集約するため無効化。移行完了後に削除予定。
+// func (b *ButtonUI) IsMouseOver() bool {
+// 	return b.hovered
+// }
+//
+// func (b *ButtonUI) IsButtonPressed() bool {
+// 	return b.pressed
+// }
 
 func (b *ButtonUI) RichUI() *RichUI {
 	return b.content

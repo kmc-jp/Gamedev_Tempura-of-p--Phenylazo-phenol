@@ -86,7 +86,10 @@ UIは構造的に`scene.Element`も満たし続けるため、既存Sceneと`con
 `canvas.Canvas`と`canvas.CanvasItem`を作成し、UI側のアサーションと`ScrollUI`の子要素の型を`canvas.CanvasItem`へ置き換える。
 UIは構造的に`scene.Element`も満たし続けるため、既存Sceneと`construct`の`AddUIElement`は変更しない。
 
-### 4. ButtonUIの入力責務整理
+### 4. ButtonUIの入力責務整理（完了）
+
+マウス判定（`IsMouseOver`、`IsButtonPressed`）をコメントアウトし、`SetSelected`、`Selected`と選択枠の描画を追加した。
+旧マウス判定のコメントアウトは、Scene側の入力移行が完了した時点で削除する。
 
 対象:
 

@@ -55,13 +55,14 @@ Scene 固有の構成は `scenecanvas` package の各 Canvas が決める。
 
 ## ButtonUI
 
-`ButtonUI` は `RichUI` をラップし、画面座標上のマウスポインタと左クリックを判定する。
+`ButtonUI` は `RichUI` をラップし、選択状態の表示だけを担当する。入力は扱わない。
 
-- `IsMouseOver() bool`: 現在ポインタが境界内にあるか
-- `IsButtonPressed() bool`: `Update(true)` を呼んだフレームで左クリックが開始されたか
+- `SetSelected(selected bool)`: 選択状態を設定する。選択中は境界の外周にオレンジ枠を描画する
+- `Selected() bool`: 選択状態を取得
 - `RichUI() *RichUI`: 内包要素を取得
 
-押下判定は `inpututil.IsMouseButtonJustPressed` を利用するため、押し続けても押下開始フレームのみ `true` になる。判定は `Update(true)` 後に行う。`Update(false)` では状態を false にリセットし、入力を処理しない。
+押下・選択の判定は Scene・Component が `input.Handler` で行い、結果を `SetSelected` で渡す。マウスの当たり判定が必要な場合は `RichUI().Bounds()` を使う。
+旧マウス判定（`IsMouseOver`、`IsButtonPressed`）は、移行完了までコメントアウトして残している。
 
 ## ScrollUI
 
