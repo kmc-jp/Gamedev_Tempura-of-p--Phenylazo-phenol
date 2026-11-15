@@ -17,3 +17,4 @@ Layer = "Human"
 Name = "Player"
 JsonPath = "みんげー主人公走るアニメーション前後左右.json"
 PngPath = "みんげー主人公走るアニメーション前後左右-Sheet.png"
+Offset = {X = 0, Y = -7}
