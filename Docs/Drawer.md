@@ -41,4 +41,4 @@
 ### canvas.CanvasItem.Draw(screen *ebiten.Image) に期待すること
 いい感じの場所に自分のUIを設置すること
 
-UI の構成と Canvas API の詳細は [UIRefactoring/UI.md](./UIRefactoring/UI.md) を参照する。
+UI の構成と Canvas API の詳細は [UI.md](./UI.md) を参照する。

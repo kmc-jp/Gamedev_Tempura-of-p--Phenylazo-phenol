@@ -5,7 +5,7 @@ skinparam classAttributeIconSize 0
 
 ' Xxx は Title / Pause / SelectStage / Play / Train / Result のいずれか。
 ' シーンごとに異なる部分は「.. 〜 ..」の区切りで示し、内容は省略する。
-' シーンごとのCanvas APIの違いは UI_refactoring_priority.md の 7 の表を参照する。
+' シーンごとのCanvas APIの違いは UI.md の「Canvas APIの構成」の表を参照する。
 
 ' package "input" {
 '     class InputConfig {
