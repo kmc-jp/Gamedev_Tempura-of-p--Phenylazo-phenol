@@ -381,13 +381,13 @@ func (tmd TileMapData) Construct() (any, error) {
 // 部分適用
 func makeTileData(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType) func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
 	return func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
-		return tilemap.NewTileData(name, imgData, layer, tileSize, Interact, tilemap.TileData_Offset(offset))
+		return tilemap.NewTileData(name, imgData, layer, tileSize, offset, Interact)
 	}
 }
 
 func makeTileDataWithDIO(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType, DIO *ebiten.DrawImageOptions) func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
 	return func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
-		return tilemap.NewTileData(name, imgData, layer, tileSize, Interact, tilemap.TileData_DIOOption(DIO), tilemap.TileData_Offset(offset))
+		return tilemap.NewTileData(name, imgData, layer, tileSize, offset, Interact, tilemap.TileData_DIOOption(DIO))
 	}
 }
 

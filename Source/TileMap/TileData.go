@@ -30,14 +30,15 @@ func IsIntaractive(t InteractType) bool {
 
 type TileDataOpt func(*TileData)
 
-func NewTileData(name string, imgData *imageassets.ImageData, layer string, TileSize Utils.Vec2Int, Interact InteractType, opts ...TileDataOpt) (*TileData, error) {
+func NewTileData(name string, imgData *imageassets.ImageData, layer string, TileSize Utils.Vec2Int, offset Utils.Vec2, Interact InteractType, opts ...TileDataOpt) (*TileData, error) {
 	td := &TileData{
-		Name:      name,
-		ImageData: *imgData,
-		Layer:     layer,
-		TileSize:  TileSize,
-		Interact:  Interact,
-		DIO:       &ebiten.DrawImageOptions{},
+		Name:       name,
+		ImageData:  *imgData,
+		Layer:      layer,
+		TileSize:   TileSize,
+		TileOffset: offset,
+		Interact:   Interact,
+		DIO:        &ebiten.DrawImageOptions{},
 	}
 
 	for _, opt := range opts {
@@ -50,11 +51,5 @@ func NewTileData(name string, imgData *imageassets.ImageData, layer string, Tile
 func TileData_DIOOption(DIO *ebiten.DrawImageOptions) TileDataOpt {
 	return func(td *TileData) {
 		td.DIO = DIO
-	}
-}
-
-func TileData_Offset(Offset Utils.Vec2) TileDataOpt {
-	return func(td *TileData) {
-		td.TileOffset = Offset
 	}
 }
