@@ -18,12 +18,6 @@ const (
 	ActionInteract
 	ActionEnter
 	ActionPartsList
-	Action1
-	ActionRed
-	ActionBlue
-	ActionGreen
-	ActionOrange
-	ActionPurple
 )
 
 func ActionConst(name string) (input.Action, error) {
@@ -48,18 +42,6 @@ func ActionConst(name string) (input.Action, error) {
 		return ActionInteract, nil
 	case "ActionPartsList":
 		return ActionPartsList, nil
-	case "Action1":
-		return Action1, nil
-	case "ActionRed":
-		return ActionRed, nil
-	case "ActionBlue":
-		return ActionBlue, nil
-	case "ActionGreen":
-		return ActionGreen, nil
-	case "ActionOrange":
-		return ActionOrange, nil
-	case "ActionPurple":
-		return ActionPurple, nil
 	default:
 		return ActionUnknown, fmt.Errorf("%s というアクションは見つかりませんでした。", name)
 	}

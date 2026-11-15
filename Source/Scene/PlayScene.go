@@ -4,6 +4,7 @@ import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
+	stageinfo "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/StageInfo"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 	"strconv"
@@ -66,8 +67,9 @@ type PlayCanvasAPI interface {
 
 // メインの遊べるシーン
 type PlayScene struct {
-	Stage       Stage
-	entities    []Entity
+	// Stage は、このシーンが遊ばせるステージのある駅。
+	Stage       stageinfo.Location
+	entities   []Entity
 	worldDrawer WorldDrawer
 
 	canvas PlayCanvasAPI
@@ -84,7 +86,7 @@ type PlayScene struct {
 
 // NewPlayScene は PlayScene を生成する。
 // CanvasはSceneを参照するため、生成関数 newCanvas を受け取り、Sceneの生成直後に呼んで注入する。
-func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], newCanvas func(*PlayScene) (PlayCanvasAPI, error), Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes, stage Stage) Utils.Factory[*PlayScene] {
+func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], newCanvas func(*PlayScene) (PlayCanvasAPI, error), Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes, stage stageinfo.Location) Utils.Factory[*PlayScene] {
 	return func() (*PlayScene, error) {
 		if newCanvas == nil {
 			return &PlayScene{}, fmt.Errorf("PlaySceneのcanvas生成関数が nil です")
@@ -122,7 +124,7 @@ func (s *PlayScene) SelectListRevision() int {
 
 // Name implements [Scene].
 func (s PlayScene) Name() string {
-	return fmt.Sprintf("%T(Stage : %s)", s, Stage2String[s.Stage])
+	return fmt.Sprintf("%T(Stage : %s)", s, stageinfo.Location2String[s.Stage])
 }
 
 // Draw implements [Scene].

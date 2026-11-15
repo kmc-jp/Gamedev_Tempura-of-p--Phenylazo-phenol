@@ -1,50 +1,39 @@
 package stageinfo
 
-import (
-	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
-)
-
-type StageLocation struct {
-	X float64
-	Y float64
-
-	accessibility float64 //周辺の交通手段の豊富さ(= 経路の重みづけ; 使うかわからん) デフォルトは 1
-}
+// Location は路線図上の駅を表す。
+type Location uint
 
 const (
-	Stage1 Location = iota
-	Red
+	Red Location = iota
 	Blue
 	Green
 	Orange
 	Purple
 
+	// Departure は自宅駅（ゲーム開始時の現在地）。
 	Departure
 )
 
-type Location uint
+// Stage2URL は、ステージのある駅から、そのステージのタイルマップ設定ファイルのURLを引く。
+// ここに載っている駅が「ステージのある駅」である（Departure は載らない）。
+type Stage2URL = map[Location]string
 
-// 各ステージの相対位置 (数値は適当)
-var Locations []StageLocation = []StageLocation{
-	{0, 0, 1},    //Stage1
-	{50, 30, 1},  //Red
-	{40, 130, 1}, //Blue
-	{200, 50, 1}, //Green
-	{120, 70, 1}, //Orange
-	{80, 170, 1}, //Purple
-
-	{100, 50, 1}, //開始時のプレイヤー出発位置 (仮)
+// Location2String は Location を TOML などで使う駅名へ変換する。
+var Location2String = map[Location]string{
+	Red:       "Red",
+	Blue:      "Blue",
+	Green:     "Green",
+	Orange:    "Orange",
+	Purple:    "Purple",
+	Departure: "Departure",
 }
 
-type locations []StageLocation
-
-// とりあえず二乗距離 引数にscene.Stageを入力
-func (sl locations) Distance(from, to int) float64 {
-	f := sl[from].VectorValue()
-	t := sl[to].VectorValue()
-	return f.DistanceSquared(t) / (sl[from].accessibility * sl[to].accessibility)
-}
-
-func (sl StageLocation) VectorValue() Utils.Vec2 {
-	return Utils.Vec2{X: sl.X, Y: sl.Y}
+// String2Location は駅名から Location を引く。
+var String2Location = map[string]Location{
+	"Red":       Red,
+	"Blue":      Blue,
+	"Green":     Green,
+	"Orange":    Orange,
+	"Purple":    Purple,
+	"Departure": Departure,
 }

@@ -87,7 +87,7 @@ package "scenecanvas" {
         +Update(active bool) error
         +Draw(screen)
         +IsXxxCanvas()
-        .. Play / Train / Result のみ ..
+        .. Play / Train / Result / SelectStage のみ ..
         -gdata : Gamedata
         -partsList : PartsListUI
         -scene : *scene.XxxScene
@@ -97,7 +97,8 @@ package "scenecanvas" {
     }
 
     note bottom of XxxCanvas
-    Title / Pause / SelectStage は共通ヘルパー newTextCanvas で、
+    SelectStage は Scene の選択中の駅・現在地を毎フレーム観測し、RouteMapUI（路線図）へ反映する。
+    Title / Pause は共通ヘルパー newTextCanvas で、
     案内用のTextを1個だけ持つCanvasを構築する。
     Play / Train / Result はScene・Gamedataのリビジョン番号を毎フレーム観測し、
     反映済みの番号と違えば表示を作り直す。
@@ -161,6 +162,14 @@ package "ui" {
         +Draw(screen)
     }
 
+    class RouteMapUI {
+        +SetSelected(id)
+        +SetMarker(id)
+        +SetBackground(img)
+        +Update(active) error
+        +Draw(screen)
+    }
+
     class GameDataText {
         +Draw(screen)
     }
@@ -214,6 +223,7 @@ package "ui" {
     CanvasItem <|.. RichUI
     CanvasItem <|.. ButtonUI
     CanvasItem <|.. ScrollUI
+    CanvasItem <|.. RouteMapUI
     CanvasItem <|.. GameDataText
     CanvasItem <|.. GameDataUI
     CanvasItem <|.. PartsListUI
@@ -223,6 +233,24 @@ package "ui" {
     InstalledParts *-- AnimatableUI
     ButtonUI ..> Draw : 枠の描画
     PartsListUI ..> Draw : 矩形・枠の描画
+}
+
+package "selection" {
+    class Graph {
+        +AddTransition(from, trigger, to, cond)
+        +SetGuard(guard)
+        +SetCondition(from, trigger, to, cond) bool
+        +Fire(trigger) bool
+        +Next(trigger) (node, bool)
+        +Current() node
+        +SetCurrent(node)
+        +Revision() int
+    }
+
+    note bottom of Graph
+    選択可能UIの共通基盤。選択中のノードと遷移（オートマトン）を管理する。
+    描画・入力は扱わない。SelectStageScene が路線図のカーソルに使う。
+    end note
 }
 
 package "construct" {
@@ -235,7 +263,9 @@ package "construct" {
 XxxScene --> Gamedata : Model更新・参照
 XxxCanvas ..|> XxxCanvasAPI : 実装
 XxxCanvas *-- Canvas : 汎用UIコンテナを所有
-XxxCanvas --> XxxScene : 公開メソッドを観測\n（Play / Train / Result）
+XxxCanvas --> XxxScene : 公開メソッドを観測\n（Play / Train / Result / SelectStage）
+XxxScene ..> Graph : 選択UIのScene（SelectStage）が\n選択状態と遷移の管理に使う
+XxxCanvas ..> RouteMapUI : SelectStageCanvasが保持
 XxxCanvas --> Gamedata : 必要な状態を参照・観測
 Canvas --> CanvasItem : 更新・描画を委譲
 ' Component --> InputHandler : 必要な入力を取得
@@ -247,8 +277,8 @@ note left of XxxScene
 Sceneはscene packageに定義された
 XxxCanvasAPI interfaceだけを利用する。
 具体的なscenecanvas実装やUIは知らない。
-Title / Pause / SelectStage は NewXxxScene の引数で、
-Play / Train / Result は Canvas の生成関数を NewXxxScene の引数で受け取り、
+Title / Pause は Canvas を NewXxxScene の引数で、
+Play / Train / Result / SelectStage は Canvas の生成関数を NewXxxScene の引数で受け取り、
 Scene の生成直後に呼んで注入する。
 end note
 
