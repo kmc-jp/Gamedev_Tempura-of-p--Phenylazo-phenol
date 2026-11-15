@@ -4,18 +4,16 @@ type Stage int
 type Stage2URL = map[Stage]string
 
 const (
-	Stage1 Stage = iota
-	Red
+	Red Stage = iota
 	Blue
 	Green
 	Orange
 	Purple
 )
 
-const Stages = 6 //Stage数
+const Stages = 5 //Stage数
 
 var Stage2String map[Stage]string = map[Stage]string{
-	Stage1: "Stage1",
 	Red:    "Red",
 	Blue:   "Blue",
 	Green:  "Green",
@@ -24,7 +22,6 @@ var Stage2String map[Stage]string = map[Stage]string{
 }
 
 var String2Stage map[string]Stage = map[string]Stage{
-	"Stage1": Stage1,
 	"Red":    Red,
 	"Blue":   Blue,
 	"Green":  Green,

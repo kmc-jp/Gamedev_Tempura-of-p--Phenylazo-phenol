@@ -98,10 +98,6 @@ func (s *SelectStageScene) Update(active bool) (nextScene Utils.Factory[game.Sce
 		}, transition.NewScene(), nil
 	}
 
-	if s.Input.ActionIsJustPressed(inputconfig.Action1) {
-		s.gamedata.SetNextStage(s.mkStage(Stage1))
-		return s.mkTrainScene(), transition.NewScene(), nil
-	}
 	if s.Input.ActionIsJustPressed(inputconfig.ActionRed) {
 		s.gamedata.SetNextStage(s.mkStage(Red))
 		return s.mkTrainScene(), transition.NewScene(), nil

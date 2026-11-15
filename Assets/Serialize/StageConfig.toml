@@ -1,5 +1,4 @@
 [Stages]
-Stage1 = "Stages/Stage1.toml"
 Red = "Stages/Red.toml"
 Blue = "Stages/Blue.toml"
 Green = "Stages/Green.toml"
