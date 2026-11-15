@@ -8,12 +8,13 @@ import (
 )
 
 type TileData struct {
-	Name      string
-	ImageData imageassets.ImageData
-	Layer     string
-	TileSize  Utils.Vec2Int
-	Interact  InteractType
-	DIO       *ebiten.DrawImageOptions
+	Name       string
+	ImageData  imageassets.ImageData
+	Layer      string
+	TileSize   Utils.Vec2Int
+	TileOffset Utils.Vec2
+	Interact   InteractType
+	DIO        *ebiten.DrawImageOptions
 }
 
 type InteractType int
@@ -49,5 +50,11 @@ func NewTileData(name string, imgData *imageassets.ImageData, layer string, Tile
 func TileData_DIOOption(DIO *ebiten.DrawImageOptions) TileDataOpt {
 	return func(td *TileData) {
 		td.DIO = DIO
+	}
+}
+
+func TileData_Offset(Offset Utils.Vec2) TileDataOpt {
+	return func(td *TileData) {
+		td.TileOffset = Offset
 	}
 }
