@@ -152,6 +152,16 @@ func (g *Gamedata) NextStage() Utils.Factory[Scene] {
 	return g.nextStage
 }
 
+// CurrentLocation は路線図上の現在地を返す。ゲーム開始時は自宅（stageinfo.Departure）。
+func (g *Gamedata) CurrentLocation() stageinfo.Location {
+	return g.currentLocation
+}
+
+// SetCurrentLocation は路線図上の現在地を設定する。行き先を確定したときにSceneが呼ぶ。
+func (g *Gamedata) SetCurrentLocation(loc stageinfo.Location) {
+	g.currentLocation = loc
+}
+
 func (g *Gamedata) EnableWorldTimeProgressing() {
 	g.timeProgressing = true
 }

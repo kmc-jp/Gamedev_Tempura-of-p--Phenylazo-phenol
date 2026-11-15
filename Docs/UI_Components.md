@@ -38,12 +38,13 @@ Scene 固有の構成は `scenecanvas` package の各 Canvas が決める。
 
 `Source/SceneCanvas` の各 Canvas は、対応する Scene のファイルに定義された Canvas API（`scene.TitleCanvasAPI` など）を実装し、`construct` から Scene へ注入される。
 
-- `TitleCanvas` / `PauseCanvas` / `SelectStageCanvas`: 案内用の `Text` 1個だけを持つ。`NewXxxCanvas(font)` で生成し、`NewXxxScene` の引数で注入する
+- `TitleCanvas` / `PauseCanvas`: 案内用の `Text` 1個だけを持つ。`NewXxxCanvas(font)` で生成し、`NewXxxScene` の引数で注入する
+- `SelectStageCanvas`: 路線図（`RouteMapUI`）と案内 `Text`。`NewSelectStageCanvas(scene, gdata)`。`SelectStageScene.SelectionRevision`（カーソル移動のたびに増える）と `CurrentLocation`（現在地）を毎フレーム観測し、変化したときだけ `SelectedLocation` と合わせて反映する。`StageMap` から駅・路線を組み立てる。行き先選択のルール（隣接駅のみ等）は Scene の `SelectStageRule` を `WithRule` で生成時に渡して決める。ルールを入れないときは制限なし
 - `PlayCanvas`: 残り時間（`GameDataText`）、空き重量・所持金（`GameDataUI`）、`PartsListUI`。`NewPlayCanvas(scene, gdata)`。`PlayScene.SelectListRevision` の変化で一覧を開く。購入はSceneが`CurrentPartsTab`で発見タブの表示中かを確かめたうえで、`SelectedFoundPart`と`Gamedata.BuyFoundPart`で行い、購入後の一覧は`Gamedata.PartsRevision`の変化を観測して再構築する
 - `TrainCanvas`: 案内 `Text`、`PartsListUI`。`NewTrainCanvas(scene, gdata)`。`TrainScene.PartsListRevision`（または`Gamedata.PartsRevision`）の変化で所持パーツ一覧を構築・表示する
 - `ResultCanvas`: 案内 `Text`、ベンチマーク案内（`AnimatableUI`）、`InstalledParts`、`PartsListUI`。`NewResultCanvas(scene, gdata)`。全UIを毎フレーム`Canvas.Update`で更新する。組み立て済みパーツの表示は`Result_Assembled`、ベンチマーク案内のアニメーションは`Result_Benchmark`に変わったときに開始する
 
-Play / Train / Result の Canvas は Scene のポインタや Gamedata を観測して表示を切り替える。そのため、Canvas 本体ではなく Canvas の生成関数（`func(*XxxScene) (XxxCanvasAPI, error)`）を `NewXxxScene` に渡し、Scene のコンストラクタが自身の生成直後に呼んで注入する。生成関数がエラーや `nil` を返したときは Scene の生成エラーになる。
+Play / Train / Result / SelectStage の Canvas は Scene のポインタや Gamedata を観測して表示を切り替える。そのため、Canvas 本体ではなく Canvas の生成関数（`func(*XxxScene) (XxxCanvasAPI, error)`）を `NewXxxScene` に渡し、Scene のコンストラクタが自身の生成直後に呼んで注入する。生成関数がエラーや `nil` を返したときは Scene の生成エラーになる。
 
 状態変化の観測にはリビジョン番号（変化するたびに増える整数）を使う。書き換える側（Scene・Gamedata）が変更時に番号を増やし、Canvas は反映済みの番号と比べて違っていれば作り直す。
 
@@ -95,6 +96,38 @@ Play / Train / Result の Canvas は Scene のポインタや Gamedata を観測
 子要素の座標はコンテンツバッファの座標系で指定する。スクロール量は自動的に 0 から最大値までクランプされる。
 
 ScrollUI は表示と子要素の更新だけを担当し、マウスホイールやキー入力の解釈は行わない。オフセットは ScrollUI を持つUI（`PartsListUI` など）が設定する。ボタン等のUIはマウス判定を行わない方針のため、子要素向けの座標変換は提供しない。
+
+## RouteMapUI
+
+`RouteMapUI[N]`（`Source/UI/RouteMapUI.go`）は、ノード（駅）とそれを結ぶ辺を路線図として描画する。`scene` を import しない汎用部品で、入力は扱わない。ノードの ID 型 `N` は呼び出し側が決める（`SelectStageCanvas` は `stageinfo.Location`）。
+
+- `NewRouteMapUI(refSize, nodes, edges, fontSource)`: 基準サイズ・ノード（`RouteMapNode{ID, Pos, Label, Image}`）・辺（ID の組）から生成する。ID の重複、辺の端が未定義のとき、`refSize` が正でないときはエラー
+- `SetSelected(id)`: 選択中のノードを設定する（オレンジの脈動するリング）。未知の ID は何もしない
+- `SetMarker(id)`: 現在地のノードを設定する（ノード内側の青い円）。未知の ID は何もしない
+- `SetBackground(img)`: 路線図の背景画像を設定する。基準サイズ全体に引き伸ばして描く。`nil` で背景なし
+- `Update(active)`: 選択リングの脈動のためにフレームを進めるだけ
+
+座標は `refSize`（基準サイズ）上の値で、`Draw` 時に画面サイズへアスペクト比を保ったまま拡大縮小し、中央に描く。画面サイズが変わっても座標を決め打ちしない。
+`RouteMapNode.Image` が `nil` のノードは円で描く。画像を指定すると中心を `Pos` に合わせて描くため、絵が届いたらノードごとに差し替えられる。
+
+## selection.Graph
+
+`selection.Graph[N, T]`（`Source/Utils/Selection`）は、選択可能UIの「いま選んでいるノード」と「どの入力でどこへ移るか」を管理する共通基盤で、オートマトン（状態遷移グラフ）として扱う。描画と入力の取得は行わず、ebiten に依存しない。
+
+- `NewGraph(initial)`: 初期ノードを指定して生成する
+- `AddTransition(from, trigger, to, cond)`: 遷移を登録する。`cond` が `nil` なら無条件。同じ `(from, trigger)` に複数登録した場合は登録順に評価し、最初に条件を満たしたものを採用する
+- `Fire(trigger) bool`: 現在のノードで発火する。遷移したら `true`。遷移先がない・条件を満たさないときは何もせず `false`
+- `Next(trigger) (N, bool)`: `Fire` した場合の遷移先を、状態を変えずに返す
+- `Current()` / `SetCurrent(n)`: 現在のノード。`SetCurrent` は値が変わったときだけ `Revision` を増やす
+- `Revision() int`: 選択が変化するたびに増える整数。UIが変化を観測するために使う
+- `SetGuard(guard)`: 全遷移に共通の条件（`guard(from, trigger, to) bool`）を設定する。`nil` で解除。遷移の登録をやり直さずにルールを入れ替えるための差し替え口
+- `SetCondition(from, trigger, to, cond) bool`: 登録済みの遷移1本の条件を差し替える。`nil` で無条件に戻る。該当する遷移がなければ `false`
+
+`Direction`（`Left` / `Right` / `Up` / `Down`）と `Directions()` を上下左右移動用のトリガーとして同梱している。
+
+`SelectStageScene` は `stageinfo.StageMap.NewSelector` で路線図から `Graph` を作る。上下左右の移動先は、路線でつながった駅の位置関係から自動で決まる（方向キーの向きと 60° 以内で最も近い路線）。自動で決まるキーを変えたい路線は、`StageMap.toml` の `[[Lines]]` に `FromKey`（From の駅で To へ進むキー）/ `ToKey`（To の駅で From へ戻るキー）を `"Left"` / `"Right"` / `"Up"` / `"Down"` で書いて明示する。明示した向きは自動導出より優先され（その向きは自動では決めない）、書かない向きは自動のまま。同じ駅の同じキーに別の行き先を明示した場合と、どのキーでも選べない路線があるときは起動時エラーになる。路線図の定義は `Assets/Serialize/StageMap.toml`（`StageMapConfig`）。
+
+行き先選択のルールは、`NewSelectStageScene` の末尾の Functional Options `scene.WithRule(scene.SelectStageRule{...})` で生成時に決める。`CanMove(from, to) bool` はカーソルの移動可否（`Graph.SetGuard` として全遷移に効く）、`CanConfirm(loc) bool` は行き先として確定できるかを決める。各関数が `nil` なら制限なしで、`WithRule` を渡さなければルールなし。渡す場所は `SelectStageSceneConstruct.go` で、途中での差し替えは想定していない（参照する `Gamedata` の状態が変われば結果は動的に変わる）。
 
 ## PartsListUI
 

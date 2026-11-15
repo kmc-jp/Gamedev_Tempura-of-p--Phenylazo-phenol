@@ -1,0 +1,72 @@
+# 路線図（行き先選択画面）の定義
+# 座標は Width x Height の基準サイズ上の値。画面サイズに合わせて拡大縮小して描画される。
+# 絵が届いたら Width / Height を絵のサイズにし、各駅の座標を絵に合わせる。
+# 上下左右キーでの移動先は、Lines でつながった駅の位置関係から自動で決まる。
+# 自動で決まるキーを変えたい路線は、Lines に FromKey / ToKey（Left / Right / Up / Down）を書く。
+#   FromKey: From の駅で To へ進むキー / ToKey: To の駅で From へ戻るキー
+#   例: [[Lines]] From = "Departure" To = "Red" FromKey = "Left" ToKey = "Right"
+# 書いた向きは明示が優先され、書かない向きは自動のまま。
+Width = 320
+Height = 240
+
+[Stations.Departure]
+Label = "自宅"
+X = 40
+Y = 190
+
+[Stations.Red]
+Label = "Red"
+X = 80
+Y = 150
+
+[Stations.Green]
+Label = "Green"
+X = 240
+Y = 150
+
+[Stations.Blue]
+Label = "Blue"
+X = 80
+Y = 95
+
+[Stations.Orange]
+Label = "Orange"
+X = 240
+Y = 95
+
+[Stations.Purple]
+Label = "Purple"
+X = 160
+Y = 70
+
+[[Lines]]
+From = "Departure"
+To = "Red"
+FromKey = "Up"
+ToKey = "Down"
+
+[[Lines]]
+From = "Departure"
+To = "Green"
+FromKey = "Right"
+ToKey = "Down"
+
+[[Lines]]
+From = "Red"
+To = "Green"
+
+[[Lines]]
+From = "Red"
+To = "Blue"
+
+[[Lines]]
+From = "Green"
+To = "Orange"
+
+[[Lines]]
+From = "Blue"
+To = "Purple"
+
+[[Lines]]
+From = "Orange"
+To = "Purple"
