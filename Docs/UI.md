@@ -152,6 +152,15 @@ type PlayCanvasAPI interface {
 }
 ```
 
+SceneごとのCanvas APIの違いは次の表のとおりである。
+
+| Canvas API | 入力用 | 問い合わせ | Canvasが観測するもの |
+|---|---|---|---|
+| `TitleCanvasAPI` / `PauseCanvasAPI` / `SelectStageCanvasAPI` | なし | なし | なし |
+| `PlayCanvasAPI` | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab` | `IsPartsListOpen`、`CurrentPartsTab`、`SelectedFoundPart` | `PlayScene.SelectListRevision`、`Gamedata.PartsRevision` |
+| `TrainCanvasAPI` | `ScrollPartsListDown/Up` | なし | `TrainScene.PartsListRevision`、`Gamedata.PartsRevision` |
+| `ResultCanvasAPI` | `MovePartSelectionDown/Up` | `SelectedPart`、`IsInstalledPartsFinished` | `ResultScene.CandidatesRevision`・`CandidateParts`、`Gamedata.State` |
+
 注意点:
 
 - CanvasがSceneのポインタを持つScene（Play / Train / Result）は、Canvasの生成関数（`func(*XxxScene) (XxxCanvasAPI, error)`）を`NewXxxScene`の引数で受け取り、Scene自身の生成直後に呼んで注入する。注入忘れや`nil`はScene生成時のエラーになる。CanvasはSceneの具体型に依存する（別Sceneを誤って受け取らないため、interfaceにはしない）。
@@ -277,6 +286,20 @@ UIはこれらを入力によって直接変更しない。Sceneが入力を判�
 
 実装上のクラス関係は[`UI_architecture_class_diagram.puml`](./UI_architecture_class_diagram.puml)を参照する。
 
-個別UI部品（`PartsListUI`、`InstalledParts`など）の公開APIと挙動は[`UI_Components.md`](../UI_Components.md)を参照する。
+個別UI部品（`PartsListUI`、`InstalledParts`など）の公開APIと挙動は[`UI_Components.md`](./UI_Components.md)を参照する。
 
-全体の実施順は[`UI_refactoring_priority.md`](./UI_refactoring_priority.md)を参照する。
+## 保留事項
+
+現時点では実施せず、必要になった時点で検討する。
+
+- Gamedata参照の縮小: UIが`*game.Gamedata`を直接参照することを許容しているため未実施。Readerや表示用データへ縮小する必要が生じた時点で検討する（対象: `GameDataUI`、`GameDataText`、`InstalledParts`）。
+- `ScrollUI`の汎用化: 利用箇所が`PartsListUI`の内部だけのため未実施。`ScrollUI`を使うUIが2つ目に現れた時点で、選択追従や最大オフセットの取得を`ScrollUI`へ移すか検討する。
+- `PartsListUI`・`InstalledParts`のファイル分割: ファイルが大きくなった時点で検討する。分割後もゲームルールやScene遷移は移さない。
+
+## UI変更時の進め方
+
+- UIの見た目変更と責務変更を同じ変更に詰め込みすぎない。
+- 不要になったコードは、再利用の可能性がある（マウス操作の復活など）なら理由付きでコメントアウトし、そうでなければ削除する。
+- 方針・API・責務を変えた場合は、`UI.md`、`UI_Components.md`、クラス図を同じ変更で更新する。
+- AIによる静的確認として、`go vet ./...`、`gofmt`、変更した型やAPIの使用箇所（旧APIの残り）の検索を行う。テストが存在する場合は`go test ./...`も実行する。
+- 手動で実機確認する。対象Sceneで、表示、入力、選択、タブ切り替え、スクロール、アニメーション、画面遷移が変更前と変わらないことを確かめる。
