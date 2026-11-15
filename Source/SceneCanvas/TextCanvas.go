@@ -17,7 +17,7 @@ import (
 )
 
 // newTextCanvas は、案内用の静的なテキスト1個だけを持つCanvasを生成する。
-// Title、Pause、SelectStageのCanvasで共通の構成である。
+// Title、PauseのCanvasで共通の構成である。
 func newTextCanvas(
 	position utils.Position,
 	value string,

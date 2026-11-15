@@ -22,12 +22,21 @@ func SelectStageSceneConstruct(assetsManager *assets.AssetsManager, inputHandler
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		selectStageCanvas, err := scenecanvas.NewSelectStageCanvas(gdata.Font)
+		stageMap, err := MakeStageMap(assetsManager)
 		if err != nil {
-			return nil, fmt.Errorf("scenecanvas.NewSelectStageCanvas() でエラーが発生しました。\n%w", err)
+			return nil, fmt.Errorf("MakeStageMap(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		selectStagescene, err := scene.NewSelectStageScene(DrawerFactory, selectStageCanvas, inputHandler, gdata, initScenes)()
+		// CanvasはSceneを参照するため、Sceneの生成時に生成関数から作る
+		newCanvas := func(s *scene.SelectStageScene) (scene.SelectStageCanvasAPI, error) {
+			selectStageCanvas, err := scenecanvas.NewSelectStageCanvas(s, gdata)
+			if err != nil {
+				return nil, fmt.Errorf("scenecanvas.NewSelectStageCanvas() でエラーが発生しました。\n%w", err)
+			}
+			return selectStageCanvas, nil
+		}
+
+		selectStagescene, err := scene.NewSelectStageScene(DrawerFactory, stageMap, newCanvas, inputHandler, gdata, initScenes)()
 		if err != nil {
 			return nil, fmt.Errorf("NewSelectStageScene() でエラーが発生しました。\n%w", err)
 		}
