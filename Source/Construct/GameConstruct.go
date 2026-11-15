@@ -8,6 +8,7 @@ import (
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	parts "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Parts"
+	stageinfo "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/StageInfo"
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
@@ -58,8 +59,8 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 		//各シーンの Constructor
 		initializedScenes := &scene.InitializedScenes{}
 		initializedScenes.InitTitleScene = TitleSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
-		initializedScenes.InitPlayScene = map[scene.Stage]Utils.Factory[*scene.PlayScene]{}
-		for s := range scene.Stage2String { // ステージだけ全部取り出す
+		initializedScenes.InitPlayScene = map[stageinfo.Location]Utils.Factory[*scene.PlayScene]{}
+		for s := range Stage2URL { // ステージのある駅だけ全部取り出す
 			initializedScenes.InitPlayScene[s] = PlaySceneConstruct(assetsManager, Handler, gdata, initializedScenes, Stage2URL, s)
 		}
 		initializedScenes.InitPauseScene = PauseSceneConstruct(assetsManager, Handler, gdata, initializedScenes)

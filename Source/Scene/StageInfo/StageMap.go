@@ -71,6 +71,7 @@ func (m StageMap) Neighbors(loc Location) []Location {
 //   - Width / Height が正
 //   - Departure（自宅）が Stations にある
 //   - Lines の両端が Stations にあり、From != To
+//   - 同じ2駅を結ぶ路線がない（A-B と B-A も重複とみなす）
 //   - 同じ座標の駅がない
 //   - 全駅が Departure から Lines を辿って到達できる
 func (m StageMap) Validate() error {
@@ -80,6 +81,7 @@ func (m StageMap) Validate() error {
 	if _, ok := m.Stations[Departure]; !ok {
 		return fmt.Errorf("自宅駅 (Departure) が定義されていません")
 	}
+	seen := map[[2]Location]bool{}
 	for _, line := range m.Lines {
 		if line.From == line.To {
 			return fmt.Errorf("路線 %s - %s の両端が同じ駅です", name(line.From), name(line.To))
@@ -89,6 +91,12 @@ func (m StageMap) Validate() error {
 				return fmt.Errorf("路線 %s - %s の駅 %s が定義されていません", name(line.From), name(line.To), name(end))
 			}
 		}
+		// 路線は無向なので、A-B と B-A は同じ路線として数える
+		pair := [2]Location{min(line.From, line.To), max(line.From, line.To)}
+		if seen[pair] {
+			return fmt.Errorf("路線 %s - %s が重複しています", name(line.From), name(line.To))
+		}
+		seen[pair] = true
 	}
 
 	locations := slices.Sorted(maps.Keys(m.Stations))

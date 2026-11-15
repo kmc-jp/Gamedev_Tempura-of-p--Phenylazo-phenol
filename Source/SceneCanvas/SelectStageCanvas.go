@@ -22,6 +22,13 @@ type SelectStageCanvas struct {
 	canvas   *canvas.Canvas
 	routeMap *ui.RouteMapUI[stageinfo.Location]
 	guide    *ui.Text
+
+	// labels は駅の表示名。案内文の組み立てに使う。
+	labels map[stageinfo.Location]string
+	// shownRevision は反映済みの SelectStageScene.SelectionRevision。
+	shownRevision int
+	// shownCurrent は反映済みの現在地。
+	shownCurrent stageinfo.Location
 }
 
 // NewSelectStageCanvas は SelectStageCanvas を生成する。
@@ -40,8 +47,10 @@ func NewSelectStageCanvas(s *scene.SelectStageScene, gdata *game.Gamedata) (*Sel
 
 	// 描画順を安定させるため、駅は Location の昇順に並べる
 	nodes := []ui.RouteMapNode[stageinfo.Location]{}
+	labels := make(map[stageinfo.Location]string, len(m.Stations))
 	for _, loc := range slices.Sorted(maps.Keys(m.Stations)) {
 		station := m.Stations[loc]
+		labels[loc] = station.Label
 		nodes = append(nodes, ui.RouteMapNode[stageinfo.Location]{
 			ID:    loc,
 			Pos:   station.Pos,

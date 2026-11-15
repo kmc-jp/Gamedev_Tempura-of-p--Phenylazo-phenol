@@ -14,6 +14,10 @@ const (
 	Departure
 )
 
+// Stage2URL は、ステージのある駅から、そのステージのタイルマップ設定ファイルのURLを引く。
+// ここに載っている駅が「ステージのある駅」である（Departure は載らない）。
+type Stage2URL = map[Location]string
+
 // Location2String は Location を TOML などで使う駅名へ変換する。
 var Location2String = map[Location]string{
 	Red:       "Red",

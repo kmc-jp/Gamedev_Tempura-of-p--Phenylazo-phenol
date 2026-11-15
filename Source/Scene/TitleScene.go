@@ -4,6 +4,7 @@ import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
+	stageinfo "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/StageInfo"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 
@@ -110,7 +111,7 @@ func (s TitleScene) SetCameraCenter(center Utils.Position) {
 	s.worldDrawer.SetCenter(center)
 }
 
-func (s TitleScene) mkStage(stage Stage) Utils.Factory[game.Scene] {
+func (s TitleScene) mkStage(stage stageinfo.Location) Utils.Factory[game.Scene] {
 	return func() (game.Scene, error) {
 		nextScene, err := s.initScenes.InitPlayScene[stage]()
 		if err != nil {

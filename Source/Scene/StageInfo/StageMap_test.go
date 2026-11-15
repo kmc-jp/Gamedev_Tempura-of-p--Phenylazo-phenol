@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// testMap は Assets/Serialize/StageMap.toml と同じ配置の路線図を返す。
+// testMap はテスト用の路線図を返す（本番の Assets/Serialize/StageMap.toml とは別の配置）。
 func testMap() StageMap {
 	st := func(label string, x, y float64) Station {
 		return Station{Label: label, Pos: Utils.Position{X: x, Y: y}}
@@ -91,6 +91,21 @@ func TestValidateUnknownStation(t *testing.T) {
 	delete(m.Stations, Orange)
 	if err := m.Validate(); err == nil {
 		t.Fatal("未定義の駅への路線があるのに Validate が成功した")
+	}
+}
+
+func TestValidateDuplicateLine(t *testing.T) {
+	// 同じ向き
+	m := testMap()
+	m.Lines = append(m.Lines, Line{From: Departure, To: Red})
+	if err := m.Validate(); err == nil {
+		t.Fatal("同じ路線が2本あるのに Validate が成功した")
+	}
+	// 逆向き
+	m = testMap()
+	m.Lines = append(m.Lines, Line{From: Red, To: Departure})
+	if err := m.Validate(); err == nil {
+		t.Fatal("A-B と B-A があるのに Validate が成功した")
 	}
 }
 

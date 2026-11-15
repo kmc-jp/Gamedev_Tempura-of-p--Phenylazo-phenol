@@ -236,7 +236,7 @@ UIは、表示を成立させるための一時的な状態を保持してよい
 - 一時的なUIの表示状態
 - 画面内での入力や操作の進行状況
 
-選択中の項目と「どの入力でどこへ移るか」の管理には、共通基盤の`selection.Graph`（`Source/Utils/Selection`）を使える。遷移先と遷移条件を登録しておけば、Sceneが`Fire`でトリガーを渡すだけで選択が移る。遷移条件は`SetGuard`（全遷移共通）と`SetCondition`（1本ずつ）であとから差し替えられる。`SelectStageScene`は路線図のカーソル移動に使い、ゲームルールは`SelectStageRule`（`SetRule`で差し替え）としてScene側に持つ。
+選択中の項目と「どの入力でどこへ移るか」の管理には、共通基盤の`selection.Graph`（`Source/Utils/Selection`）を使える。遷移先と遷移条件を登録しておけば、Sceneが`Fire`でトリガーを渡すだけで選択が移る。遷移条件は`SetGuard`（全遷移共通）と`SetCondition`（1本ずつ）であとから差し替えられる。`SelectStageScene`は路線図のカーソル移動に使い、ゲームルールは`SelectStageRule`（`WithRule`で生成時に決める）としてScene側に持つ。
 
 UIはこれらを入力によって直接変更しない。Sceneが入力を判定し、Canvas APIの入力用APIを通じて変更を指示する。
 例えば`PartsListUI`は選択中の項目・タブ・表示状態を保持するが、変更は`PlayCanvas`などが`SelectNext`、`NextTab`、`Show`などで行う。

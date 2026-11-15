@@ -8,6 +8,8 @@ import (
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	selection "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Selection"
 	"fmt"
+	"maps"
+	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	input "github.com/quasilyte/ebitengine-input"
@@ -88,6 +90,18 @@ func NewSelectStageScene(
 		if err != nil {
 			return &SelectStageScene{}, fmt.Errorf("worldDrawer() でエラーが発生しました。 \n%w", err)
 		}
+		if initScenes == nil {
+			return &SelectStageScene{}, fmt.Errorf("SelectStageSceneのinitScenes が nil です")
+		}
+		// 自宅以外の駅は、行き先として確定するとそのステージへ向かう。ステージが無い駅は入った時点で気付けるようにする。
+		for _, loc := range slices.Sorted(maps.Keys(stageMap.Stations)) {
+			if loc == stageinfo.Departure {
+				continue
+			}
+			if _, ok := initScenes.InitPlayScene[loc]; !ok {
+				return &SelectStageScene{}, fmt.Errorf("駅 %s に対応するステージがありません", stageinfo.Location2String[loc])
+			}
+		}
 		selector, err := stageMap.NewSelector(gdata.CurrentLocation())
 		if err != nil {
 			return &SelectStageScene{}, fmt.Errorf("stageMap.NewSelector() でエラーが発生しました。\n%w", err)
@@ -136,6 +150,12 @@ func (s *SelectStageScene) StageMap() stageinfo.StageMap {
 // SelectedLocation はカーソルが指している駅を返す。
 func (s *SelectStageScene) SelectedLocation() stageinfo.Location {
 	return s.selector.Current()
+}
+
+// SelectionRevision はカーソルが動くたびに増える整数を返す。
+// Canvasはこの値の変化を観測し、変化したときに表示を更新する。
+func (s *SelectStageScene) SelectionRevision() int {
+	return s.selector.Revision()
 }
 
 // CurrentLocation はプレイヤーが今いる駅（直前に行き先として確定した駅）を返す。
@@ -218,11 +238,10 @@ func (s *SelectStageScene) confirm() (Utils.Factory[game.Scene], transition.Type
 		return s.mkResultScene(), transition.NewScene(), nil
 	}
 
-	stage, ok := StageOfLocation(loc)
-	if !ok {
+	if _, ok := s.initScenes.InitPlayScene[loc]; !ok {
 		return nil, transition.None(), fmt.Errorf("駅 %s に対応するステージがありません", stageinfo.Location2String[loc])
 	}
-	s.gamedata.SetNextStage(s.mkStage(stage))
+	s.gamedata.SetNextStage(s.mkStage(loc))
 	s.gamedata.SetCurrentLocation(loc)
 	return s.mkTrainScene(), transition.NewScene(), nil
 }
@@ -235,7 +254,7 @@ func (s SelectStageScene) SetCameraCenter(center Utils.Position) {
 	s.worldDrawer.SetCenter(center)
 }
 
-func (s SelectStageScene) mkStage(stage Stage) Utils.Factory[game.Scene] {
+func (s SelectStageScene) mkStage(stage stageinfo.Location)Utils.Factory[game.Scene] {
 	return func() (game.Scene, error) {
 		nextScene, err := s.initScenes.InitPlayScene[stage]()
 		if err != nil {
