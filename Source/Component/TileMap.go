@@ -96,7 +96,9 @@ func (tm *TileMap) SetGameObject(
 				return fmt.Errorf("Interact() でエラーが発生しました。\ndata.Interact = %d\n%w", data.Interact, err)
 			}
 			obj.AddComponent(ic)
-			tm.Interact[pos.Position] = ic
+			for offset := range data.TileSize.Range() {
+				tm.Interact[pos.Position.Add(offset)] = ic
+			}
 		}
 
 		// fmt.Printf("Tile %s が追加されました。\n", obj.Name())
