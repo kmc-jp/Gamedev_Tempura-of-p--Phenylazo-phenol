@@ -52,7 +52,7 @@ type Gamedata struct {
 	Money int
 
 	//訪れた店の数
-	Visited uint
+	visited uint
 
 	// 所持品。書き換えは AddParts / RemoveParts を通す
 	parts Parts
@@ -122,7 +122,7 @@ func (g *Gamedata) ForNewScene(state state) {
 }
 
 func (g *Gamedata) ForNewStage() {
-	g.Visited++
+	g.visited++
 }
 
 // ゲームサイクル終了時のゲームデータ初期化
@@ -133,7 +133,7 @@ func (g *Gamedata) ResetGame() {
 	g.Assemble = []*Part{}
 	g.Weight = InitialWeight
 	g.Money = InitialMoney
-	g.Visited = 0
+	g.visited = 0
 	g.currentLocation = stageinfo.Departure
 	g.timeProgressing = false
 }
@@ -246,4 +246,21 @@ func (g *Gamedata) SellPart() {
 func (g *Gamedata) ChooseSellPart(idx int) {
 	g.sell = g.parts[idx]
 	g.parts = g.parts.Remove(idx)
+}
+
+func (g *Gamedata) IsSellPartExists() bool {
+	if g.sell != nil {
+		return true
+	} else {
+		return false
+	}
+}
+
+// 訪れた店の数
+func (g *Gamedata) Visited() uint {
+	return g.visited
+}
+
+func (g *Gamedata) IncrementVisited() {
+	g.visited++
 }
