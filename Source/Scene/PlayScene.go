@@ -170,8 +170,8 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 	if s.Gamedata.State == game.Play_EnterStore {
 		// 入店時処理
 
-		// 最初の店なら売却処理をスキップ
-		if s.Gamedata.Visited() <= 1 {
+		// 最初の店(または売却予定パーツ無し)なら売却処理をスキップ
+		if s.Gamedata.Visited() <= 1 || !s.Gamedata.IsSellPartExists() {
 			s.Gamedata.State = game.Play_Explore
 		} else {
 			s.Gamedata.State = game.Play_Sell
