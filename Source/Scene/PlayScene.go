@@ -221,8 +221,6 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 				s.Gamedata.State = game.Play_Timeup
 
 				s.Gamedata.Text = "0\nTimeUp 次の店に移動します"
-				// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
-				fmt.Print("みつけたもの\n", s.Gamedata.ExtractFoundPartsName(), "\n")
 			}
 		}
 		// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
