@@ -32,17 +32,17 @@ func (al AudioLoader) Load(data AudioData) (*audio.Player, error) {
 	}
 
 	ad, _ := al.cache[data.Path]
-	pl, err := al.mkPlayer(ad)
-	if err != nil {
-		return nil, fmt.Errorf("al.mkPlayer(ad) でエラーが発生しました。\nPath : %s\n%w", data.Path, err)
-	}
+	pl := al.mkPlayer(ad)
 	return pl, nil
 }
 
+// デコードして []byte にする
 func (al AudioLoader) fetch(path string) ([]byte, error) {
 	return nil, fmt.Errorf("Not Implimented!")
 }
 
-func (al AudioLoader) mkPlayer(AudioData []byte) (*audio.Player, error) {
-	return nil, fmt.Errorf("Not Implimented!")
+// デコードしたデータを *audio.Player にする
+// 不正なデータでも問答無用で変換してくれる
+func (al AudioLoader) mkPlayer(AudioData []byte) *audio.Player {
+	return al.audiocxt.NewPlayerFromBytes(AudioData)
 }
