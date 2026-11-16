@@ -23,9 +23,10 @@ const (
 )
 
 func NewWorldTimer() *WorldTimer {
-	t := NewTimer()
-	t.Set(PlayableTime * CountSpeed)
-	return &WorldTimer{Timer: *t, passedTime: 0}
+	timer := &WorldTimer{}
+	timers[&timer.Timer] = struct{}{}
+	timer.Set(PlayableTime * CountSpeed)
+	return timer
 }
 
 func (wtimer *WorldTimer) syncTime() {

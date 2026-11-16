@@ -14,7 +14,7 @@ type Timer struct {
 
 var timers = map[*Timer]struct{}{}
 
-// Tick advances every timer created by NewTimer by one game frame.
+// Tick advances every registered timer by one game frame.
 func Tick() {
 	for timer := range timers {
 		if timer.suspend {
