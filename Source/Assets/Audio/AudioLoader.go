@@ -2,9 +2,12 @@ package audioassets
 
 import (
 	"fmt"
+	"io"
 	"io/fs"
 
 	"github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/hajimehoshi/ebiten/v2/audio/mp3"
+	"github.com/hajimehoshi/ebiten/v2/audio/wav"
 )
 
 type SELoader struct {
@@ -24,7 +27,7 @@ func NewSELoader(fs fs.FS, audiocxt *audio.Context) (*SELoader, error) {
 func (al SELoader) Load(data AudioData) (*audio.Player, error) {
 	_, ok := al.cache[data.Path]
 	if !ok {
-		pl, err := al.fetch(data.Path)
+		pl, err := al.fetch(data)
 		if err != nil {
 			return nil, fmt.Errorf("al.fetch(data.Path) でエラーが発生しました。\n%w", err)
 		}
@@ -37,8 +40,38 @@ func (al SELoader) Load(data AudioData) (*audio.Player, error) {
 }
 
 // デコードして []byte にする
-func (al SELoader) fetch(path string) ([]byte, error) {
-	return nil, fmt.Errorf("Not Implimented!")
+func (al SELoader) fetch(data AudioData) ([]byte, error) {
+	rawfile, err := al.fs.Open(data.Path)
+	if err != nil {
+		return nil, err
+	}
+
+	var target []byte
+
+	switch data.ext {
+	case ".wav":
+		stream, err := wav.DecodeWithSampleRate(data.SampleRate, rawfile)
+		if err != nil {
+			return nil, fmt.Errorf("wavファイルの解析に失敗しました。\nPath : %s\n%w", data.Path, err)
+		}
+		target, err = io.ReadAll(stream)
+		if err != nil {
+			return nil, fmt.Errorf("wavファイルの解析結果が読み込めません。\nPath : %s\n%w", data.Path, err)
+		}
+	case ".mp3":
+		stream, err := mp3.DecodeWithSampleRate(data.SampleRate, rawfile)
+		if err != nil {
+			return nil, fmt.Errorf("mp3ファイルの解析に失敗しました。\nPath : %s\n%w", data.Path, err)
+		}
+		target, err = io.ReadAll(stream)
+		if err != nil {
+			return nil, fmt.Errorf("mp3ファイルの解析結果が読み込めません。\nPath : %s\n%w", data.Path, err)
+		}
+	default:
+		return nil, fmt.Errorf("対応していないファイル形式です\nPath : %s", data.Path)
+	}
+
+	return target, nil
 }
 
 // デコードしたデータを *audio.Player にする
