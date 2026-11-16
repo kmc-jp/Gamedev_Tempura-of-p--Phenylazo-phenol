@@ -243,6 +243,11 @@ func (c *PlayCanvas) Draw(screen *ebiten.Image) {
 		X: float64((bounds.Dx() - confirmSize.X) / 2),
 		Y: float64((bounds.Dy() - confirmSize.Y) / 2),
 	})
+	exitStoreConfirmSize := c.exitStoreConfirm.Size()
+	c.exitStoreConfirm.SetPosition(utils.Position{
+		X: float64((bounds.Dx() - exitStoreConfirmSize.X) / 2),
+		Y: float64((bounds.Dy() - exitStoreConfirmSize.Y) / 2),
+	})
 	c.canvas.Draw(screen)
 }
 
@@ -312,35 +317,32 @@ func (c *PlayCanvas) HidePurchaseConfirmation() {
 }
 
 func (c *PlayCanvas) ShowExitStoreConfirmation() bool {
-	if !c.partsList.IsShowingFoundParts() || c.partsList.SelectedPart() == nil {
-		return false
-	}
-	c.purchaseConfirm.Show()
+	c.exitStoreConfirm.Show()
 	return true
 }
 
 func (c *PlayCanvas) MoveExitStoreConfirmationLeft() {
-	c.purchaseConfirm.MoveLeft()
+	c.exitStoreConfirm.MoveLeft()
 }
 
 func (c *PlayCanvas) MoveExitStoreConfirmationRight() {
-	c.purchaseConfirm.MoveRight()
+	c.exitStoreConfirm.MoveRight()
 }
 
 func (c *PlayCanvas) ConfirmExitStore() {
-	c.purchaseConfirm.Confirm()
+	c.exitStoreConfirm.Confirm()
 }
 
 func (c *PlayCanvas) IsExitStoreConfirmationOpen() bool {
-	return c.purchaseConfirm.Visible()
+	return c.exitStoreConfirm.Visible()
 }
 
 func (c *PlayCanvas) ExitStoreConfirmationResult() (bool, bool) {
-	return c.purchaseConfirm.Result()
+	return c.exitStoreConfirm.Result()
 }
 
 func (c *PlayCanvas) HideExitStoreConfirmation() {
-	c.purchaseConfirm.Hide()
+	c.exitStoreConfirm.Hide()
 }
 
 // SelectedFoundPart implements [scene.PlayCanvasAPI].
