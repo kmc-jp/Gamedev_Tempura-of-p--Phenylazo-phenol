@@ -140,6 +140,8 @@ func (tmd TileMapData) Construct() (any, error) {
 			DIO.GeoM.Translate(tsv2.X, 0)
 			revtile := makeTileDataWithDIO(tiledata.Name, imagedata, tileSize, interactivity, DIO)
 			ReverseTiles[tilekey] = revtile
+		} else {
+			ReverseTiles[tilekey] = tile
 		}
 	}
 
