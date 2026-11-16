@@ -274,8 +274,8 @@ func (tmd TileMapData) Construct() (any, error) {
 	// 	}
 
 	// 	// posを指定
-	// 	posUL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 2}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUL]}
-	// 	posUR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 2}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUR]}
+	// 	posUL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 2}, Layer: tmd.FloorLayer}
+	// 	posUR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 2}, Layer: tmd.FloorLayer}
 
 	// 	// 実際のタイルのデータを生成
 	// 	tileFactoryUL, ok := ReverseTiles[CornerKeyUL]
@@ -287,11 +287,11 @@ func (tmd TileMapData) Construct() (any, error) {
 	// 		return nil, fmt.Errorf("CornerUR のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyUR)
 	// 	}
 
-	// 	realtiledataUL, err := tileFactoryUL(tmd.WallLayer)
+	// 	realtiledataUL, err := tileFactoryUL(tmd.WallLayer, Offsets[CornerKeyUL])
 	// 	if err != nil {
 	// 		return nil, fmt.Errorf("Floor %s の生成に失敗しました。\n%w\n", CornerKeyUL, err)
 	// 	}
-	// 	realtiledataUR, err := tileFactoryUR(tmd.WallLayer)
+	// 	realtiledataUR, err := tileFactoryUR(tmd.WallLayer, Offsets[CornerKeyUR])
 	// 	if err != nil {
 	// 		return nil, fmt.Errorf("Floor %s の生成に失敗しました。\n%w\n", CornerKeyUR, err)
 	// 	}
