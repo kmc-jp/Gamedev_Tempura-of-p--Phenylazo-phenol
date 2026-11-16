@@ -162,14 +162,17 @@ func (g *Gamedata) SetCurrentLocation(loc stageinfo.Location) {
 	g.currentLocation = loc
 }
 
+// 時間進行を有効化する.
 func (g *Gamedata) EnableWorldTimeProgressing() {
 	g.timeProgressing = true
 }
 
+// 時間進行を停止する.
 func (g *Gamedata) DisableWorldTimeProgressing() {
 	g.timeProgressing = false
 }
 
+// 現在の時間進行状況をbool値で返す.
 func (g *Gamedata) WorldTimeProgress() bool {
 	return g.timeProgressing
 }
