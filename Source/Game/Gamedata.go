@@ -252,3 +252,7 @@ func (g *Gamedata) ChooseSellPart(idx int) {
 func (g *Gamedata) Visited() uint {
 	return g.visited
 }
+
+func (g *Gamedata) IncrementVisited() {
+	g.visited++
+}
