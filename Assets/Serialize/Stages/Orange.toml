@@ -9,7 +9,7 @@ shelf = {Name = "shelf", JsonPath = "StageAssets/Orange/みんげー_棚_橙.jso
 floor = {Name = "floor", JsonPath = "StageAssets/Orange/みんげー_床_橙.json", PngPath = "StageAssets/Orange/みんげー_床_橙.png"}
 register = {Name = "register", JsonPath =  "StageAssets/Orange/みんげー_机_橙.json", PngPath = "StageAssets/Orange/みんげー_机_橙.png", Size = {X = 1, Y = 2}}
 WallTop = {Name = "wallTop", JsonPath = "StageAssets/Orange/みんげー_壁横_橙.json", PngPath = "StageAssets/Orange/みんげー_壁横_橙.png", Offset = {X = 0, Y = -15}}
-WallBottom = {Name = "wallTop", JsonPath = "StageAssets/Orange/みんげー_壁横_橙.json", PngPath = "StageAssets/Orange/みんげー_壁横_橙.png", Offset = {X = 0, Y = 15}}
+WallBottom = {Name = "wallBottom", JsonPath = "StageAssets/Orange/みんげー_壁横_橙.json", PngPath = "StageAssets/Orange/みんげー_壁横_橙.png", Offset = {X = 0, Y = 15}}
 WallSide = {Name = "wallSide", JsonPath = "StageAssets/Orange/みんげー_壁縦_橙.json", PngPath = "StageAssets/Orange/みんげー_壁縦_橙.png", Reversible = true}
 WallCorner = {Name = "wallCorner", JsonPath = "StageAssets/Orange/みんげー_壁縦端_橙.json", PngPath = "StageAssets/Orange/みんげー_壁縦端_橙.png", Reversible = true}
 
