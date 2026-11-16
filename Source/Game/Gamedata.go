@@ -248,6 +248,14 @@ func (g *Gamedata) ChooseSellPart(idx int) {
 	g.parts = g.parts.Remove(idx)
 }
 
+func (g *Gamedata) IsSellPartExists() bool {
+	if g.sell != nil {
+		return true
+	} else {
+		return false
+	}
+}
+
 // 訪れた店の数
 func (g *Gamedata) Visited() uint {
 	return g.visited
