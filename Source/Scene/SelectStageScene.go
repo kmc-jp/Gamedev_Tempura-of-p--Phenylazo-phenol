@@ -261,7 +261,7 @@ func (s SelectStageScene) mkStage(stage stageinfo.Location) Utils.Factory[game.S
 			return nil, fmt.Errorf("s.initScenes.InitPlayScene() でエラーが発生しました。\n%w", err)
 		}
 		nextScene.Gamedata = s.gamedata
-		nextScene.Gamedata.ForNewScene(game.Play_Explore)
+		nextScene.Gamedata.ForNewScene(game.Play_EnterStore)
 		nextScene.initScenes = s.initScenes
 		return nextScene, nil
 	}
