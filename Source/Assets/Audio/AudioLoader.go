@@ -1,10 +1,15 @@
 package audioassets
 
-import "fmt"
+import (
+	"github.com/hajimehoshi/ebiten/v2/audio"
+)
 
 type AudioLoader struct {
+	cache map[string]audio.Player
 }
 
 func NewAudioLoader() (*AudioLoader, error) {
-	return nil, fmt.Errorf("Not Implimented!")
+	return &AudioLoader{
+		cache: map[string]audio.Player{},
+	}, nil
 }
