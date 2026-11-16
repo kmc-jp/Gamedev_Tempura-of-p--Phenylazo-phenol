@@ -3,6 +3,7 @@ package tick
 type WorldTimer struct {
 	Timer
 
+	//ゲームスタートからの経過時間
 	passedTime uint64 //unit: min
 }
 
