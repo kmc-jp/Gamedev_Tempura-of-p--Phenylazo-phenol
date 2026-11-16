@@ -91,6 +91,7 @@ const (
 	Play_Explore
 	Play_Timeup
 	Play_Select
+	Play_ExitStore
 
 	Train_Default
 
