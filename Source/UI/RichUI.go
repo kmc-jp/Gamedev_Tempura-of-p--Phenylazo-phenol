@@ -74,6 +74,9 @@ func (r *RichUI) Bounds() image.Rectangle {
 
 func (r *RichUI) SetPosition(position utils.Position) {
 	r.position = position
+	if r.text != nil {
+		r.text.SetPosition(position)
+	}
 }
 
 var _ canvas.CanvasItem = (*RichUI)(nil)

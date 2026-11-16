@@ -32,6 +32,14 @@ type ResultCanvasAPI interface {
 	MovePartSelectionDown()
 	// MovePartSelectionUp は組み立てに使うパーツの選択を1つ上へ移す。
 	MovePartSelectionUp()
+	// ShowPartUseConfirmation は選択中パーツの使用確認を表示する。
+	ShowPartUseConfirmation() bool
+	MovePartUseConfirmationLeft()
+	MovePartUseConfirmationRight()
+	ConfirmPartUse()
+	IsPartUseConfirmationOpen() bool
+	PartUseConfirmationResult() (bool, bool)
+	HidePartUseConfirmation()
 
 	// ---- 問い合わせ ----
 
@@ -52,9 +60,10 @@ type ResultScene struct {
 	// candidatesRevision は選択候補が変わるたびに増える。Canvasが観測して一覧を作り直す。
 	candidatesRevision int
 	// text       *ui.Text
-	Input      *input.Handler
-	gamedata   *game.Gamedata
-	initScenes *InitializedScenes
+	Input                   *input.Handler
+	gamedata                *game.Gamedata
+	initScenes              *InitializedScenes
+	partUseConfirmationPart *game.Part
 }
 
 // NewResultScene は ResultScene を生成する。
@@ -134,6 +143,35 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 
 	if s.gamedata.State == game.Result_SelectParts {
 		//組み立てに使うパーツを選択
+		if s.canvas.IsPartUseConfirmationOpen() {
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
+				s.canvas.MovePartUseConfirmationLeft()
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveRight) {
+				s.canvas.MovePartUseConfirmationRight()
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+				s.canvas.ConfirmPartUse()
+			}
+			accepted, confirmed := s.canvas.PartUseConfirmationResult()
+			if confirmed {
+				part := s.partUseConfirmationPart
+				s.partUseConfirmationPart = nil
+				s.canvas.HidePartUseConfirmation()
+				if !accepted || part == nil {
+					return
+				}
+				s.gamedata.Assemble = append(s.gamedata.Assemble, part)
+				if !s.isSelectingArbitraryParts() {
+					s.partKindIndex++
+				}
+				if err := s.refreshCandidates(); err != nil {
+					return nil, transition.None(), err
+				}
+			}
+			return
+		}
+
 		if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
 			s.canvas.MovePartSelectionUp()
 		}
@@ -153,12 +191,8 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 				}
 				return nil, transition.None(), fmt.Errorf("選択されたパーツがありません")
 			}
-			s.gamedata.Assemble = append(s.gamedata.Assemble, part)
-			if !s.isSelectingArbitraryParts() {
-				s.partKindIndex++
-			}
-			if err := s.refreshCandidates(); err != nil {
-				return nil, transition.None(), err
+			if s.canvas.ShowPartUseConfirmation() {
+				s.partUseConfirmationPart = part
 			}
 		}
 	}

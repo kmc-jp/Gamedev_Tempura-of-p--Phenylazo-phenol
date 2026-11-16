@@ -26,6 +26,7 @@ type PlayCanvas struct {
 	partsList         *ui.PartsListUI
 	foundPartLog      *commonui.LogWindow
 	messageWindow     *commonui.MessageWindow
+	purchaseConfirm   *commonui.Confirm
 	messageWindowText string
 
 	// shownSelectListRevision は反映済みの PlayScene.SelectListRevision。
@@ -43,6 +44,11 @@ const (
 	messageWindowPaddingX     = 10
 	messageWindowPaddingY     = 5
 	messageWindowBottomMargin = 20
+	confirmWidth              = 280
+	confirmHeight             = 110
+	confirmPadding            = 12
+	confirmButtonWidth        = 90
+	confirmButtonHeight       = 30
 )
 
 var (
@@ -132,8 +138,24 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	messageWindow.SetText("探索中")
 	messageWindow.ShowText()
 
+	purchaseConfirm, err := commonui.NewConfirm(commonui.ConfirmConfig{
+		Size:                  image.Point{X: confirmWidth, Y: confirmHeight},
+		Font:                  ui.FontFace(gdata.Font, messageWindowTextSize),
+		TextColor:             messageWindowTextColor,
+		BackgroundColor:       messageWindowBackgroundColor,
+		ButtonBackgroundColor: color.DarkGray(),
+		Padding:               image.Point{X: confirmPadding, Y: confirmPadding},
+		ButtonSize:            image.Point{X: confirmButtonWidth, Y: confirmButtonHeight},
+		Message:               "購入しますか？",
+		YesLabel:              "はい",
+		NoLabel:               "いいえ",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("commonui.NewConfirm() でエラーが発生しました。\n%w", err)
+	}
+
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{timeText, partsList, gameDataUI, foundPartLog, messageWindow} {
+	for _, item := range []canvas.CanvasItem{timeText, partsList, gameDataUI, foundPartLog, messageWindow, purchaseConfirm} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("プレイ画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -146,6 +168,7 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		partsList:               partsList,
 		foundPartLog:            foundPartLog,
 		messageWindow:           messageWindow,
+		purchaseConfirm:         purchaseConfirm,
 		messageWindowText:       "探索中",
 		shownSelectListRevision: s.SelectListRevision(),
 		shownPartsRevision:      gdata.PartsRevision(),
@@ -197,6 +220,11 @@ func (c *PlayCanvas) Draw(screen *ebiten.Image) {
 		X: float64((bounds.Dx() - messageSize.X) / 2),
 		Y: float64(bounds.Dy() - messageSize.Y - messageWindowBottomMargin),
 	})
+	confirmSize := c.purchaseConfirm.Size()
+	c.purchaseConfirm.SetPosition(utils.Position{
+		X: float64((bounds.Dx() - confirmSize.X) / 2),
+		Y: float64((bounds.Dy() - confirmSize.Y) / 2),
+	})
 	c.canvas.Draw(screen)
 }
 
@@ -231,6 +259,38 @@ func (c *PlayCanvas) ShowNextPartsTab() error {
 // ShowPreviousPartsTab implements [scene.PlayCanvasAPI].
 func (c *PlayCanvas) ShowPreviousPartsTab() error {
 	return c.partsList.PreviousTab()
+}
+
+func (c *PlayCanvas) ShowPurchaseConfirmation() bool {
+	if !c.partsList.IsShowingFoundParts() || c.partsList.SelectedPart() == nil {
+		return false
+	}
+	c.purchaseConfirm.Show()
+	return true
+}
+
+func (c *PlayCanvas) MovePurchaseConfirmationLeft() {
+	c.purchaseConfirm.MoveLeft()
+}
+
+func (c *PlayCanvas) MovePurchaseConfirmationRight() {
+	c.purchaseConfirm.MoveRight()
+}
+
+func (c *PlayCanvas) ConfirmPurchase() {
+	c.purchaseConfirm.Confirm()
+}
+
+func (c *PlayCanvas) IsPurchaseConfirmationOpen() bool {
+	return c.purchaseConfirm.Visible()
+}
+
+func (c *PlayCanvas) PurchaseConfirmationResult() (bool, bool) {
+	return c.purchaseConfirm.Result()
+}
+
+func (c *PlayCanvas) HidePurchaseConfirmation() {
+	c.purchaseConfirm.Hide()
 }
 
 // SelectedFoundPart implements [scene.PlayCanvasAPI].
