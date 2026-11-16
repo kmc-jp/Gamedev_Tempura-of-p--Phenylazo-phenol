@@ -2,16 +2,19 @@ package audioassets
 
 import (
 	"fmt"
+	"io/fs"
 
 	"github.com/hajimehoshi/ebiten/v2/audio"
 )
 
 type AudioLoader struct {
+	fs    fs.FS
 	cache map[string][]byte // キーはパス
 }
 
-func NewAudioLoader() (*AudioLoader, error) {
+func NewAudioLoader(fs fs.FS) (*AudioLoader, error) {
 	return &AudioLoader{
+		fs:    fs,
 		cache: map[string][]byte{},
 	}, nil
 }

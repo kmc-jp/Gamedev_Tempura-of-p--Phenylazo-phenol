@@ -13,7 +13,7 @@ type AudioManager struct {
 }
 
 func NewAudioManager(AudioFS fs.FS) (*AudioManager, error) {
-	al, err := NewAudioLoader()
+	al, err := NewAudioLoader(AudioFS)
 	if err != nil {
 		return nil, fmt.Errorf("NewAudioLoader() でエラーが発生しました。\n%w", err)
 	}
