@@ -111,6 +111,7 @@ func (tmd TileMapData) Construct() (any, error) {
 	ReverseTiles := map[string](func(string, Utils.Vec2) (*tilemap.TileData, error)){}
 	// タイル毎のOffsetの一覧
 	Offsets := map[string]Utils.Vec2{}
+	ReverseOffsets := map[string]Utils.Vec2{}
 	for tilekey, tiledata := range tmd.TileData {
 		imagedata, err := imageassets.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath, tmd.imageManager)
 		if err != nil {
@@ -140,8 +141,10 @@ func (tmd TileMapData) Construct() (any, error) {
 			DIO.GeoM.Translate(tsv2.X, 0)
 			revtile := makeTileDataWithDIO(tiledata.Name, imagedata, tileSize, interactivity, DIO)
 			ReverseTiles[tilekey] = revtile
+			ReverseOffsets[tilekey] = tiledata.Offset.HadamardProd(Utils.Vec2{X: -1, Y: 1})
 		} else {
 			ReverseTiles[tilekey] = tile
+			ReverseOffsets[tilekey] = tiledata.Offset
 		}
 	}
 
@@ -212,7 +215,7 @@ func (tmd TileMapData) Construct() (any, error) {
 		posL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: j}, Layer: tmd.FloorLayer}
 		posR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: j}, Layer: tmd.FloorLayer}
 
-		if err := tmd.addTileData("WallL", posL, WallKeyL, tmd.WallLayer, true, ReverseTiles, Offsets, &mapdata, &enterabledata); err != nil {
+		if err := tmd.addTileData("WallL", posL, WallKeyL, tmd.WallLayer, true, ReverseTiles, ReverseOffsets, &mapdata, &enterabledata); err != nil {
 			return nil, fmt.Errorf("tmd.addTileData(\"WallL\", posL, WallKeyL, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, WallKeyL, err)
 		}
 		if err := tmd.addTileData("WallR", posR, WallKeyR, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
@@ -236,7 +239,7 @@ func (tmd TileMapData) Construct() (any, error) {
 	// 	posUL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 2}, Layer: tmd.FloorLayer}
 	// 	posUR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 2}, Layer: tmd.FloorLayer}
 
-	// 	if err := tmd.addTileData("CornerUL", posUL, CornerKeyUL, tmd.WallLayer, true, ReverseTiles, Offsets, &mapdata, &enterabledata); err != nil {
+	// 	if err := tmd.addTileData("CornerUL", posUL, CornerKeyUL, tmd.WallLayer, true, ReverseTiles, ReverseOffsets, &mapdata, &enterabledata); err != nil {
 	// 		return nil, fmt.Errorf("tmd.addTileData(\"CornerUL\", posUL, CornerKeyUL, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, CornerKeyUL, err)
 	// 	}
 	// 	if err := tmd.addTileData("CornerUR", posUR, CornerKeyUR, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
@@ -260,7 +263,7 @@ func (tmd TileMapData) Construct() (any, error) {
 		posL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: down + 1}, Layer: tmd.FloorLayer}
 		posR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: down + 1}, Layer: tmd.FloorLayer}
 
-		if err := tmd.addTileData("CornerDL", posL, CornerKeyL, tmd.WallLayer, true, ReverseTiles, Offsets, &mapdata, &enterabledata); err != nil {
+		if err := tmd.addTileData("CornerDL", posL, CornerKeyL, tmd.WallLayer, true, ReverseTiles, ReverseOffsets, &mapdata, &enterabledata); err != nil {
 			return nil, fmt.Errorf("tmd.addTileData(\"CornerDL\", posL, CornerKeyL, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, CornerKeyL, err)
 		}
 		if err := tmd.addTileData("CornerDR", posR, CornerKeyR, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
