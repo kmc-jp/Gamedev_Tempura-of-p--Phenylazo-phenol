@@ -254,7 +254,7 @@ func (s SelectStageScene) SetCameraCenter(center Utils.Position) {
 	s.worldDrawer.SetCenter(center)
 }
 
-func (s SelectStageScene) mkStage(stage stageinfo.Location)Utils.Factory[game.Scene] {
+func (s SelectStageScene) mkStage(stage stageinfo.Location) Utils.Factory[game.Scene] {
 	return func() (game.Scene, error) {
 		nextScene, err := s.initScenes.InitPlayScene[stage]()
 		if err != nil {
