@@ -8,14 +8,16 @@ import (
 )
 
 type AudioLoader struct {
-	fs    fs.FS
-	cache map[string][]byte // キーはパス
+	fs       fs.FS
+	audiocxt *audio.Context
+	cache    map[string][]byte // キーはパス
 }
 
-func NewAudioLoader(fs fs.FS) (*AudioLoader, error) {
+func NewAudioLoader(fs fs.FS, audiocxt *audio.Context) (*AudioLoader, error) {
 	return &AudioLoader{
-		fs:    fs,
-		cache: map[string][]byte{},
+		fs:       fs,
+		audiocxt: audiocxt,
+		cache:    map[string][]byte{},
 	}, nil
 }
 
