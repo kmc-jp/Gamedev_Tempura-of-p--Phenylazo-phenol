@@ -245,8 +245,25 @@ func (g *Gamedata) SellPart() {
 
 // 売却するパーツの選択処理
 func (g *Gamedata) ChooseSellPart(idx int) {
+	if idx < 0 || idx >= len(g.parts) {
+		return
+	}
 	g.sell = g.parts[idx]
 	g.parts = g.parts.Remove(idx)
+}
+
+// ChooseSellPartByPointer は p を次の店で売るパーツとして保存する。
+// 保存時に所持品からも取り除く。p が nil または所持品にない場合は false を返す。
+func (g *Gamedata) ChooseSellPartByPointer(p *Part) bool {
+	if p == nil {
+		return false
+	}
+	index := slices.Index(g.parts, p)
+	if index < 0 {
+		return false
+	}
+	g.ChooseSellPart(index)
+	return true
 }
 
 func (g *Gamedata) IsSellPartExists() bool {

@@ -5,9 +5,11 @@ import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
+	commonui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI/CommonUI"
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
+	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -15,10 +17,11 @@ import (
 // TrainCanvas は TrainScene のUI構成である。案内テキストと所持パーツ一覧を持つ。
 // 一覧を表示する時点はSceneが決めるため、Sceneのポインタを持って観測する。
 type TrainCanvas struct {
-	scene     *scene.TrainScene
-	gdata     *game.Gamedata
-	canvas    *canvas.Canvas
-	partsList *ui.PartsListUI
+	scene       *scene.TrainScene
+	gdata       *game.Gamedata
+	canvas      *canvas.Canvas
+	partsList   *ui.PartsListUI
+	sellConfirm *commonui.Confirm
 
 	// shownListRevision は反映済みの TrainScene.PartsListRevision。
 	shownListRevision int
@@ -38,7 +41,7 @@ func NewTrainCanvas(s *scene.TrainScene, gdata *game.Gamedata) (*TrainCanvas, er
 	guide, err := ui.NewText(
 		utils.Position{},
 		color.Orange(),
-		"電車で移動中\nESCキーでメニューを開く\nEnterキー で 店に向かう",
+		"電車で移動中\n上下キーでパーツ選択\nSpaceキーで売却確認\nEnterキーで店に向かう\nESCキーでメニューを開く",
 		ui.FontFace(gdata.Font, 15),
 	)
 	if err != nil {
@@ -50,14 +53,36 @@ func NewTrainCanvas(s *scene.TrainScene, gdata *game.Gamedata) (*TrainCanvas, er
 		return nil, err
 	}
 
+	sellConfirm, err := commonui.NewConfirm(commonui.ConfirmConfig{
+		Size:                  image.Point{X: 280, Y: 110},
+		Font:                  ui.FontFace(gdata.Font, 20),
+		TextColor:             color.White(),
+		BackgroundColor:       color.SemiTransparentBlack(),
+		ButtonBackgroundColor: color.DarkGray(),
+		Padding:               image.Point{X: 12, Y: 12},
+		ButtonSize:            image.Point{X: 90, Y: 30},
+		Message:               "このパーツを売りますか？",
+		YesLabel:              "はい",
+		NoLabel:               "いいえ",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("commonui.NewConfirm() でエラーが発生しました。\n%w", err)
+	}
+
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{guide, partsList} {
+	for _, item := range []canvas.CanvasItem{guide, partsList, sellConfirm} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("電車画面のCanvas構築に失敗しました。\n%w", err)
 		}
 	}
 
-	return &TrainCanvas{scene: s, gdata: gdata, canvas: c, partsList: partsList}, nil
+	return &TrainCanvas{
+		scene:       s,
+		gdata:       gdata,
+		canvas:      c,
+		partsList:   partsList,
+		sellConfirm: sellConfirm,
+	}, nil
 }
 
 // Update implements [scene.TrainCanvasAPI].
@@ -79,6 +104,14 @@ func (c *TrainCanvas) Update(active bool) error {
 
 // Draw implements [scene.TrainCanvasAPI].
 func (c *TrainCanvas) Draw(screen *ebiten.Image) {
+	if c.sellConfirm.Visible() {
+		bounds := screen.Bounds()
+		confirmSize := c.sellConfirm.Size()
+		c.sellConfirm.SetPosition(utils.Position{
+			X: float64((bounds.Dx() - confirmSize.X) / 2),
+			Y: float64((bounds.Dy() - confirmSize.Y) / 2),
+		})
+	}
 	c.canvas.Draw(screen)
 }
 
@@ -95,6 +128,42 @@ func (c *TrainCanvas) ScrollPartsListDown() {
 // ScrollPartsListUp implements [scene.TrainCanvasAPI].
 func (c *TrainCanvas) ScrollPartsListUp() {
 	c.partsList.SelectPrevious()
+}
+
+func (c *TrainCanvas) ShowSellPartConfirmation() bool {
+	if c.partsList.SelectedPart() == nil {
+		return false
+	}
+	c.sellConfirm.Show()
+	return true
+}
+
+func (c *TrainCanvas) MoveSellPartConfirmationLeft() {
+	c.sellConfirm.MoveLeft()
+}
+
+func (c *TrainCanvas) MoveSellPartConfirmationRight() {
+	c.sellConfirm.MoveRight()
+}
+
+func (c *TrainCanvas) ConfirmSellPart() {
+	c.sellConfirm.Confirm()
+}
+
+func (c *TrainCanvas) IsSellPartConfirmationOpen() bool {
+	return c.sellConfirm.Visible()
+}
+
+func (c *TrainCanvas) SellPartConfirmationResult() (bool, bool) {
+	return c.sellConfirm.Result()
+}
+
+func (c *TrainCanvas) HideSellPartConfirmation() {
+	c.sellConfirm.Hide()
+}
+
+func (c *TrainCanvas) SelectedPart() *game.Part {
+	return c.partsList.SelectedPart()
 }
 
 var _ scene.TrainCanvasAPI = (*TrainCanvas)(nil)
