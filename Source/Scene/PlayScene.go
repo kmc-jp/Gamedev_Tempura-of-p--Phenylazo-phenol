@@ -295,9 +295,10 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 		// 購入できるのは発見タブの表示中だけ
 		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) && s.canvas.CurrentPartsTab() == PartsListTabFound {
 			part := s.canvas.SelectedFoundPart()
-			if part != nil && s.canvas.ShowPurchaseConfirmation() {
+			if s.Gamedata.Buyable(part) == game.Buyable && part != nil && s.canvas.ShowPurchaseConfirmation() {
 				s.purchaseConfirmationPart = part
 			}
+
 		}
 
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
