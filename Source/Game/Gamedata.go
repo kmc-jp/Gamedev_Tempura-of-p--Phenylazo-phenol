@@ -106,13 +106,15 @@ const states = 13 //stateの数
 type state uint
 
 func NewGamedata() *Gamedata {
-	return &Gamedata{
+	g := &Gamedata{
 		Timer:           tick.NewTimer(),
 		WorldTimer:      tick.NewWorldTimer(),
 		Weight:          InitialWeight,
 		Money:           InitialMoney,
 		currentLocation: stageinfo.Departure,
 	}
+	g.DisableWorldTimeProgressing()
+	return g
 }
 
 func (g *Gamedata) ForNewScene(state state) {
@@ -120,6 +122,7 @@ func (g *Gamedata) ForNewScene(state state) {
 	g.Flag = []bool{}
 	g.State = state
 	g.Text = ""
+	g.DisableWorldTimeProgressing()
 }
 
 func (g *Gamedata) ForNewStage() {
@@ -136,7 +139,7 @@ func (g *Gamedata) ResetGame() {
 	g.Money = InitialMoney
 	g.visited = 0
 	g.currentLocation = stageinfo.Departure
-	g.timeProgressing = false
+	g.DisableWorldTimeProgressing()
 }
 
 // 同じScene内での利用を想定
@@ -169,11 +172,13 @@ func (g *Gamedata) SetCurrentLocation(loc stageinfo.Location) {
 // 時間進行を有効化する.
 func (g *Gamedata) EnableWorldTimeProgressing() {
 	g.timeProgressing = true
+	g.WorldTimer.Resume()
 }
 
 // 時間進行を停止する.
 func (g *Gamedata) DisableWorldTimeProgressing() {
 	g.timeProgressing = false
+	g.WorldTimer.Suspend()
 }
 
 // 現在の時間進行状況をbool値で返す.
