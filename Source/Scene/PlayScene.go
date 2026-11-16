@@ -50,6 +50,14 @@ type PlayCanvasAPI interface {
 	ShowNextPartsTab() error
 	// ShowPreviousPartsTab は発見／所持タブを前へ切り替える。
 	ShowPreviousPartsTab() error
+	// ShowPurchaseConfirmation は選択中の発見パーツの購入確認を表示する。
+	ShowPurchaseConfirmation() bool
+	MovePurchaseConfirmationLeft()
+	MovePurchaseConfirmationRight()
+	ConfirmPurchase()
+	IsPurchaseConfirmationOpen() bool
+	PurchaseConfirmationResult() (bool, bool)
+	HidePurchaseConfirmation()
 
 	// ---- 問い合わせ ----
 
@@ -69,7 +77,7 @@ type PlayCanvasAPI interface {
 type PlayScene struct {
 	// Stage は、このシーンが遊ばせるステージのある駅。
 	Stage       stageinfo.Location
-	entities   []Entity
+	entities    []Entity
 	worldDrawer WorldDrawer
 
 	canvas PlayCanvasAPI
@@ -81,7 +89,8 @@ type PlayScene struct {
 	Gamedata   *game.Gamedata
 	initScenes *InitializedScenes
 	// テスト用
-	cameraCenter Utils.Position
+	cameraCenter             Utils.Position
+	purchaseConfirmationPart *game.Part
 }
 
 // NewPlayScene は PlayScene を生成する。
@@ -229,6 +238,40 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 	}
 
 	if s.Gamedata.State == game.Play_Select {
+		if s.canvas.IsPurchaseConfirmationOpen() {
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
+				s.canvas.MovePurchaseConfirmationLeft()
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveRight) {
+				s.canvas.MovePurchaseConfirmationRight()
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+				s.canvas.ConfirmPurchase()
+			}
+			accepted, confirmed := s.canvas.PurchaseConfirmationResult()
+			if confirmed {
+				part := s.purchaseConfirmationPart
+				s.purchaseConfirmationPart = nil
+				s.canvas.HidePurchaseConfirmation()
+				if !accepted || part == nil {
+					return
+				}
+				switch s.Gamedata.BuyFoundPart(part) {
+				case game.NoItem:
+					fmt.Print("購入可能な商品がありません")
+				case game.Lack_money:
+					fmt.Print("所持金が不足しています")
+				case game.Lack_weight:
+					fmt.Print("重量オーバーです")
+				case game.Buy:
+					fmt.Printf("%s を購入した", part.Name)
+				default:
+					fmt.Print("不正な値がBuyFoundPart()から渡されました")
+				}
+			}
+			return
+		}
+
 		if err := s.handlePartsListInput(); err != nil {
 			return nil, transition.None(), err
 		}
@@ -236,17 +279,8 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 		// 購入できるのは発見タブの表示中だけ
 		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) && s.canvas.CurrentPartsTab() == PartsListTabFound {
 			part := s.canvas.SelectedFoundPart()
-			switch s.Gamedata.BuyFoundPart(part) {
-			case game.NoItem:
-				fmt.Print("購入可能な商品がありません")
-			case game.Lack_money:
-				fmt.Print("所持金が不足しています")
-			case game.Lack_weight:
-				fmt.Print("重量オーバーです")
-			case game.Buy:
-				fmt.Printf("%s を購入した", part.Name)
-			default:
-				fmt.Print("不正な値がBuyFoundPart()から渡されました")
+			if part != nil && s.canvas.ShowPurchaseConfirmation() {
+				s.purchaseConfirmationPart = part
 			}
 		}
 
@@ -257,7 +291,7 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 					return nil, err
 				}
 				nextScene.gamedata = s.Gamedata
-				nextScene.gamedata.ForNewScene(game.SelectStage_Default)
+				nextScene.gamedata.ForNewScene(game.SelectStage_Select)
 				nextScene.initScenes = s.initScenes
 				return nextScene, nil
 			}, transition.NewScene(), nil

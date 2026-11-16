@@ -81,6 +81,19 @@ Play / Train / Result / SelectStage の Canvas は Scene のポインタや Game
 押下・選択の判定は Scene・Component が `input.Handler` で行い、結果を `SetSelected` で渡す。マウスの当たり判定が必要な場合は `RichUI().Bounds()` を使う。
 旧マウス判定（`IsMouseOver`、`IsButtonPressed`）は、Scene側の入力移行は完了したが、再利用の可能性があるため理由付きのコメントアウトで残している。
 
+## Confirm
+
+`commonui.Confirm` は、任意メッセージと「はい」「いいえ」の2択を表示する受動的な確認UIである。背景はメッセージとボタン全体を覆い、ボタンの選択状態は既存のオレンジ枠で示す。
+
+- `NewConfirm(ConfirmConfig)`: 位置、サイズ、余白、フォント、色、ボタンサイズ、表示文言を指定して生成する
+- `Show()` / `Hide()` / `Visible() bool`: 表示状態を管理する。`Show` は選択を「はい」に戻し、未確定にする
+- `SetMessage(string)`: 上部のメッセージを差し替える
+- `MoveLeft()` / `MoveRight()`: Scene・Componentから選択を変更する（左が「はい」、右が「いいえ」）。入力は扱わない
+- `Confirm()`: 現在の選択を確定する
+- `Result() (bool, bool)`: `(結果, 確定済み)`を返す
+
+キー入力はScene・Componentの`input.Handler`で解釈し、左右キーを`MoveLeft` / `MoveRight`、Enterを`Confirm`へ接続する。
+
 ## ScrollUI
 
 `ScrollUI` は複数の `CanvasItem` をコンテンツ用オフスクリーン画像へ描画し、ビューポート部分だけを表示する。
