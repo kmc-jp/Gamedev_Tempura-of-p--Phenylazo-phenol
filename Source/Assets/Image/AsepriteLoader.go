@@ -9,32 +9,42 @@ import (
 	"github.com/solarlune/goaseprite"
 )
 
+type imagecachekey struct {
+	JsonPath string
+	PngPath  string
+}
+
 type AsepriteLoader struct {
-	cacheAseprite map[string]*goaseprite.File
-	cacheImage    map[string]*ebiten.Image
+	cacheAseprite map[imagecachekey]*goaseprite.File
+	cacheImage    map[imagecachekey]*ebiten.Image
 }
 
 func NewAsepriteLoader() (*AsepriteLoader, error) {
 	al := AsepriteLoader{
-		cacheAseprite: map[string]*goaseprite.File{},
-		cacheImage:    map[string]*ebiten.Image{},
+		cacheAseprite: map[imagecachekey]*goaseprite.File{},
+		cacheImage:    map[imagecachekey]*ebiten.Image{},
 	}
 	return &al, nil
 }
 
 func (al AsepriteLoader) Load(data ImageData, fs fs.FS) (*goaseprite.File, *ebiten.Image, error) {
-	asp, aspOk := al.cacheAseprite[data.Name]
-	img, imgOk := al.cacheImage[data.Name]
+	cachekey := imagecachekey{
+		JsonPath: data.JsonPath,
+		PngPath:  data.PngPath,
+	}
+
+	asp, aspOk := al.cacheAseprite[cachekey]
+	img, imgOk := al.cacheImage[cachekey]
 	if !aspOk || !imgOk {
 		asp, img, err := al.fetch(data, fs)
 		if err != nil {
 			return nil, nil, fmt.Errorf("AsepriteLoader.fetch() でエラーが発生しました。\n%w", err)
 		}
-		al.cacheAseprite[data.Name] = asp
-		al.cacheImage[data.Name] = img
+		al.cacheAseprite[cachekey] = asp
+		al.cacheImage[cachekey] = img
 	}
-	asp, _ = al.cacheAseprite[data.Name]
-	img, _ = al.cacheImage[data.Name]
+	asp, _ = al.cacheAseprite[cachekey]
+	img, _ = al.cacheImage[cachekey]
 	return asp, img, nil
 }
 
