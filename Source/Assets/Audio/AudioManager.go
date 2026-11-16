@@ -8,25 +8,42 @@ import (
 )
 
 type AudioManager struct {
-	AudioFS     fs.FS
-	audioLoader *SELoader
+	AudioFS   fs.FS
+	seLoader  *SELoader
+	bgmLoader *BGMLoader
 }
 
 func NewAudioManager(AudioFS fs.FS) (*AudioManager, error) {
-	al, err := NewSELoader(AudioFS, nil)
+	sl, err := NewSELoader(AudioFS, nil)
 	if err != nil {
-		return nil, fmt.Errorf("NewAudioLoader() でエラーが発生しました。\n%w", err)
+		return nil, fmt.Errorf("NewSELoader() でエラーが発生しました。\n%w", err)
+	}
+	bl, err := NewBGMLoader(AudioFS, nil)
+	if err != nil {
+		return nil, fmt.Errorf("NewBGMLoader() でエラーが発生しました。\n%w", err)
 	}
 	return &AudioManager{
-		AudioFS:     AudioFS,
-		audioLoader: al,
+		AudioFS:   AudioFS,
+		seLoader:  sl,
+		bgmLoader: bl,
 	}, nil
 }
 
 func (am AudioManager) Load(data AudioData) (*audio.Player, error) {
-	pl, err := am.audioLoader.Load(data)
-	if err != nil {
-		return nil, fmt.Errorf("am.audioLoader.Load(data) でエラーが発生しました。\n%w", err)
+	switch data.Type {
+	case SE:
+		pl, err := am.seLoader.Load(data)
+		if err != nil {
+			return nil, fmt.Errorf("am.seLoader.Load(data) でエラーが発生しました。\n%w", err)
+		}
+		return pl, nil
+	case BGM:
+		pl, err := am.bgmLoader.Load(data)
+		if err != nil {
+			return nil, fmt.Errorf("am.bgmLoader.Load(data) でエラーが発生しました。\n%w", err)
+		}
+		return pl, nil
+	default:
+		return nil, fmt.Errorf("data.Type が不正です。\n%s", data.Type)
 	}
-	return pl, nil
 }
