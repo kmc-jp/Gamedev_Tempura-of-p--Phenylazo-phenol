@@ -189,7 +189,11 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 	}
 
 	if s.Gamedata.State == game.Play_Sell {
-		// 売却処理
+		// TrainSceneで保存したパーツを売却し、探索へ進む。
+		if s.Gamedata.IsSellPartExists() {
+			s.Gamedata.SellPart()
+		}
+		s.Gamedata.State = game.Play_Explore
 
 		return nil, transition.None(), nil
 	}
