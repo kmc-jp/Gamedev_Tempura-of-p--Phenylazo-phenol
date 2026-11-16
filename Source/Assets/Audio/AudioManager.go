@@ -9,11 +9,11 @@ import (
 
 type AudioManager struct {
 	AudioFS     fs.FS
-	audioLoader *AudioLoader
+	audioLoader *SELoader
 }
 
 func NewAudioManager(AudioFS fs.FS) (*AudioManager, error) {
-	al, err := NewAudioLoader(AudioFS, nil)
+	al, err := NewSELoader(AudioFS, nil)
 	if err != nil {
 		return nil, fmt.Errorf("NewAudioLoader() でエラーが発生しました。\n%w", err)
 	}

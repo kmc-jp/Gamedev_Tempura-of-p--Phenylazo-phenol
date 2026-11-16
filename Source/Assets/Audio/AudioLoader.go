@@ -7,21 +7,21 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/audio"
 )
 
-type AudioLoader struct {
+type SELoader struct {
 	fs       fs.FS
 	audiocxt *audio.Context
 	cache    map[string][]byte // キーはパス
 }
 
-func NewAudioLoader(fs fs.FS, audiocxt *audio.Context) (*AudioLoader, error) {
-	return &AudioLoader{
+func NewSELoader(fs fs.FS, audiocxt *audio.Context) (*SELoader, error) {
+	return &SELoader{
 		fs:       fs,
 		audiocxt: audiocxt,
 		cache:    map[string][]byte{},
 	}, nil
 }
 
-func (al AudioLoader) Load(data AudioData) (*audio.Player, error) {
+func (al SELoader) Load(data AudioData) (*audio.Player, error) {
 	_, ok := al.cache[data.Path]
 	if !ok {
 		pl, err := al.fetch(data.Path)
@@ -37,12 +37,12 @@ func (al AudioLoader) Load(data AudioData) (*audio.Player, error) {
 }
 
 // デコードして []byte にする
-func (al AudioLoader) fetch(path string) ([]byte, error) {
+func (al SELoader) fetch(path string) ([]byte, error) {
 	return nil, fmt.Errorf("Not Implimented!")
 }
 
 // デコードしたデータを *audio.Player にする
 // 不正なデータでも問答無用で変換してくれる
-func (al AudioLoader) mkPlayer(AudioData []byte) *audio.Player {
+func (al SELoader) mkPlayer(AudioData []byte) *audio.Player {
 	return al.audiocxt.NewPlayerFromBytes(AudioData)
 }
