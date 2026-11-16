@@ -5,6 +5,7 @@ import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
+	commonui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI/CommonUI"
 	resultui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI/ResultUI"
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
@@ -27,6 +28,7 @@ type ResultCanvas struct {
 	benchmarkPrompt *ui.AnimatableUI
 	installedParts  *resultui.InstalledParts
 	partsList       *ui.PartsListUI
+	partUseConfirm  *commonui.Confirm
 
 	// shownRevision は一覧に反映済みの ResultScene.CandidatesRevision。
 	shownRevision int
@@ -94,8 +96,24 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 		return nil, err
 	}
 
+	partUseConfirm, err := commonui.NewConfirm(commonui.ConfirmConfig{
+		Size:                  image.Point{X: 280, Y: 110},
+		Font:                  ui.FontFace(gdata.Font, 20),
+		TextColor:             color.White(),
+		BackgroundColor:       color.SemiTransparentBlack(),
+		ButtonBackgroundColor: color.DarkGray(),
+		Padding:               image.Point{X: 12, Y: 12},
+		ButtonSize:            image.Point{X: 90, Y: 30},
+		Message:               "このパーツをつかいますか？",
+		YesLabel:              "はい",
+		NoLabel:               "いいえ",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("commonui.NewConfirm() でエラーが発生しました。\n%w", err)
+	}
+
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{guide, benchmarkPrompt, installedParts, partsList} {
+	for _, item := range []canvas.CanvasItem{guide, benchmarkPrompt, installedParts, partsList, partUseConfirm} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("結果画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -108,6 +126,7 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 		benchmarkPrompt: benchmarkPrompt,
 		installedParts:  installedParts,
 		partsList:       partsList,
+		partUseConfirm:  partUseConfirm,
 	}, nil
 }
 
@@ -154,6 +173,14 @@ func (c *ResultCanvas) Update(active bool) error {
 
 // Draw implements [scene.ResultCanvasAPI].
 func (c *ResultCanvas) Draw(screen *ebiten.Image) {
+	if c.partUseConfirm.Visible() {
+		bounds := screen.Bounds()
+		confirmSize := c.partUseConfirm.Size()
+		c.partUseConfirm.SetPosition(utils.Position{
+			X: float64((bounds.Dx() - confirmSize.X) / 2),
+			Y: float64((bounds.Dy() - confirmSize.Y) / 2),
+		})
+	}
 	c.canvas.Draw(screen)
 }
 
@@ -169,6 +196,40 @@ func (c *ResultCanvas) MovePartSelectionDown() {
 // MovePartSelectionUp implements [scene.ResultCanvasAPI].
 func (c *ResultCanvas) MovePartSelectionUp() {
 	c.partsList.SelectPrevious()
+}
+
+func (c *ResultCanvas) ShowPartUseConfirmation() bool {
+	if c.partsList.SelectedPart() == nil {
+		return false
+	}
+	c.partsList.Hide()
+	c.partUseConfirm.Show()
+	return true
+}
+
+func (c *ResultCanvas) MovePartUseConfirmationLeft() {
+	c.partUseConfirm.MoveLeft()
+}
+
+func (c *ResultCanvas) MovePartUseConfirmationRight() {
+	c.partUseConfirm.MoveRight()
+}
+
+func (c *ResultCanvas) ConfirmPartUse() {
+	c.partUseConfirm.Confirm()
+}
+
+func (c *ResultCanvas) IsPartUseConfirmationOpen() bool {
+	return c.partUseConfirm.Visible()
+}
+
+func (c *ResultCanvas) PartUseConfirmationResult() (bool, bool) {
+	return c.partUseConfirm.Result()
+}
+
+func (c *ResultCanvas) HidePartUseConfirmation() {
+	c.partUseConfirm.Hide()
+	c.partsList.Show()
 }
 
 // SelectedPart implements [scene.ResultCanvasAPI].
