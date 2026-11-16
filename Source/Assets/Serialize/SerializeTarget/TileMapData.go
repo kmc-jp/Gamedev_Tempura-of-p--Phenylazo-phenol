@@ -236,7 +236,7 @@ func (tmd TileMapData) Construct() (any, error) {
 	// 	posUL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 2}, Layer: tmd.FloorLayer}
 	// 	posUR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 2}, Layer: tmd.FloorLayer}
 
-	// 	if err := tmd.addTileData("CornerUL", posUL, CornerKeyUL, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+	// 	if err := tmd.addTileData("CornerUL", posUL, CornerKeyUL, tmd.WallLayer, true, ReverseTiles, Offsets, &mapdata, &enterabledata); err != nil {
 	// 		return nil, fmt.Errorf("tmd.addTileData(\"CornerUL\", posUL, CornerKeyUL, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, CornerKeyUL, err)
 	// 	}
 	// 	if err := tmd.addTileData("CornerUR", posUR, CornerKeyUR, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
