@@ -265,7 +265,6 @@ func (c *PlayCanvas) ShowPurchaseConfirmation() bool {
 	if !c.partsList.IsShowingFoundParts() || c.partsList.SelectedPart() == nil {
 		return false
 	}
-	c.partsList.Hide()
 	c.purchaseConfirm.Show()
 	return true
 }
@@ -292,7 +291,6 @@ func (c *PlayCanvas) PurchaseConfirmationResult() (bool, bool) {
 
 func (c *PlayCanvas) HidePurchaseConfirmation() {
 	c.purchaseConfirm.Hide()
-	c.partsList.Show()
 }
 
 // SelectedFoundPart implements [scene.PlayCanvasAPI].

@@ -202,7 +202,6 @@ func (c *ResultCanvas) ShowPartUseConfirmation() bool {
 	if c.partsList.SelectedPart() == nil {
 		return false
 	}
-	c.partsList.Hide()
 	c.partUseConfirm.Show()
 	return true
 }
@@ -229,7 +228,6 @@ func (c *ResultCanvas) PartUseConfirmationResult() (bool, bool) {
 
 func (c *ResultCanvas) HidePartUseConfirmation() {
 	c.partUseConfirm.Hide()
-	c.partsList.Show()
 }
 
 // SelectedPart implements [scene.ResultCanvasAPI].
