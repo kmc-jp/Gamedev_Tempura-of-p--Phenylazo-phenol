@@ -120,7 +120,7 @@ func (s *TrainScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 		//シーン起動時処理
 		s.Gamedata.InitialProcess = false
 
-		if s.Gamedata.Visited == 0 {
+		if s.Gamedata.Visited() == 0 {
 			return
 		}
 
@@ -164,7 +164,7 @@ func (s *TrainScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 	}
 
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
-		s.Gamedata.Visited++
+		s.Gamedata.IncrementVisited()
 		return s.Gamedata.NextStage(), transition.NewScene(), nil
 	}
 
