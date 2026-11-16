@@ -101,19 +101,19 @@ func NewConfirm(config ConfirmConfig) (*Confirm, error) {
 	}
 
 	buttonY := config.Position.Y + float64(config.Size.Y-config.Padding.Y-config.ButtonSize.Y)
-	noButton, err := newConfirmButton(
+	yesButton, err := newConfirmButton(
 		utils.Position{X: config.Position.X + float64(config.Padding.X), Y: buttonY},
-		config.ButtonSize, config.NoLabel, config.Font, config.TextColor,
+		config.ButtonSize, config.YesLabel, config.Font, config.TextColor,
 	)
 	if err != nil {
 		return nil, err
 	}
-	yesButton, err := newConfirmButton(
+	noButton, err := newConfirmButton(
 		utils.Position{
 			X: config.Position.X + float64(config.Size.X-config.Padding.X-config.ButtonSize.X),
 			Y: buttonY,
 		},
-		config.ButtonSize, config.YesLabel, config.Font, config.TextColor,
+		config.ButtonSize, config.NoLabel, config.Font, config.TextColor,
 	)
 	if err != nil {
 		return nil, err
@@ -128,7 +128,7 @@ func NewConfirm(config ConfirmConfig) (*Confirm, error) {
 		message:               message,
 		yes:                   yesButton,
 		no:                    noButton,
-		choice:                ConfirmNo,
+		choice:                ConfirmYes,
 		visible:               false,
 	}
 	confirm.syncSelection()
@@ -192,10 +192,10 @@ func (c *Confirm) SetMessage(message string) {
 	c.message.SetText(message)
 }
 
-// Show は確認UIを表示し、選択を「いいえ」に戻して未確定にする。
+// Show は確認UIを表示し、選択を「はい」に戻して未確定にする。
 func (c *Confirm) Show() {
 	c.visible = true
-	c.choice = ConfirmNo
+	c.choice = ConfirmYes
 	c.confirmed = false
 	c.result = false
 	c.syncSelection()
@@ -211,18 +211,18 @@ func (c *Confirm) Visible() bool {
 	return c.visible
 }
 
-// MoveLeft は選択を「いいえ」へ移す。
+// MoveLeft は選択を「はい」へ移す。
 func (c *Confirm) MoveLeft() {
 	if c.visible && !c.confirmed {
-		c.choice = ConfirmNo
+		c.choice = ConfirmYes
 		c.syncSelection()
 	}
 }
 
-// MoveRight は選択を「はい」へ移す。
+// MoveRight は選択を「いいえ」へ移す。
 func (c *Confirm) MoveRight() {
 	if c.visible && !c.confirmed {
-		c.choice = ConfirmYes
+		c.choice = ConfirmNo
 		c.syncSelection()
 	}
 }

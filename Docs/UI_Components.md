@@ -86,9 +86,9 @@ Play / Train / Result / SelectStage の Canvas は Scene のポインタや Game
 `commonui.Confirm` は、任意メッセージと「はい」「いいえ」の2択を表示する受動的な確認UIである。背景はメッセージとボタン全体を覆い、ボタンの選択状態は既存のオレンジ枠で示す。
 
 - `NewConfirm(ConfirmConfig)`: 位置、サイズ、余白、フォント、色、ボタンサイズ、表示文言を指定して生成する
-- `Show()` / `Hide()` / `Visible() bool`: 表示状態を管理する。`Show` は選択を「いいえ」に戻し、未確定にする
+- `Show()` / `Hide()` / `Visible() bool`: 表示状態を管理する。`Show` は選択を「はい」に戻し、未確定にする
 - `SetMessage(string)`: 上部のメッセージを差し替える
-- `MoveLeft()` / `MoveRight()`: Scene・Componentから選択を変更する。入力は扱わない
+- `MoveLeft()` / `MoveRight()`: Scene・Componentから選択を変更する（左が「はい」、右が「いいえ」）。入力は扱わない
 - `Confirm()`: 現在の選択を確定する
 - `Result() (bool, bool)`: `(結果, 確定済み)`を返す
 
