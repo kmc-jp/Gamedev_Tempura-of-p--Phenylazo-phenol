@@ -7,12 +7,12 @@ import (
 )
 
 type AudioLoader struct {
-	cache map[string]*audio.Player // キーはパス
+	cache map[string][]byte // キーはパス
 }
 
 func NewAudioLoader() (*AudioLoader, error) {
 	return &AudioLoader{
-		cache: map[string]*audio.Player{},
+		cache: map[string][]byte{},
 	}, nil
 }
 
@@ -26,10 +26,18 @@ func (al AudioLoader) Load(data AudioData) (*audio.Player, error) {
 		al.cache[data.Path] = pl
 	}
 
-	pl, _ := al.cache[data.Path]
+	ad, _ := al.cache[data.Path]
+	pl, err := al.mkPlayer(ad)
+	if err != nil {
+		return nil, fmt.Errorf("al.mkPlayer(ad) でエラーが発生しました。\nPath : %s\n%w", data.Path, err)
+	}
 	return pl, nil
 }
 
-func (al AudioLoader) fetch(path string) (*audio.Player, error) {
+func (al AudioLoader) fetch(path string) ([]byte, error) {
+	return nil, fmt.Errorf("Not Implimented!")
+}
+
+func (al AudioLoader) mkPlayer(AudioData []byte) (*audio.Player, error) {
 	return nil, fmt.Errorf("Not Implimented!")
 }
