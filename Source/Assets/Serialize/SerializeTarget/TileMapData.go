@@ -309,7 +309,7 @@ func (tmd TileMapData) addTileData(
 	pos tilemap.TilePosition,
 	Key string,
 	Layer string,
-	Enterable bool,
+	Unenterable bool,
 	Tiles map[string](func(string, Utils.Vec2) (*tilemap.TileData, error)),
 	Offsets map[string]Utils.Vec2,
 	mapdata *map[tilemap.TilePosition]*tilemap.TileData,
@@ -328,7 +328,7 @@ func (tmd TileMapData) addTileData(
 
 	(*mapdata)[pos] = realtiledata
 
-	if Enterable {
+	if Unenterable {
 		Size := realtiledata.TileSize
 		for offset := range Size.Range() {
 			(*enterabledata)[pos.Position.Add(offset)] = false
