@@ -28,6 +28,16 @@ type TrainCanvasAPI interface {
 	ScrollPartsListDown()
 	// ScrollPartsListUp は所持パーツ一覧を上へスクロールする。
 	ScrollPartsListUp()
+	// ShowSellPartConfirmation は選択中パーツの売却確認を表示する。
+	ShowSellPartConfirmation() bool
+	MoveSellPartConfirmationLeft()
+	MoveSellPartConfirmationRight()
+	ConfirmSellPart()
+	IsSellPartConfirmationOpen() bool
+	SellPartConfirmationResult() (bool, bool)
+	HideSellPartConfirmation()
+	// SelectedPart は一覧で選択中の所持パーツを返す。
+	SelectedPart() *game.Part
 }
 
 type TrainScene struct {
@@ -42,9 +52,10 @@ type TrainScene struct {
 	bgDrawer BackGroundDrawer
 
 	// text       *ui.Text
-	Input      *input.Handler
-	Gamedata   *game.Gamedata
-	initScenes *InitializedScenes
+	Input                    *input.Handler
+	Gamedata                 *game.Gamedata
+	initScenes               *InitializedScenes
+	sellPartConfirmationPart *game.Part
 }
 
 // NewTrainScene は TrainScene を生成する。
@@ -142,11 +153,43 @@ func (s *TrainScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 		return nil, transition.None(), fmt.Errorf("s.bgDrawer.Update() でエラーが発生しました。\n%w", err)
 	}
 
-	if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
-		s.canvas.ScrollPartsListUp()
-	}
-	if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
-		s.canvas.ScrollPartsListDown()
+	if s.partsListRevision > 0 {
+		if s.canvas.IsSellPartConfirmationOpen() {
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
+				s.canvas.MoveSellPartConfirmationLeft()
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveRight) {
+				s.canvas.MoveSellPartConfirmationRight()
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+				s.canvas.ConfirmSellPart()
+			}
+			accepted, confirmed := s.canvas.SellPartConfirmationResult()
+			if confirmed {
+				part := s.sellPartConfirmationPart
+				s.sellPartConfirmationPart = nil
+				s.canvas.HideSellPartConfirmation()
+				if accepted && part != nil && !s.Gamedata.IsSellPartExists() {
+					if !s.Gamedata.ChooseSellPartByPointer(part) {
+						return nil, transition.None(), fmt.Errorf("売却対象パーツの保存に失敗しました")
+					}
+				}
+			}
+			return
+		}
+
+		if s.Input.ActionIsJustPressed(inputconfig.ActionMoveUp) {
+			s.canvas.ScrollPartsListUp()
+		}
+		if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
+			s.canvas.ScrollPartsListDown()
+		}
+		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) && !s.Gamedata.IsSellPartExists() {
+			part := s.canvas.SelectedPart()
+			if part != nil && s.canvas.ShowSellPartConfirmation() {
+				s.sellPartConfirmationPart = part
+			}
+		}
 	}
 
 	// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
@@ -163,7 +206,8 @@ func (s *TrainScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 		}, transition.Push(), nil
 	}
 
-	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) &&
+		(s.Gamedata.Visited() == 0 || s.Gamedata.IsSellPartExists()) {
 		s.Gamedata.IncrementVisited()
 		return s.Gamedata.NextStage(), transition.NewScene(), nil
 	}
