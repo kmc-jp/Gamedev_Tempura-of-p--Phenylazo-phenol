@@ -107,10 +107,11 @@ func (tmd TileMapData) Construct() (any, error) {
 
 	// タイル種別の一覧
 	// レイヤーを入れればタイルがデータが返ってくるようになってる
-	Tiles := map[string](func(layer string) (*tilemap.TileData, error)){}
-	ReverseTiles := map[string](func(layer string) (*tilemap.TileData, error)){}
+	Tiles := map[string](func(string, Utils.Vec2) (*tilemap.TileData, error)){}
+	ReverseTiles := map[string](func(string, Utils.Vec2) (*tilemap.TileData, error)){}
 	// タイル毎のOffsetの一覧
 	Offsets := map[string]Utils.Vec2{}
+	ReverseOffsets := map[string]Utils.Vec2{}
 	for tilekey, tiledata := range tmd.TileData {
 		imagedata, err := imageassets.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath, tmd.imageManager)
 		if err != nil {
@@ -140,6 +141,10 @@ func (tmd TileMapData) Construct() (any, error) {
 			DIO.GeoM.Translate(tsv2.X, 0)
 			revtile := makeTileDataWithDIO(tiledata.Name, imagedata, tileSize, interactivity, DIO)
 			ReverseTiles[tilekey] = revtile
+			ReverseOffsets[tilekey] = tiledata.Offset.HadamardProd(Utils.Vec2{X: -1, Y: 1})
+		} else {
+			ReverseTiles[tilekey] = tile
+			ReverseOffsets[tilekey] = tiledata.Offset
 		}
 	}
 
@@ -162,20 +167,11 @@ func (tmd TileMapData) Construct() (any, error) {
 			}
 
 			// posを指定
-			pos := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: j}, Layer: tmd.FloorLayer, Offset: Offsets[floorKey]}
+			pos := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: j}, Layer: tmd.FloorLayer}
 
-			// 実際のタイルのデータを生成
-			tileFactory, ok := Tiles[floorKey]
-			if !ok {
-				return nil, fmt.Errorf("FloorLayer のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, floorKey)
+			if err := tmd.addTileData("Floor", pos, floorKey, tmd.FloorLayer, false, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+				return nil, fmt.Errorf("tmd.addTileData(\"Floor\", pos, floorKey, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, floorKey, err)
 			}
-
-			realtiledata, err := tileFactory(tmd.FloorLayer)
-			if err != nil {
-				return nil, fmt.Errorf("Floor %s の生成に失敗しました。\n%w\n", floorKey, err)
-			}
-
-			mapdata[pos] = realtiledata
 		}
 	}
 
@@ -193,32 +189,15 @@ func (tmd TileMapData) Construct() (any, error) {
 		}
 
 		// posを指定
-		posU := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: up - 1}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyU]}
-		posD := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: down + 1}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyD]}
+		posU := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: up - 1}, Layer: tmd.FloorLayer}
+		posD := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: down + 1}, Layer: tmd.FloorLayer}
 
-		// 実際のタイルのデータを生成
-		tileFactoryU, ok := Tiles[WallKeyU]
-		if !ok {
-			return nil, fmt.Errorf("WallKeyUp のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, WallKeyU)
+		if err := tmd.addTileData("WallU", posU, WallKeyU, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+			return nil, fmt.Errorf("tmd.addTileData(\"WallU\", posU, WallKeyU, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, WallKeyU, err)
 		}
-		tileFactoryD, ok := Tiles[WallKeyD]
-		if !ok {
-			return nil, fmt.Errorf("WallKeyDown のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, WallKeyD)
+		if err := tmd.addTileData("WallD", posD, WallKeyD, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+			return nil, fmt.Errorf("tmd.addTileData(\"WallD\", posD, WallKeyD, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, WallKeyD, err)
 		}
-
-		realtiledataU, err := tileFactoryU(tmd.WallLayer)
-		if err != nil {
-			return nil, fmt.Errorf("WallUp %s の生成に失敗しました。\n%w\n", WallKeyU, err)
-		}
-		realtiledataD, err := tileFactoryD(tmd.WallLayer)
-		if err != nil {
-			return nil, fmt.Errorf("WallDown %s の生成に失敗しました。\n%w\n", WallKeyD, err)
-		}
-
-		mapdata[posU] = realtiledataU
-		enterabledata[posU.Position] = false
-		mapdata[posD] = realtiledataD
-		enterabledata[posD.Position] = false
 	}
 	// 縦壁 (ふたつのばす)
 	for j := up - 2; j <= down; j++ {
@@ -233,32 +212,15 @@ func (tmd TileMapData) Construct() (any, error) {
 		}
 
 		// posを指定
-		posL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: j}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyL]}
-		posR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: j}, Layer: tmd.FloorLayer, Offset: Offsets[WallKeyR]}
+		posL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: j}, Layer: tmd.FloorLayer}
+		posR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: j}, Layer: tmd.FloorLayer}
 
-		// 実際のタイルのデータを生成
-		tileFactoryL, ok := ReverseTiles[WallKeyL]
-		if !ok {
-			return nil, fmt.Errorf("WallKeyUp のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, WallKeyL)
+		if err := tmd.addTileData("WallL", posL, WallKeyL, tmd.WallLayer, true, ReverseTiles, ReverseOffsets, &mapdata, &enterabledata); err != nil {
+			return nil, fmt.Errorf("tmd.addTileData(\"WallL\", posL, WallKeyL, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, WallKeyL, err)
 		}
-		tileFactoryR, ok := Tiles[WallKeyR]
-		if !ok {
-			return nil, fmt.Errorf("WallKeyDown のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, WallKeyR)
+		if err := tmd.addTileData("WallR", posR, WallKeyR, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+			return nil, fmt.Errorf("tmd.addTileData(\"WallR\", posR, WallKeyR, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, WallKeyR, err)
 		}
-
-		realtiledataL, err := tileFactoryL(tmd.WallLayer)
-		if err != nil {
-			return nil, fmt.Errorf("WallUp %s の生成に失敗しました。\n%w\n", WallKeyL, err)
-		}
-		realtiledataR, err := tileFactoryR(tmd.WallLayer)
-		if err != nil {
-			return nil, fmt.Errorf("WallDown %s の生成に失敗しました。\n%w\n", WallKeyR, err)
-		}
-
-		mapdata[posL] = realtiledataL
-		enterabledata[posL.Position] = false
-		mapdata[posR] = realtiledataR
-		enterabledata[posR.Position] = false
 	}
 	// // 角
 	// // 上角を張る
@@ -274,72 +236,39 @@ func (tmd TileMapData) Construct() (any, error) {
 	// 	}
 
 	// 	// posを指定
-	// 	posUL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 2}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUL]}
-	// 	posUR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 2}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyUR]}
+	// 	posUL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 2}, Layer: tmd.FloorLayer}
+	// 	posUR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 2}, Layer: tmd.FloorLayer}
 
-	// 	// 実際のタイルのデータを生成
-	// 	tileFactoryUL, ok := ReverseTiles[CornerKeyUL]
-	// 	if !ok {
-	// 		return nil, fmt.Errorf("CornerUL のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyUL)
+	// 	if err := tmd.addTileData("CornerUL", posUL, CornerKeyUL, tmd.WallLayer, true, ReverseTiles, ReverseOffsets, &mapdata, &enterabledata); err != nil {
+	// 		return nil, fmt.Errorf("tmd.addTileData(\"CornerUL\", posUL, CornerKeyUL, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, CornerKeyUL, err)
 	// 	}
-	// 	tileFactoryUR, ok := Tiles[CornerKeyUR]
-	// 	if !ok {
-	// 		return nil, fmt.Errorf("CornerUR のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyUR)
+	// 	if err := tmd.addTileData("CornerUR", posUR, CornerKeyUR, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+	// 		return nil, fmt.Errorf("tmd.addTileData(\"CornerUR\", posUR, CornerKeyUR, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, CornerKeyUR, err)
 	// 	}
-
-	// 	realtiledataUL, err := tileFactoryUL(tmd.WallLayer)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("Floor %s の生成に失敗しました。\n%w\n", CornerKeyUL, err)
-	// 	}
-	// 	realtiledataUR, err := tileFactoryUR(tmd.WallLayer)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("Floor %s の生成に失敗しました。\n%w\n", CornerKeyUR, err)
-	// 	}
-
-	// 	mapdata[posUL] = realtiledataUL
-	// 	enterabledata[posUL.Position] = false
-	// 	mapdata[posUR] = realtiledataUR
-	// 	enterabledata[posUR.Position] = false
 	// }
+
 	// 下角
 	{
 		// (left,down+1), (right,down+1) に置く壁タイルを指定
-		CornerKeyL, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", left-1, down+2)]
+		CornerKeyL, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", left-1, down+1)]
 		if !ok {
 			CornerKeyL = tmd.Wall.Bottom
 		}
-		CornerKeyR, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", right+1, down+2)]
+		CornerKeyR, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", right+1, down+1)]
 		if !ok {
 			CornerKeyR = tmd.Wall.Bottom
 		}
 
 		// posを指定
-		posL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: down + 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyL]}
-		posR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: down + 1}, Layer: tmd.FloorLayer, Offset: Offsets[CornerKeyR]}
+		posL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: down + 1}, Layer: tmd.FloorLayer}
+		posR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: down + 1}, Layer: tmd.FloorLayer}
 
-		// 実際のタイルのデータを生成
-		tileFactoryL, ok := Tiles[CornerKeyL]
-		if !ok {
-			return nil, fmt.Errorf("CornerKeyL のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyL)
+		if err := tmd.addTileData("CornerDL", posL, CornerKeyL, tmd.WallLayer, true, ReverseTiles, ReverseOffsets, &mapdata, &enterabledata); err != nil {
+			return nil, fmt.Errorf("tmd.addTileData(\"CornerDL\", posL, CornerKeyL, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, CornerKeyL, err)
 		}
-		tileFactoryR, ok := Tiles[CornerKeyR]
-		if !ok {
-			return nil, fmt.Errorf("CornerKeyR のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, CornerKeyR)
+		if err := tmd.addTileData("CornerDR", posR, CornerKeyR, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+			return nil, fmt.Errorf("tmd.addTileData(\"CornerDR\", posR, CornerKeyR, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, CornerKeyR, err)
 		}
-
-		realtiledataL, err := tileFactoryL(tmd.WallLayer)
-		if err != nil {
-			return nil, fmt.Errorf("CornerL %s の生成に失敗しました。\n%w\n", CornerKeyL, err)
-		}
-		realtiledataR, err := tileFactoryR(tmd.WallLayer)
-		if err != nil {
-			return nil, fmt.Errorf("CornerR %s の生成に失敗しました。\n%w\n", CornerKeyR, err)
-		}
-
-		mapdata[posL] = realtiledataL
-		enterabledata[posL.Position] = false
-		mapdata[posR] = realtiledataR
-		enterabledata[posR.Position] = false
 	}
 
 	// 床以外のオブジェクト
@@ -350,22 +279,10 @@ func (tmd TileMapData) Construct() (any, error) {
 		if err != nil {
 			return nil, fmt.Errorf("MapData のキーが不正です。 \"x,y\" の形式で入力してください。\nfilePath: %s, key: %s\n%w", tmd.filePath, posstr, err)
 		}
-		pos := tilemap.TilePosition{Position: posvec, Layer: ObjectData.Layer, Offset: Offsets[ObjectData.Tilekey]}
+		pos := tilemap.TilePosition{Position: posvec, Layer: ObjectData.Layer}
 
-		// 実際のタイルのデータを生成
-		tileFactory, ok := Tiles[ObjectData.Tilekey]
-		if !ok {
-			return nil, fmt.Errorf("FloorLayer のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", tmd.filePath, ObjectData.Tilekey)
-		}
-
-		realtiledata, err := tileFactory(ObjectData.Layer)
-		if err != nil {
-			return nil, fmt.Errorf("Object %s の生成に失敗しました。\n%w\n", ObjectData.Tilekey, err)
-		}
-		mapdata[pos] = realtiledata
-		Size := realtiledata.TileSize
-		for offset := range Size.Range() {
-			enterabledata[pos.Position.Add(offset)] = false
+		if err := tmd.addTileData("Object", pos, ObjectData.Tilekey, ObjectData.Layer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+			return nil, fmt.Errorf("tmd.addTileData(\"Object\", pos, ObjectData.Tilekey, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, ObjectData.Tilekey, err)
 		}
 	}
 
@@ -379,16 +296,51 @@ func (tmd TileMapData) Construct() (any, error) {
 }
 
 // 部分適用
-func makeTileData(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType) func(layer string) (*tilemap.TileData, error) {
-	return func(layer string) (*tilemap.TileData, error) {
-		return tilemap.NewTileData(name, imgData, layer, tileSize, Interact)
+func makeTileData(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType) func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
+	return func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
+		return tilemap.NewTileData(name, imgData, layer, tileSize, offset, Interact)
 	}
 }
 
-func makeTileDataWithDIO(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType, DIO *ebiten.DrawImageOptions) func(layer string) (*tilemap.TileData, error) {
-	return func(layer string) (*tilemap.TileData, error) {
-		return tilemap.NewTileData(name, imgData, layer, tileSize, Interact, tilemap.TileData_DIOOption(DIO))
+func makeTileDataWithDIO(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType, DIO *ebiten.DrawImageOptions) func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
+	return func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
+		return tilemap.NewTileData(name, imgData, layer, tileSize, offset, Interact, tilemap.TileData_DIOOption(DIO))
 	}
+}
+
+// タイルデータ追加
+func (tmd TileMapData) addTileData(
+	Target string,
+	pos tilemap.TilePosition,
+	Key string,
+	Layer string,
+	Unenterable bool,
+	Tiles map[string](func(string, Utils.Vec2) (*tilemap.TileData, error)),
+	Offsets map[string]Utils.Vec2,
+	mapdata *map[tilemap.TilePosition]*tilemap.TileData,
+	enterabledata *map[Utils.Vec2Int]bool,
+) error {
+	// 実際のタイルのデータを生成
+	tileFactory, ok := Tiles[Key]
+	if !ok {
+		return fmt.Errorf("%s のタイル指定キーが不正です。 存在するキーを入力してください。\nfilePath: %s, key: %s", Target, tmd.filePath, Key)
+	}
+
+	realtiledata, err := tileFactory(Layer, Offsets[Key])
+	if err != nil {
+		return fmt.Errorf("%s %s の生成に失敗しました。\n%w", Target, Key, err)
+	}
+
+	(*mapdata)[pos] = realtiledata
+
+	if Unenterable {
+		Size := realtiledata.TileSize
+		for offset := range Size.Range() {
+			(*enterabledata)[pos.Position.Add(offset)] = false
+		}
+	}
+
+	return nil
 }
 
 // tileType から干渉可能設定を取り出す関数

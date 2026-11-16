@@ -75,7 +75,7 @@ func (pc PlayerConfig) Construct() (any, error) {
 		return nil, fmt.Errorf("imageassets.NewImageData でエラーが発生しました。\n%w", err)
 	}
 
-	td, err := tilemap.NewTileData(pc.TileData.Name, imageData, pc.Position.Layer, pc.TileData.Size, tilemap.None)
+	td, err := tilemap.NewTileData(pc.TileData.Name, imageData, pc.Position.Layer, pc.TileData.Size, pc.TileData.Offset, tilemap.None)
 	if err != nil {
 		return nil, fmt.Errorf("tilemap.NewTileData でエラーが発生しました。\n%w", err)
 	}

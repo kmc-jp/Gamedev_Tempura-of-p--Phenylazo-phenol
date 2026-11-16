@@ -96,7 +96,9 @@ func (tm *TileMap) SetGameObject(
 				return fmt.Errorf("Interact() でエラーが発生しました。\ndata.Interact = %d\n%w", data.Interact, err)
 			}
 			obj.AddComponent(ic)
-			tm.Interact[pos.Position] = ic
+			for offset := range data.TileSize.Range() {
+				tm.Interact[pos.Position.Add(offset)] = ic
+			}
 		}
 
 		// fmt.Printf("Tile %s が追加されました。\n", obj.Name())
@@ -107,7 +109,7 @@ func (tm *TileMap) SetGameObject(
 func (tm TileMap) TilePositionToWorldPosition(pos tilemap.TilePosition, data tilemap.TileData) Utils.Position {
 	tileposf := pos.Position.ToVec2()
 	sizeoffset := data.TileSize.Sub(Utils.NewVecIntOne()).ToVec2().HadamardDiv(data.TileSize.ToVec2())
-	to := tileposf.Add(sizeoffset).HadamardProd(tm.TileSize.ToVec2()).Add(pos.Offset)
+	to := tileposf.Add(sizeoffset).HadamardProd(tm.TileSize.ToVec2()).Add(pos.Offset).Add(data.TileOffset)
 	// if data.Size != Utils.NewVecIntOne() {
 	// 	fmt.Printf("TilePositionToWorldPosition\npos %d -> size %d -> %f\ntileposf = %f, pos.Offset = %f, sizeoffset = %f", pos.Position, data.Size, to.HadamardDiv(tm.TileSize.ToVec2()), tileposf, pos.Offset, sizeoffset)
 	// }

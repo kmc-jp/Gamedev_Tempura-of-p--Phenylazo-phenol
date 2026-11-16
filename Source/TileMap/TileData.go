@@ -8,12 +8,13 @@ import (
 )
 
 type TileData struct {
-	Name      string
-	ImageData imageassets.ImageData
-	Layer     string
-	TileSize  Utils.Vec2Int
-	Interact  InteractType
-	DIO       *ebiten.DrawImageOptions
+	Name       string
+	ImageData  imageassets.ImageData
+	Layer      string
+	TileSize   Utils.Vec2Int
+	TileOffset Utils.Vec2
+	Interact   InteractType
+	DIO        *ebiten.DrawImageOptions
 }
 
 type InteractType int
@@ -29,14 +30,15 @@ func IsIntaractive(t InteractType) bool {
 
 type TileDataOpt func(*TileData)
 
-func NewTileData(name string, imgData *imageassets.ImageData, layer string, TileSize Utils.Vec2Int, Interact InteractType, opts ...TileDataOpt) (*TileData, error) {
+func NewTileData(name string, imgData *imageassets.ImageData, layer string, TileSize Utils.Vec2Int, offset Utils.Vec2, Interact InteractType, opts ...TileDataOpt) (*TileData, error) {
 	td := &TileData{
-		Name:      name,
-		ImageData: *imgData,
-		Layer:     layer,
-		TileSize:  TileSize,
-		Interact:  Interact,
-		DIO:       &ebiten.DrawImageOptions{},
+		Name:       name,
+		ImageData:  *imgData,
+		Layer:      layer,
+		TileSize:   TileSize,
+		TileOffset: offset,
+		Interact:   Interact,
+		DIO:        &ebiten.DrawImageOptions{},
 	}
 
 	for _, opt := range opts {
