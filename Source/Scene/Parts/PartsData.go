@@ -91,6 +91,8 @@ var (
 			Val:         100,
 			Rank:        game.A,
 			Performance: 0,
+			Detail:      "PC装飾用LEDテープ",
+			ImgName:     "Parts/みんげー_LEDテープ",
 		}
 	})
 )
