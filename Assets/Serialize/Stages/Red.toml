@@ -16,12 +16,6 @@ WallCorner = {Name = "wallCorner", JsonPath = "StageAssets/Red/みんげー_壁�
 [ObjectMap]
 "-1, 0" = {Tile =  "register", Layer = "Object"}
 "1,1" = {Tile =  "shelf", Layer = "Object"}
-"2,1" = {Tile =  "shelf", Layer = "Object"}
-"3,1" = {Tile =  "shelf", Layer = "Object"}
 "4,1" = {Tile =  "shelf", Layer = "Object"}
-"5,1" = {Tile =  "shelf", Layer = "Object"}
-"6,1" = {Tile =  "shelf", Layer = "Object"}
 "7,1" = {Tile =  "shelf", Layer = "Object"}
-"8,1" = {Tile =  "shelf", Layer = "Object"}
-"9,1" = {Tile =  "shelf", Layer = "Object"}
 "10,1" = {Tile =  "shelf", Layer = "Object"}
