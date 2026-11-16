@@ -2,9 +2,9 @@ package audioassets
 
 import "fmt"
 
-type WAVLoader struct {
+type AudioLoader struct {
 }
 
-func NewWAVLoader() (*WAVLoader, error) {
+func NewAudioLoader() (*AudioLoader, error) {
 	return nil, fmt.Errorf("Not Implimented!")
 }
