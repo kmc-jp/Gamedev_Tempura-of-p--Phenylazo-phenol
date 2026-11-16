@@ -187,10 +187,10 @@ func (tmd TileMapData) Construct() (any, error) {
 		posU := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: up - 1}, Layer: tmd.FloorLayer}
 		posD := tilemap.TilePosition{Position: Utils.Vec2Int{X: i, Y: down + 1}, Layer: tmd.FloorLayer}
 
-		if err := tmd.addTileData("Floor", posU, WallKeyU, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+		if err := tmd.addTileData("WallU", posU, WallKeyU, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
 			return nil, fmt.Errorf("tmd.addTileData(\"Floor\", posU, WallKeyU, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, WallKeyU, err)
 		}
-		if err := tmd.addTileData("Floor", posD, WallKeyD, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+		if err := tmd.addTileData("WallD", posD, WallKeyD, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
 			return nil, fmt.Errorf("tmd.addTileData(\"Floor\", posD, WallKeyD, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, WallKeyD, err)
 		}
 	}
@@ -210,10 +210,10 @@ func (tmd TileMapData) Construct() (any, error) {
 		posL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: j}, Layer: tmd.FloorLayer}
 		posR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: j}, Layer: tmd.FloorLayer}
 
-		if err := tmd.addTileData("Floor", posL, WallKeyL, tmd.WallLayer, true, ReverseTiles, Offsets, &mapdata, &enterabledata); err != nil {
+		if err := tmd.addTileData("WallL", posL, WallKeyL, tmd.WallLayer, true, ReverseTiles, Offsets, &mapdata, &enterabledata); err != nil {
 			return nil, fmt.Errorf("tmd.addTileData(\"Floor\", posL, WallKeyL, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, WallKeyL, err)
 		}
-		if err := tmd.addTileData("Floor", posR, WallKeyR, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+		if err := tmd.addTileData("WallR", posR, WallKeyR, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
 			return nil, fmt.Errorf("tmd.addTileData(\"Floor\", posR, WallKeyR, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, WallKeyR, err)
 		}
 	}
@@ -234,10 +234,10 @@ func (tmd TileMapData) Construct() (any, error) {
 	// 	posUL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: up - 2}, Layer: tmd.FloorLayer}
 	// 	posUR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: up - 2}, Layer: tmd.FloorLayer}
 
-	// 	if err := tmd.addTileData("Floor", posUL, CornerKeyUL, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+	// 	if err := tmd.addTileData("CornerUL", posUL, CornerKeyUL, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
 	// 		return nil, fmt.Errorf("tmd.addTileData(\"Floor\", posUL, CornerKeyUL, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, CornerKeyUL, err)
 	// 	}
-	// 	if err := tmd.addTileData("Floor", posUR, CornerKeyUR, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+	// 	if err := tmd.addTileData("CornerUR", posUR, CornerKeyUR, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
 	// 		return nil, fmt.Errorf("tmd.addTileData(\"Floor\", posUR, CornerKeyUR, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, CornerKeyUR, err)
 	// 	}
 	// }
@@ -258,10 +258,10 @@ func (tmd TileMapData) Construct() (any, error) {
 		posL := tilemap.TilePosition{Position: Utils.Vec2Int{X: left - 1, Y: down + 1}, Layer: tmd.FloorLayer}
 		posR := tilemap.TilePosition{Position: Utils.Vec2Int{X: right + 1, Y: down + 1}, Layer: tmd.FloorLayer}
 
-		if err := tmd.addTileData("Floor", posL, CornerKeyL, tmd.WallLayer, true, ReverseTiles, Offsets, &mapdata, &enterabledata); err != nil {
+		if err := tmd.addTileData("CornerDL", posL, CornerKeyL, tmd.WallLayer, true, ReverseTiles, Offsets, &mapdata, &enterabledata); err != nil {
 			return nil, fmt.Errorf("tmd.addTileData(\"Floor\", posL, CornerKeyL, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, CornerKeyL, err)
 		}
-		if err := tmd.addTileData("Floor", posR, CornerKeyR, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+		if err := tmd.addTileData("CornerDR", posR, CornerKeyR, tmd.WallLayer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
 			return nil, fmt.Errorf("tmd.addTileData(\"Floor\", posR, CornerKeyR, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, CornerKeyR, err)
 		}
 	}
@@ -276,7 +276,7 @@ func (tmd TileMapData) Construct() (any, error) {
 		}
 		pos := tilemap.TilePosition{Position: posvec, Layer: ObjectData.Layer}
 
-		if err := tmd.addTileData("Floor", pos, ObjectData.Tilekey, ObjectData.Layer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
+		if err := tmd.addTileData("Object", pos, ObjectData.Tilekey, ObjectData.Layer, true, Tiles, Offsets, &mapdata, &enterabledata); err != nil {
 			return nil, fmt.Errorf("tmd.addTileData(\"Floor\", pos, ObjectData.Tilekey, ...) でエラーが発生しました。\nfilePath: %s, key: %s\n%w", tmd.filePath, ObjectData.Tilekey, err)
 		}
 	}
