@@ -6,6 +6,7 @@ import (
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	stageinfo "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/StageInfo"
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
+	commonui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI/CommonUI"
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
@@ -72,8 +73,19 @@ func NewSelectStageCanvas(s *scene.SelectStageScene, gdata *game.Gamedata) (*Sel
 		return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
 	}
 
+	worldTimeText, err := commonui.NewClock(
+		utils.Position{},
+		color.White(),
+		gdata,
+		ui.FontFace(gdata.Font, 15),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("commonui.NewClock() でエラーが発生しました。\n%w", err)
+	}
+	guide.SetPosition(utils.Position{Y: 25})
+
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{routeMap, guide} {
+	for _, item := range []canvas.CanvasItem{routeMap, worldTimeText, guide} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("ステージ選択画面のCanvas構築に失敗しました。\n%w", err)
 		}
