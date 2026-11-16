@@ -9,15 +9,16 @@ import (
 
 type AudioData struct {
 	// /Assets/Audio からの相対パス
-	Path string
-	ext  string
+	Path       string
+	ext        string
+	SampleRate int
 }
 
 func (ad AudioData) Extention() string {
 	return ad.ext
 }
 
-func NewImageData(path string, audioManager *AudioManager) (*AudioData, error) {
+func NewImageData(path string, SampleRate int, audioManager *AudioManager) (*AudioData, error) {
 	cleaned, err := assetsutil.CheckAndCleanPath(path, audioManager.AudioFS)
 	if err != nil {
 		return nil, fmt.Errorf("path が不正です。\n%w", err)
@@ -26,8 +27,9 @@ func NewImageData(path string, audioManager *AudioManager) (*AudioData, error) {
 	ext := strings.ToLower(filepath.Ext(path))
 
 	id := AudioData{
-		Path: cleaned,
-		ext:  ext,
+		Path:       cleaned,
+		ext:        ext,
+		SampleRate: SampleRate,
 	}
 	return &id, nil
 }
