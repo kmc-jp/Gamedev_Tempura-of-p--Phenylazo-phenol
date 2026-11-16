@@ -245,11 +245,11 @@ func (tmd TileMapData) Construct() (any, error) {
 	// 下角
 	{
 		// (left,down+1), (right,down+1) に置く壁タイルを指定
-		CornerKeyL, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", left-1, down+2)]
+		CornerKeyL, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", left-1, down+1)]
 		if !ok {
 			CornerKeyL = tmd.Wall.Bottom
 		}
-		CornerKeyR, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", right+1, down+2)]
+		CornerKeyR, ok := tmd.AdditionalFloor[fmt.Sprintf("%d,%d", right+1, down+1)]
 		if !ok {
 			CornerKeyR = tmd.Wall.Bottom
 		}
