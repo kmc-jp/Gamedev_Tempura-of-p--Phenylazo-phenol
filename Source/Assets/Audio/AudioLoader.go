@@ -5,7 +5,7 @@ import (
 )
 
 type AudioLoader struct {
-	cache map[string]audio.Player
+	cache map[string]audio.Player // キーはパス
 }
 
 func NewAudioLoader() (*AudioLoader, error) {
