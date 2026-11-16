@@ -69,7 +69,7 @@ type PlayCanvasAPI interface {
 type PlayScene struct {
 	// Stage は、このシーンが遊ばせるステージのある駅。
 	Stage       stageinfo.Location
-	entities   []Entity
+	entities    []Entity
 	worldDrawer WorldDrawer
 
 	canvas PlayCanvasAPI
@@ -257,7 +257,7 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 					return nil, err
 				}
 				nextScene.gamedata = s.Gamedata
-				nextScene.gamedata.ForNewScene(game.SelectStage_Default)
+				nextScene.gamedata.ForNewScene(game.SelectStage_Select)
 				nextScene.initScenes = s.initScenes
 				return nextScene, nil
 			}, transition.NewScene(), nil
