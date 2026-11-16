@@ -325,7 +325,7 @@ func (tmd TileMapData) addTileData(
 
 	realtiledata, err := tileFactory(Layer, Offsets[Key])
 	if err != nil {
-		return fmt.Errorf("%s %s の生成に失敗しました。\n%w\n", Target, Key, err)
+		return fmt.Errorf("%s %s の生成に失敗しました。\n%w", Target, Key, err)
 	}
 
 	(*mapdata)[pos] = realtiledata
