@@ -59,6 +59,15 @@ type PlayCanvasAPI interface {
 	PurchaseConfirmationResult() (bool, bool)
 	HidePurchaseConfirmation()
 
+	// ShowExitStoreConfirmation は退店確認を表示する。
+	ShowExitStoreConfirmation() bool
+	MoveExitStoreConfirmationLeft()
+	MoveExitStoreConfirmationRight()
+	ConfirmExitStore()
+	IsExitStoreConfirmationOpen() bool
+	ExitStoreConfirmationResult() (bool, bool)
+	HideExitStoreConfirmation()
+
 	// ---- 問い合わせ ----
 
 	// SelectedFoundPart は選択中の発見済みパーツを返す。
@@ -221,8 +230,6 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 				s.Gamedata.State = game.Play_Timeup
 
 				s.Gamedata.Text = "0\nTimeUp 次の店に移動します"
-				// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
-				fmt.Print("みつけたもの\n", s.Gamedata.ExtractFoundPartsName(), "\n")
 			}
 		}
 		// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
@@ -297,23 +304,51 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 		// 購入できるのは発見タブの表示中だけ
 		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) && s.canvas.CurrentPartsTab() == PartsListTabFound {
 			part := s.canvas.SelectedFoundPart()
-			if part != nil && s.canvas.ShowPurchaseConfirmation() {
+			if s.Gamedata.Buyable(part) == game.Buyable && part != nil && s.canvas.ShowPurchaseConfirmation() {
 				s.purchaseConfirmationPart = part
 			}
+
 		}
 
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
-			return func() (game.Scene, error) {
-				nextScene, err := s.initScenes.InitSelectStageScene()
-				if err != nil {
-					return nil, err
-				}
-				nextScene.gamedata = s.Gamedata
-				nextScene.gamedata.ForNewScene(game.SelectStage_Select)
-				nextScene.initScenes = s.initScenes
-				return nextScene, nil
-			}, transition.NewScene(), nil
+			s.Gamedata.State = game.Play_ExitStore
+			s.canvas.ShowExitStoreConfirmation()
+			return
 		}
+
+	}
+
+	if s.Gamedata.State == game.Play_ExitStore {
+		if s.canvas.IsExitStoreConfirmationOpen() {
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
+				s.canvas.MoveExitStoreConfirmationLeft()
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveRight) {
+				s.canvas.MoveExitStoreConfirmationRight()
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+				s.canvas.ConfirmExitStore()
+			}
+			accepted, confirmed := s.canvas.ExitStoreConfirmationResult()
+			if confirmed {
+				if accepted {
+					return func() (game.Scene, error) {
+						nextScene, err := s.initScenes.InitSelectStageScene()
+						if err != nil {
+							return nil, err
+						}
+						nextScene.gamedata = s.Gamedata
+						nextScene.gamedata.ForNewScene(game.SelectStage_Select)
+						nextScene.initScenes = s.initScenes
+						return nextScene, nil
+					}, transition.NewScene(), nil
+				} else {
+					s.canvas.HideExitStoreConfirmation()
+					s.Gamedata.State = game.Play_Select
+				}
+			}
+		}
+
 	}
 
 	return

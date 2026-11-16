@@ -112,6 +112,8 @@ const (
 	Lack_weight
 
 	NoItem
+
+	Buyable
 )
 
 // 購入処理の結果
@@ -135,6 +137,19 @@ func (g *Gamedata) BuyFoundPart(p *Part) PurchaseResult {
 	g.Money -= p.Val
 	g.Weight -= p.Weight
 	return Buy
+}
+
+func (g *Gamedata) Buyable(p *Part) PurchaseResult {
+	if p == nil || !slices.Contains(g.found, p) {
+		return NoItem
+	}
+	if g.Money < p.Val {
+		return Lack_money
+	}
+	if g.Weight < p.Weight {
+		return Lack_weight
+	}
+	return Buyable
 }
 
 func (g *Gamedata) TotalWeight() int {
