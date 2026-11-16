@@ -27,6 +27,7 @@ type PlayCanvas struct {
 	foundPartLog      *commonui.LogWindow
 	messageWindow     *commonui.MessageWindow
 	purchaseConfirm   *commonui.Confirm
+	exitStoreConfirm  *commonui.Confirm
 	messageWindowText string
 
 	// shownSelectListRevision は反映済みの PlayScene.SelectListRevision。
@@ -151,11 +152,27 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		NoLabel:               "いいえ",
 	})
 	if err != nil {
-		return nil, fmt.Errorf("commonui.NewConfirm() でエラーが発生しました。\n%w", err)
+		return nil, fmt.Errorf("commonui.NewConfirm() -> purchaseConfirm でエラーが発生しました。\n%w", err)
+	}
+
+	exitStoreConfirm, err := commonui.NewConfirm(commonui.ConfirmConfig{
+		Size:                  image.Point{X: confirmWidth, Y: confirmHeight},
+		Font:                  ui.FontFace(gdata.Font, messageWindowTextSize),
+		TextColor:             messageWindowTextColor,
+		BackgroundColor:       messageWindowBackgroundColor,
+		ButtonBackgroundColor: color.DarkGray(),
+		Padding:               image.Point{X: confirmPadding, Y: confirmPadding},
+		ButtonSize:            image.Point{X: confirmButtonWidth, Y: confirmButtonHeight},
+		Message:               "店を出ますか？",
+		YesLabel:              "はい",
+		NoLabel:               "いいえ",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("commonui.NewConfirm() -> exitStoreConfirm でエラーが発生しました。\n%w", err)
 	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{timeText, partsList, gameDataUI, foundPartLog, messageWindow, purchaseConfirm} {
+	for _, item := range []canvas.CanvasItem{timeText, partsList, gameDataUI, foundPartLog, messageWindow, purchaseConfirm, exitStoreConfirm} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("プレイ画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -169,6 +186,7 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		foundPartLog:            foundPartLog,
 		messageWindow:           messageWindow,
 		purchaseConfirm:         purchaseConfirm,
+		exitStoreConfirm:        exitStoreConfirm,
 		messageWindowText:       "探索中",
 		shownSelectListRevision: s.SelectListRevision(),
 		shownPartsRevision:      gdata.PartsRevision(),
@@ -290,6 +308,38 @@ func (c *PlayCanvas) PurchaseConfirmationResult() (bool, bool) {
 }
 
 func (c *PlayCanvas) HidePurchaseConfirmation() {
+	c.purchaseConfirm.Hide()
+}
+
+func (c *PlayCanvas) ShowExitStoreConfirmation() bool {
+	if !c.partsList.IsShowingFoundParts() || c.partsList.SelectedPart() == nil {
+		return false
+	}
+	c.purchaseConfirm.Show()
+	return true
+}
+
+func (c *PlayCanvas) MoveExitStoreConfirmationLeft() {
+	c.purchaseConfirm.MoveLeft()
+}
+
+func (c *PlayCanvas) MoveExitStoreConfirmationRight() {
+	c.purchaseConfirm.MoveRight()
+}
+
+func (c *PlayCanvas) ConfirmExitStore() {
+	c.purchaseConfirm.Confirm()
+}
+
+func (c *PlayCanvas) IsExitStoreConfirmationOpen() bool {
+	return c.purchaseConfirm.Visible()
+}
+
+func (c *PlayCanvas) ExitStoreConfirmationResult() (bool, bool) {
+	return c.purchaseConfirm.Result()
+}
+
+func (c *PlayCanvas) HideExitStoreConfirmation() {
 	c.purchaseConfirm.Hide()
 }
 
