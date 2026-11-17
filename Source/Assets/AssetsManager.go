@@ -1,6 +1,7 @@
 package assets
 
 import (
+	audioassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Audio"
 	imageassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Image"
 	serialize "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize"
 	"embed"
@@ -11,6 +12,7 @@ import (
 type AssetsManager struct {
 	Image     *imageassets.ImageManager
 	Serialize *serialize.SerializeManager
+	Audio     *audioassets.AudioManager
 	assetsFS  *embed.FS
 }
 
@@ -37,9 +39,19 @@ func NewAssetsManager(assetsFS *embed.FS) (*AssetsManager, error) {
 		return nil, fmt.Errorf("NewSerializeManager() でエラーが発生しました。\n%w", err)
 	}
 
+	audioFS, err := fs.Sub(assetsFS, "Assets/Sounds")
+	if err != nil {
+		return nil, fmt.Errorf("ディレクトリの切り出しに失敗しました。\n%w", err)
+	}
+	ad, err := audioassets.NewAudioManager(audioFS)
+	if err != nil {
+		return nil, fmt.Errorf("NewAudioManager() でエラーが発生しました。\n%w", err)
+	}
+
 	return &AssetsManager{
 		Image:     im,
 		Serialize: seri,
+		Audio:     ad,
 		assetsFS:  assetsFS,
 	}, nil
 }

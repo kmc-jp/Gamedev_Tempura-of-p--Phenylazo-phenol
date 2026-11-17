@@ -113,9 +113,9 @@ func (tmd TileMapData) Construct() (any, error) {
 	Offsets := map[string]Utils.Vec2{}
 	ReverseOffsets := map[string]Utils.Vec2{}
 	for tilekey, tiledata := range tmd.TileData {
-		imagedata, err := imageassets.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath, tmd.imageManager)
+		imagedata, err := tmd.imageManager.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath)
 		if err != nil {
-			return nil, fmt.Errorf("imageassets.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath, &tmd.imageManager) でエラーが発生しました。\nfilePath: %s, tiledata.Name: %s, tiledata.PngPath: %s, tiledata.JsonPath: %s\n%w", tmd.filePath, tiledata.Name, tiledata.PngPath, tiledata.JsonPath, err)
+			return nil, fmt.Errorf("tmd.imageManager.NewImageData(tiledata.Name, tiledata.PngPath, tiledata.JsonPath) でエラーが発生しました。\nfilePath: %s, tiledata.Name: %s, tiledata.PngPath: %s, tiledata.JsonPath: %s\n%w", tmd.filePath, tiledata.Name, tiledata.PngPath, tiledata.JsonPath, err)
 		}
 
 		// タイルサイズのデフォルト値設定

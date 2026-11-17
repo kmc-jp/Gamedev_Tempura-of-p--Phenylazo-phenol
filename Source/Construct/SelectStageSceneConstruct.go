@@ -2,7 +2,6 @@ package construct
 
 import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
-	serialize "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize"
 	serializetarget "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize/SerializeTarget"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
@@ -47,9 +46,9 @@ func SelectStageSceneConstruct(assetsManager *assets.AssetsManager, inputHandler
 
 // MakeStageMap は行き先選択画面の路線図 (StageMap.toml) を読み込む。
 func MakeStageMap(assetsManager *assets.AssetsManager) (stageinfo.StageMap, error) {
-	seriData, err := serialize.NewSerializeData("StageMap", reflect.TypeFor[serializetarget.StageMapConfig](), "StageMap.toml", assetsManager.Serialize)
+	seriData, err := assetsManager.Serialize.NewSerializeData("StageMap", reflect.TypeFor[serializetarget.StageMapConfig](), "StageMap.toml")
 	if err != nil {
-		return stageinfo.StageMap{}, fmt.Errorf("serialize.NewSerializeData(\"StageMap\", ..., \"StageMap.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
+		return stageinfo.StageMap{}, fmt.Errorf("assetsManager.Serialize.NewSerializeData(\"StageMap\", ..., \"StageMap.toml\") でエラーが発生しました。\n%w", err)
 	}
 	loaded, err := assetsManager.Serialize.Load(*seriData)
 	if err != nil {
