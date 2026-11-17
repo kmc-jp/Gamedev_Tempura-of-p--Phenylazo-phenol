@@ -2,7 +2,6 @@ package construct
 
 import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
-	serialize "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize"
 	serializetarget "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize/SerializeTarget"
 	component "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Component"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
@@ -68,7 +67,7 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 
 // ステージ類設定
 func MakeStage2URL(assetsManager *assets.AssetsManager) (stageinfo.Stage2URL, error) {
-	StagesSeriData, err := serialize.NewSerializeData("Stages", reflect.TypeFor[serializetarget.StagesConfig](), "StageConfig.toml", assetsManager.Serialize)
+	StagesSeriData, err := assetsManager.Serialize.NewSerializeData("Stages", reflect.TypeFor[serializetarget.StagesConfig](), "StageConfig.toml")
 	if err != nil {
 		return nil, fmt.Errorf("serialize.NewSerializeData(\"Stages\", reflect.TypeFor[serializetarget.TileMapData](), \"StageConfig.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
 	}
@@ -87,7 +86,7 @@ func MakeStage2URL(assetsManager *assets.AssetsManager) (stageinfo.Stage2URL, er
 
 // タイルマップ設定
 func MakeTileMapData(assetsManager *assets.AssetsManager, URL string) (*tilemap.TileMapData, error) {
-	TileMapSeriData, err := serialize.NewSerializeData("shelf", reflect.TypeFor[serializetarget.TileMapData](), URL, assetsManager.Serialize)
+	TileMapSeriData, err := assetsManager.Serialize.NewSerializeData("shelf", reflect.TypeFor[serializetarget.TileMapData](), URL)
 	if err != nil {
 		return nil, fmt.Errorf("serialize.NewSerializeData(\"shelf\", reflect.TypeFor[serializetarget.TileMapData](), \"%s\", assetsManager.Serialize) でエラーが発生しました。\n%w", URL, err)
 	}
@@ -128,7 +127,7 @@ func MakeTileMapObj(assetsManager *assets.AssetsManager, Stage2URL stageinfo.Sta
 // プレイヤー設定
 func MakePlayer(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene, TileMap *component.TileMap) (*gameobject.GameObject, error) {
 	// PlayerConfig
-	SerializeData, err := serialize.NewSerializeData("Player", reflect.TypeFor[serializetarget.PlayerConfig](), "Player.toml", assetsManager.Serialize)
+	SerializeData, err := assetsManager.Serialize.NewSerializeData("Player", reflect.TypeFor[serializetarget.PlayerConfig](), "Player.toml")
 	if err != nil {
 		return nil, fmt.Errorf("serialize.NewSerializeData(\"Player\", reflect.TypeFor[serializetarget.PlayerConfig](), \"Player.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
 	}

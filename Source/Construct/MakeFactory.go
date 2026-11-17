@@ -2,7 +2,6 @@ package construct
 
 import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
-	serialize "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize"
 	serializetarget "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize/SerializeTarget"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	camera "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Camera"
@@ -13,7 +12,7 @@ import (
 
 // カメラ設定
 func MakeWorldDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[scene.WorldDrawer], error) {
-	cameraConfigData, err := serialize.NewSerializeData("CameraConfig", reflect.TypeFor[serializetarget.CameraConfig](), "CameraConfig.toml", assetsManager.Serialize)
+	cameraConfigData, err := assetsManager.Serialize.NewSerializeData("CameraConfig", reflect.TypeFor[serializetarget.CameraConfig](), "CameraConfig.toml")
 	if err != nil {
 		return nil, fmt.Errorf("serialize.NewSerializeData(\"CameraConfig\", reflect.TypeFor[serializetarget.CameraConfig](), \"CameraConfig.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
 	}

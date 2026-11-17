@@ -2,7 +2,6 @@ package construct
 
 import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
-	serialize "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize"
 	serializetarget "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize/SerializeTarget"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
@@ -18,7 +17,7 @@ import (
 func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game] {
 	return func() (*game.Game, error) {
 		inputConfigPath := "InputConfig.toml"
-		inputConfigData, err := serialize.NewSerializeData("inputConfig", reflect.TypeFor[serializetarget.InputConfig](), inputConfigPath, assetsManager.Serialize)
+		inputConfigData, err := assetsManager.Serialize.NewSerializeData("inputConfig", reflect.TypeFor[serializetarget.InputConfig](), inputConfigPath)
 		if err != nil {
 			return nil, fmt.Errorf("serialize.NewSerializeData(\"inputConfig\", reflect.TypeFor[serializetarget.CameraConfig](), \"%s\", assetsManager.Serialize) でエラーが発生しました。\n%w", inputConfigPath, err)
 		}
