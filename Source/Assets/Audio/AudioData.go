@@ -21,7 +21,7 @@ type AudioData struct {
 	Type AudioType
 }
 
-func (ad AudioData) Extention() string {
+func (ad AudioData) Extension() string {
 	return ad.ext
 }
 
