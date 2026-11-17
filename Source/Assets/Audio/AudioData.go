@@ -15,7 +15,7 @@ const (
 )
 
 type AudioData struct {
-	// /Assets/Sound からの相対パス
+	// /Assets/Sounds からの相対パス
 	Path string
 	ext  string
 	Type AudioType
