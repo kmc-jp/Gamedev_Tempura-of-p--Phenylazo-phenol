@@ -14,7 +14,13 @@ type AudioManager struct {
 	samplingRate int
 }
 
+var audiocxtCreated bool = false
+
 func NewAudioManager(AudioFS fs.FS) (*AudioManager, error) {
+	if audiocxtCreated {
+		return nil, fmt.Errorf("AudioManager は既に構築されています。重複して生成できません。")
+	}
+	audiocxtCreated = true
 	SampleRate := 44100
 	cxt := audio.NewContext(SampleRate)
 
