@@ -13,16 +13,18 @@ import (
 // BGMは長いのでキャッシュが重くなりすぎたら方式を変える
 // 現在はバイナリ音源を全キャッシュ (SEと同じ)
 type BGMLoader struct {
-	fs       fs.FS
-	audiocxt *audio.Context
-	cache    map[string][]byte // キーはパス
+	samplingRate int
+	fs           fs.FS
+	audiocxt     *audio.Context
+	cache        map[string][]byte // キーはパス
 }
 
-func NewBGMLoader(fs fs.FS, audiocxt *audio.Context) (*BGMLoader, error) {
+func NewBGMLoader(fs fs.FS, audiocxt *audio.Context, samplingRate int) (*BGMLoader, error) {
 	return &BGMLoader{
-		fs:       fs,
-		audiocxt: audiocxt,
-		cache:    map[string][]byte{},
+		samplingRate: samplingRate,
+		fs:           fs,
+		audiocxt:     audiocxt,
+		cache:        map[string][]byte{},
 	}, nil
 }
 

@@ -11,16 +11,18 @@ import (
 )
 
 type SELoader struct {
-	fs       fs.FS
-	audiocxt *audio.Context
-	cache    map[string][]byte // キーはパス
+	samplingRate int
+	fs           fs.FS
+	audiocxt     *audio.Context
+	cache        map[string][]byte // キーはパス
 }
 
-func NewSELoader(fs fs.FS, audiocxt *audio.Context) (*SELoader, error) {
+func NewSELoader(fs fs.FS, audiocxt *audio.Context, samplingRate int) (*SELoader, error) {
 	return &SELoader{
-		fs:       fs,
-		audiocxt: audiocxt,
-		cache:    map[string][]byte{},
+		samplingRate: samplingRate,
+		fs:           fs,
+		audiocxt:     audiocxt,
+		cache:        map[string][]byte{},
 	}, nil
 }
 
