@@ -70,7 +70,7 @@ func (pc PlayerConfig) Construct() (any, error) {
 		return nil, fmt.Errorf("TileData.Size がゼロ値になっています。")
 	}
 
-	imageData, err := imageassets.NewImageData(pc.Name, pc.TileData.PngPath, pc.TileData.JsonPath, pc.imageManager)
+	imageData, err := pc.imageManager.NewImageData(pc.Name, pc.TileData.PngPath, pc.TileData.JsonPath)
 	if err != nil {
 		return nil, fmt.Errorf("imageassets.NewImageData でエラーが発生しました。\n%w", err)
 	}

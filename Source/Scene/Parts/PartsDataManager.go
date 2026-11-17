@@ -22,11 +22,10 @@ func LoadRegistryImages(imageManager *imageassets.ImageManager) error {
 			continue
 		}
 
-		imageData, err := imageassets.NewImageData(
+		imageData, err := imageManager.NewImageData(
 			part.ImgName,
 			part.ImgName+".png",
 			part.ImgName+".json",
-			imageManager,
 		)
 		if err != nil {
 			return fmt.Errorf("パーツ画像データの作成に失敗しました。パーツ名: %s\n%w", part.Name, err)

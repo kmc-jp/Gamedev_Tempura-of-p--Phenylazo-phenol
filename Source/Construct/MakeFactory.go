@@ -2,7 +2,6 @@ package construct
 
 import (
 	assets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets"
-	imageassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Image"
 	serialize "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize"
 	serializetarget "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize/SerializeTarget"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
@@ -34,7 +33,7 @@ func MakeWorldDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[
 }
 
 func MakeBGDrawerFactory(assetsManager *assets.AssetsManager, pngPath string, jsonPath string) (Utils.Factory[scene.BackGroundDrawer], error) {
-	imageData, err := imageassets.NewImageData("BackGround", pngPath, jsonPath, assetsManager.Image)
+	imageData, err := assetsManager.Image.NewImageData("BackGround", pngPath, jsonPath)
 	if err != nil {
 		return nil, fmt.Errorf("imageassets.NewImageData でエラーが発生しました。\n%w", err)
 	}
