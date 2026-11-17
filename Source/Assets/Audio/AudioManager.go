@@ -13,12 +13,16 @@ type AudioManager struct {
 	bgmLoader *BGMLoader
 }
 
+const SampleRate = 44100
+
 func NewAudioManager(AudioFS fs.FS) (*AudioManager, error) {
-	sl, err := NewSELoader(AudioFS, nil)
+	cxt := audio.NewContext(SampleRate)
+
+	sl, err := NewSELoader(AudioFS, cxt)
 	if err != nil {
 		return nil, fmt.Errorf("NewSELoader() でエラーが発生しました。\n%w", err)
 	}
-	bl, err := NewBGMLoader(AudioFS, nil)
+	bl, err := NewBGMLoader(AudioFS, cxt)
 	if err != nil {
 		return nil, fmt.Errorf("NewBGMLoader() でエラーが発生しました。\n%w", err)
 	}
