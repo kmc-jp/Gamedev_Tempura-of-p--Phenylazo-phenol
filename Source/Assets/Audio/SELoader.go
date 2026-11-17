@@ -11,10 +11,9 @@ import (
 )
 
 type SELoader struct {
-	samplingRate int
-	fs           fs.FS
-	audiocxt     *audio.Context
-	cache        map[string][]byte // キーはパス
+	fs       fs.FS
+	audiocxt *audio.Context
+	cache    map[string][]byte // キーはパス
 }
 
 func NewSELoader(fs fs.FS, audiocxt *audio.Context) *SELoader {
