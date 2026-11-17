@@ -54,7 +54,7 @@ func (al BGMLoader) fetch(data AudioData) ([]byte, error) {
 
 	switch data.ext {
 	case ".wav":
-		stream, err := wav.DecodeWithSampleRate(data.SampleRate, rawfile)
+		stream, err := wav.DecodeWithSampleRate(al.samplingRate, rawfile)
 		if err != nil {
 			return nil, fmt.Errorf("wavファイルの解析に失敗しました。\nPath : %s\n%w", data.Path, err)
 		}
@@ -63,7 +63,7 @@ func (al BGMLoader) fetch(data AudioData) ([]byte, error) {
 			return nil, fmt.Errorf("wavファイルの解析結果が読み込めません。\nPath : %s\n%w", data.Path, err)
 		}
 	case ".mp3":
-		stream, err := mp3.DecodeWithSampleRate(data.SampleRate, rawfile)
+		stream, err := mp3.DecodeWithSampleRate(al.samplingRate, rawfile)
 		if err != nil {
 			return nil, fmt.Errorf("mp3ファイルの解析に失敗しました。\nPath : %s\n%w", data.Path, err)
 		}
