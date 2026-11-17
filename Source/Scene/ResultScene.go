@@ -1,6 +1,7 @@
 package scene
 
 import (
+	audioassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Audio"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	partsdata "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Parts"
@@ -218,7 +219,19 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 			}
 			fmt.Print("ベンチマーク計測結果", int(score), "\n")
 			s.gamedata.State = game.Result_QuitGame
-			return
+
+			// 仮で音を鳴らす
+			exprosionSound, err := audioassets.NewAudioData("爆発1.mp3", audioassets.SE, s.gamedata.AssetsManager.Audio)
+			if err != nil {
+				return nil, transition.None(), fmt.Errorf("AudioDataの生成に失敗しました。\n%w", err)
+			}
+			pl, err := s.gamedata.AssetsManager.Audio.Load(exprosionSound)
+			if err != nil {
+				return nil, transition.None(), fmt.Errorf("AudioPlayerの生成に失敗しました。\n%w", err)
+			}
+			pl.Play()
+
+			return nil, transition.None(), nil
 		}
 	}
 
