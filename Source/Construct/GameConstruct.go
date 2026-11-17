@@ -19,7 +19,7 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 		inputConfigPath := "InputConfig.toml"
 		inputConfigData, err := assetsManager.Serialize.NewSerializeData("inputConfig", reflect.TypeFor[serializetarget.InputConfig](), inputConfigPath)
 		if err != nil {
-			return nil, fmt.Errorf("serialize.NewSerializeData(\"inputConfig\", reflect.TypeFor[serializetarget.CameraConfig](), \"%s\", assetsManager.Serialize) でエラーが発生しました。\n%w", inputConfigPath, err)
+			return nil, fmt.Errorf("assetsManager.Serialize.NewSerializeData(\"inputConfig\", reflect.TypeFor[serializetarget.InputConfig](), \"%s\") でエラーが発生しました。\n%w", inputConfigPath, err)
 		}
 
 		inputConfigSerializedAny, err := assetsManager.Serialize.Load(*inputConfigData)

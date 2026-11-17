@@ -14,7 +14,7 @@ import (
 func MakeWorldDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[scene.WorldDrawer], error) {
 	cameraConfigData, err := assetsManager.Serialize.NewSerializeData("CameraConfig", reflect.TypeFor[serializetarget.CameraConfig](), "CameraConfig.toml")
 	if err != nil {
-		return nil, fmt.Errorf("serialize.NewSerializeData(\"CameraConfig\", reflect.TypeFor[serializetarget.CameraConfig](), \"CameraConfig.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
+		return nil, fmt.Errorf("assetsManager.Serialize.NewSerializeData(\"CameraConfig\", reflect.TypeFor[serializetarget.CameraConfig](), \"CameraConfig.toml\") でエラーが発生しました。\n%w", err)
 	}
 	cameraConfigAny, err := assetsManager.Serialize.Load(*cameraConfigData)
 	if err != nil {
@@ -34,7 +34,7 @@ func MakeWorldDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[
 func MakeBGDrawerFactory(assetsManager *assets.AssetsManager, pngPath string, jsonPath string) (Utils.Factory[scene.BackGroundDrawer], error) {
 	imageData, err := assetsManager.Image.NewImageData("BackGround", pngPath, jsonPath)
 	if err != nil {
-		return nil, fmt.Errorf("imageassets.NewImageData でエラーが発生しました。\n%w", err)
+		return nil, fmt.Errorf("assetsManager.Image.NewImageData でエラーが発生しました。\n%w", err)
 	}
 
 	asp, img, err := assetsManager.Image.Load(*imageData)

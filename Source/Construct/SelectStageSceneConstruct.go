@@ -48,7 +48,7 @@ func SelectStageSceneConstruct(assetsManager *assets.AssetsManager, inputHandler
 func MakeStageMap(assetsManager *assets.AssetsManager) (stageinfo.StageMap, error) {
 	seriData, err := assetsManager.Serialize.NewSerializeData("StageMap", reflect.TypeFor[serializetarget.StageMapConfig](), "StageMap.toml")
 	if err != nil {
-		return stageinfo.StageMap{}, fmt.Errorf("serialize.NewSerializeData(\"StageMap\", ..., \"StageMap.toml\", assetsManager.Serialize) でエラーが発生しました。\n%w", err)
+		return stageinfo.StageMap{}, fmt.Errorf("assetsManager.Serialize.NewSerializeData(\"StageMap\", ..., \"StageMap.toml\") でエラーが発生しました。\n%w", err)
 	}
 	loaded, err := assetsManager.Serialize.Load(*seriData)
 	if err != nil {
