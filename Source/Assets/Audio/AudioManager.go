@@ -8,14 +8,14 @@ import (
 )
 
 type AudioManager struct {
-	AudioFS   fs.FS
-	seLoader  *SELoader
-	bgmLoader *BGMLoader
+	AudioFS      fs.FS
+	seLoader     *SELoader
+	bgmLoader    *BGMLoader
+	samplingRate int
 }
 
-const SampleRate = 44100
-
 func NewAudioManager(AudioFS fs.FS) (*AudioManager, error) {
+	SampleRate := 44100
 	cxt := audio.NewContext(SampleRate)
 
 	sl, err := NewSELoader(AudioFS, cxt)
@@ -27,9 +27,10 @@ func NewAudioManager(AudioFS fs.FS) (*AudioManager, error) {
 		return nil, fmt.Errorf("NewBGMLoader() でエラーが発生しました。\n%w", err)
 	}
 	return &AudioManager{
-		AudioFS:   AudioFS,
-		seLoader:  sl,
-		bgmLoader: bl,
+		AudioFS:      AudioFS,
+		seLoader:     sl,
+		bgmLoader:    bl,
+		samplingRate: SampleRate,
 	}, nil
 }
 
@@ -50,4 +51,8 @@ func (am AudioManager) Load(data AudioData) (*audio.Player, error) {
 	default:
 		return nil, fmt.Errorf("data.Type が不正です。\n%d", data.Type)
 	}
+}
+
+func (am AudioManager) SamplingRate() int {
+	return am.samplingRate
 }
