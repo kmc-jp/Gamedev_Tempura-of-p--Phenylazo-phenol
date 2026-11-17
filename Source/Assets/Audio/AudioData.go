@@ -33,10 +33,10 @@ func (am AudioManager) NewAudioData(path string, Type AudioType) (AudioData, err
 
 	ext := strings.ToLower(filepath.Ext(path))
 
-	id := AudioData{
+	ad := AudioData{
 		Path: cleaned,
 		ext:  ext,
 		Type: Type,
 	}
-	return id, nil
+	return ad, nil
 }
