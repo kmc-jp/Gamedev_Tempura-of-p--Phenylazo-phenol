@@ -13,8 +13,8 @@ type SerializeData struct {
 	Path string
 }
 
-func (SerializeManager *SerializeManager) NewSerializeData(name string, Type reflect.Type, path string) (*SerializeData, error) {
-	cleanedPath, err := assetsutil.CheckAndCleanPath(path, SerializeManager.serializeFS)
+func (sm *SerializeManager) NewSerializeData(name string, Type reflect.Type, path string) (*SerializeData, error) {
+	cleanedPath, err := assetsutil.CheckAndCleanPath(path, sm.serializeFS)
 	if err != nil {
 		return nil, fmt.Errorf("path が不正です。\n%w", err)
 	}
