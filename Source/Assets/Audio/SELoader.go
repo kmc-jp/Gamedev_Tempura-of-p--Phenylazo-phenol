@@ -47,6 +47,7 @@ func (al SELoader) fetch(data AudioData) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rawfile.Close()
 
 	var target []byte
 
