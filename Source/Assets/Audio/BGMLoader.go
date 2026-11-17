@@ -10,6 +10,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/audio/wav"
 )
 
+// BGMは長いのでキャッシュが重くなりすぎたら方式を変える
+// 現在はバイナリ音源を全キャッシュ (SEと同じ)
 type BGMLoader struct {
 	fs       fs.FS
 	audiocxt *audio.Context
