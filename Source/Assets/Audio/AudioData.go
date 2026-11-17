@@ -25,10 +25,10 @@ func (ad AudioData) Extention() string {
 	return ad.ext
 }
 
-func NewAudioData(path string, Type AudioType, audioManager *AudioManager) (*AudioData, error) {
+func NewAudioData(path string, Type AudioType, audioManager *AudioManager) (AudioData, error) {
 	cleaned, err := assetsutil.CheckAndCleanPath(path, audioManager.AudioFS)
 	if err != nil {
-		return nil, fmt.Errorf("path が不正です。\n%w", err)
+		return AudioData{}, fmt.Errorf("path が不正です。\n%w", err)
 	}
 
 	ext := strings.ToLower(filepath.Ext(path))
@@ -38,5 +38,5 @@ func NewAudioData(path string, Type AudioType, audioManager *AudioManager) (*Aud
 		ext:  ext,
 		Type: Type,
 	}
-	return &id, nil
+	return id, nil
 }
