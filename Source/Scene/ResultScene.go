@@ -221,11 +221,11 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 			s.gamedata.State = game.Result_QuitGame
 
 			// 仮で音を鳴らす
-			exprosionSound, err := s.gamedata.AssetsManager.Audio.NewAudioData("爆発1.mp3", audioassets.SE)
+			explosionSound, err := s.gamedata.AssetsManager.Audio.NewAudioData("爆発1.mp3", audioassets.SE)
 			if err != nil {
 				return nil, transition.None(), fmt.Errorf("AudioDataの生成に失敗しました。\n%w", err)
 			}
-			pl, err := s.gamedata.AssetsManager.Audio.Load(exprosionSound)
+			pl, err := s.gamedata.AssetsManager.Audio.Load(explosionSound)
 			if err != nil {
 				return nil, transition.None(), fmt.Errorf("AudioPlayerの生成に失敗しました。\n%w", err)
 			}
