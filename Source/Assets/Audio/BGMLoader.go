@@ -29,11 +29,11 @@ func NewBGMLoader(fs fs.FS, audiocxt *audio.Context) *BGMLoader {
 func (al BGMLoader) Load(data AudioData) (*audio.Player, error) {
 	_, ok := al.cache[data.Path]
 	if !ok {
-		pl, err := al.fetch(data)
+		ad, err := al.fetch(data)
 		if err != nil {
 			return nil, fmt.Errorf("al.fetch(data.Path) でエラーが発生しました。\n%w", err)
 		}
-		al.cache[data.Path] = pl
+		al.cache[data.Path] = ad
 	}
 
 	ad, _ := al.cache[data.Path]
