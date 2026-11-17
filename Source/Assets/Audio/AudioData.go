@@ -25,8 +25,8 @@ func (ad AudioData) Extention() string {
 	return ad.ext
 }
 
-func NewAudioData(path string, Type AudioType, audioManager *AudioManager) (AudioData, error) {
-	cleaned, err := assetsutil.CheckAndCleanPath(path, audioManager.AudioFS)
+func (am AudioManager) NewAudioData(path string, Type AudioType) (AudioData, error) {
+	cleaned, err := assetsutil.CheckAndCleanPath(path, am.AudioFS)
 	if err != nil {
 		return AudioData{}, fmt.Errorf("path が不正です。\n%w", err)
 	}
