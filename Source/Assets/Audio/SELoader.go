@@ -17,12 +17,12 @@ type SELoader struct {
 	cache        map[string][]byte // キーはパス
 }
 
-func NewSELoader(fs fs.FS, audiocxt *audio.Context) (*SELoader, error) {
+func NewSELoader(fs fs.FS, audiocxt *audio.Context) *SELoader {
 	return &SELoader{
 		fs:       fs,
 		audiocxt: audiocxt,
 		cache:    map[string][]byte{},
-	}, nil
+	}
 }
 
 func (al SELoader) Load(data AudioData) (*audio.Player, error) {

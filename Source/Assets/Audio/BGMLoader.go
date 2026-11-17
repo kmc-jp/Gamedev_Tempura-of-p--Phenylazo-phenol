@@ -19,12 +19,12 @@ type BGMLoader struct {
 	cache        map[string][]byte // キーはパス
 }
 
-func NewBGMLoader(fs fs.FS, audiocxt *audio.Context) (*BGMLoader, error) {
+func NewBGMLoader(fs fs.FS, audiocxt *audio.Context) *BGMLoader {
 	return &BGMLoader{
 		fs:       fs,
 		audiocxt: audiocxt,
 		cache:    map[string][]byte{},
-	}, nil
+	}
 }
 
 func (al BGMLoader) Load(data AudioData) (*audio.Player, error) {

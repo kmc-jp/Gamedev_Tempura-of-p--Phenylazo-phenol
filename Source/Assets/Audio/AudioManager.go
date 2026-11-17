@@ -23,18 +23,10 @@ func NewAudioManager(AudioFS fs.FS) (*AudioManager, error) {
 	SampleRate := 44100
 	cxt := audio.NewContext(SampleRate)
 
-	sl, err := NewSELoader(AudioFS, cxt)
-	if err != nil {
-		return nil, fmt.Errorf("NewSELoader() でエラーが発生しました。\n%w", err)
-	}
-	bl, err := NewBGMLoader(AudioFS, cxt)
-	if err != nil {
-		return nil, fmt.Errorf("NewBGMLoader() でエラーが発生しました。\n%w", err)
-	}
 	return &AudioManager{
 		AudioFS:   AudioFS,
-		seLoader:  sl,
-		bgmLoader: bl,
+		seLoader:  NewSELoader(AudioFS, cxt),
+		bgmLoader: NewBGMLoader(AudioFS, cxt),
 	}, nil
 }
 
