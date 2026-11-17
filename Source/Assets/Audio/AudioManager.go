@@ -44,6 +44,6 @@ func (am AudioManager) Load(data AudioData) (*audio.Player, error) {
 		}
 		return pl, nil
 	default:
-		return nil, fmt.Errorf("data.Type が不正です。\n%s", data.Type)
+		return nil, fmt.Errorf("data.Type が不正です。\n%d", data.Type)
 	}
 }
