@@ -27,7 +27,7 @@ func NewAsepriteLoader() (*AsepriteLoader, error) {
 	return &al, nil
 }
 
-func (al AsepriteLoader) Load(data ImageData, fs fs.FS) (*goaseprite.File, *ebiten.Image, error) {
+func (al *AsepriteLoader) Load(data ImageData, fs fs.FS) (*goaseprite.File, *ebiten.Image, error) {
 	cachekey := imagecachekey{
 		JsonPath: data.JsonPath,
 		PngPath:  data.PngPath,

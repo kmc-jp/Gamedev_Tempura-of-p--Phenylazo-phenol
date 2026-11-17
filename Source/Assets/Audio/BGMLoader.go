@@ -26,7 +26,7 @@ func NewBGMLoader(fs fs.FS, audiocxt *audio.Context) *BGMLoader {
 	}
 }
 
-func (al BGMLoader) Load(data AudioData) (*audio.Player, error) {
+func (al *BGMLoader) Load(data AudioData) (*audio.Player, error) {
 	_, ok := al.cache[data.Path]
 	if !ok {
 		ad, err := al.fetch(data)

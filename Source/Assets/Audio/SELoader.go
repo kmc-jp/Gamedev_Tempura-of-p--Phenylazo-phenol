@@ -24,7 +24,7 @@ func NewSELoader(fs fs.FS, audiocxt *audio.Context) *SELoader {
 	}
 }
 
-func (al SELoader) Load(data AudioData) (*audio.Player, error) {
+func (al *SELoader) Load(data AudioData) (*audio.Player, error) {
 	_, ok := al.cache[data.Path]
 	if !ok {
 		ad, err := al.fetch(data)
