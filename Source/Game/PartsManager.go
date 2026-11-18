@@ -18,6 +18,7 @@ const (
 
 	//ここより上に必須パーツの定義、const hogePartsKind と AvailableParts も要更新 ↓ .
 	LED
+	Sticker
 
 	//ここより上に任意パーツの定義
 	Trash
@@ -42,7 +43,7 @@ const (
 
 const (
 	AvailablePartsKind = 5 // 有効なパーツ種の数
-	ArbitraryPartsKind = 1 // 任意のパーツ種の数
+	ArbitraryPartsKind = 2 // 任意のパーツ種の数
 )
 
 var AvailableParts = [AvailablePartsKind]kinds{CPU, GPU, RAM, MB, Case}
