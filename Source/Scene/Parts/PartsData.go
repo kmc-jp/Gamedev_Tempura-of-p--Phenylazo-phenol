@@ -28,10 +28,11 @@ var (
 		}
 	})
 
-	GPUExample = register(func() *game.Part {
+	GPUBlack = register(func() *game.Part {
 		return &game.Part{
-			Name:        "GPU_Example",
+			Name:        "黒GPU",
 			Kind:        game.GPU,
+			Subcategory: game.GPU_Black,
 			Rarity:      game.S2,
 			Weight:      1000,
 			Val:         20000,
@@ -39,6 +40,21 @@ var (
 			Performance: 1000,
 			Detail:      "GPU の仮パーツデータ",
 			ImgName:     "Parts/みんげー_グラボ",
+		}
+	})
+
+	GPUWhite = register(func() *game.Part {
+		return &game.Part{
+			Name:        "白GPU",
+			Kind:        game.GPU,
+			Subcategory: game.GPU_White,
+			Rarity:      game.S2,
+			Weight:      1000,
+			Val:         20000,
+			Rank:        game.C,
+			Performance: 1000,
+			Detail:      "GPU 白 の仮パーツデータ",
+			ImgName:     "Parts/みんげー_グラボ_白",
 		}
 	})
 
@@ -56,16 +72,115 @@ var (
 		}
 	})
 
-	MBExample = register(func() *game.Part {
+	MBBlack = register(func() *game.Part {
 		return &game.Part{
-			Name:        "MB_Example",
+			Name:        "マザーボード黒",
 			Kind:        game.MB,
+			Subcategory: game.MB_Black,
 			Weight:      500,
 			Val:         2000,
 			Rank:        game.C,
 			Performance: 1000,
-			Detail:      "MB の仮パーツデータ",
+			Detail:      "MB黒 の仮パーツデータ",
 			ImgName:     "Parts/みんげー_マザボ",
+		}
+	})
+
+	MBWhite = register(func() *game.Part {
+		return &game.Part{
+			Name:        "マザーボード白",
+			Kind:        game.MB,
+			Subcategory: game.MB_White,
+			Weight:      500,
+			Val:         2000,
+			Rank:        game.C,
+			Performance: 1000,
+			Detail:      "MB白 の仮パーツデータ",
+			ImgName:     "Parts/みんげー_マザボ_白",
+		}
+	})
+
+	MBBlue = register(func() *game.Part {
+		return &game.Part{
+			Name:        "マザーボード青",
+			Kind:        game.MB,
+			Subcategory: game.MB_Blue,
+			Weight:      500,
+			Val:         2000,
+			Rank:        game.C,
+			Performance: 1000,
+			Detail:      "MB青 の仮パーツデータ",
+			ImgName:     "Parts/みんげー_マザボ_青",
+		}
+	})
+
+	MBGreen = register(func() *game.Part {
+		return &game.Part{
+			Name:        "マザーボード緑",
+			Kind:        game.MB,
+			Subcategory: game.MB_Green,
+			Weight:      500,
+			Val:         2000,
+			Rank:        game.C,
+			Performance: 1000,
+			Detail:      "MB緑 の仮パーツデータ",
+			ImgName:     "Parts/みんげー_マザボ_緑",
+		}
+	})
+
+	CaseBlackSideGlass = register(func() *game.Part {
+		return &game.Part{
+			Name:        "PCケース黒",
+			Kind:        game.Case,
+			Subcategory: game.Case_Black_SideGlass,
+			Weight:      2000,
+			Val:         2000,
+			Rank:        game.B,
+			Performance: 1000,
+			Detail:      "側面がガラスの黒PCケース",
+			ImgName:     "みんげー_PCケース_黒_蓋閉じてる",
+		}
+	})
+
+	CaseBlackSideFrontGlass = register(func() *game.Part {
+		return &game.Part{
+			Name:        "PCケース黒",
+			Kind:        game.Case,
+			Subcategory: game.Case_Black_SideFrontGlass,
+			Weight:      2000,
+			Val:         2000,
+			Rank:        game.B,
+			Performance: 1000,
+			Detail:      "側面と前面がガラスの黒PCケース",
+			ImgName:     "みんげー_PCケース_黒_蓋開いてる",
+		}
+	})
+
+	CaseWhiteSideGlass = register(func() *game.Part {
+		return &game.Part{
+			Name:        "PCケース白",
+			Kind:        game.Case,
+			Subcategory: game.Case_Black_SideGlass,
+			Weight:      2000,
+			Val:         2000,
+			Rank:        game.B,
+			Performance: 1000,
+			Detail:      "側面がガラスの白PCケース",
+			ImgName:     "みんげー_PCケース_白_蓋閉じてる",
+		}
+	})
+
+	CaseWhiteSideFrontGlass = register(func() *game.Part {
+		return &game.Part{
+			Name:        "PCケース白",
+			Kind:        game.Case,
+			Subcategory: game.Case_Black_SideFrontGlass,
+			Weight:      2000,
+			Val:         2000,
+			Rank:        game.B,
+			Performance: 1000,
+			Detail:      "側面と前面がガラスの白PCケース",
+			ImgName:     "みんげー_PCケース_白_蓋開いてる",
 		}
 	})
 
@@ -105,7 +220,7 @@ var (
 			Rank:        game.A,
 			Performance: 0,
 			Detail:      "キャラクターのステッカー",
-			ImgName:     "みんげー_キャラステッカー",
+			ImgName:     "Parts/みんげー_キャラステッカー",
 		}
 	})
 )
