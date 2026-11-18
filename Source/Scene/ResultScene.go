@@ -66,8 +66,9 @@ type ResultScene struct {
 	initScenes              *InitializedScenes
 	partUseConfirmationPart *game.Part
 
-	pcImage    *ebiten.Image
-	pcPosition *ebiten.DrawImageOptions
+	pcImage       *ebiten.Image
+	pcPosition    *ebiten.DrawImageOptions
+	isGamingColor bool
 }
 
 // NewResultScene は ResultScene を生成する。
