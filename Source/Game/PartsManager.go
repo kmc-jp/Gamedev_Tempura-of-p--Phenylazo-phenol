@@ -1,6 +1,7 @@
 package game
 
 import (
+	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 	"math/rand"
 	"slices"
@@ -87,9 +88,10 @@ type Part struct {
 
 	Detail string
 
-	ImgName  string
-	Img      *ebiten.Image
-	ImgScale Imgscale
+	ImgName   string
+	Img       *ebiten.Image
+	ImgScale  Imgscale
+	ImgOffset *Utils.Vec2
 }
 
 type Parts []*Part

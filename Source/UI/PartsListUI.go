@@ -426,7 +426,7 @@ func (p *PartCard) Draw(screen *ebiten.Image) {
 	if p.part.Img != nil {
 		imageOp := &ebiten.DrawImageOptions{}
 		imageOp.GeoM.Scale(p.part.PartsImgScaleOnPartsList(), p.part.PartsImgScaleOnPartsList())
-		imageOp.GeoM.Translate(float64(p.position.X+10), float64(p.position.Y+10))
+		imageOp.GeoM.Translate(float64(p.position.X+10)+p.part.ImgOffset.X, float64(p.position.Y+10)+p.part.ImgOffset.Y)
 		screen.DrawImage(p.part.Img, imageOp)
 	}
 
