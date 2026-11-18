@@ -19,6 +19,19 @@ type MultiRender struct {
 	dio      *ebiten.DrawImageOptions
 }
 
+func NewMultiRender(main gameobject.Render, subs []gameobject.Render) *MultiRender {
+	mr := MultiRender{
+		main:         main,
+		subs:         subs,
+		subrendering: true,
+		subupdate:    true,
+		imgcache:     ebiten.NewImage(1, 1),
+		dio:          &ebiten.DrawImageOptions{},
+	}
+
+	return &mr
+}
+
 func (mr *MultiRender) Draw() (image *ebiten.Image, DIO *ebiten.DrawImageOptions, Layer string) {
 	if mr.subupdate && mr.subrendering {
 		mr.imgcache.Clear()
