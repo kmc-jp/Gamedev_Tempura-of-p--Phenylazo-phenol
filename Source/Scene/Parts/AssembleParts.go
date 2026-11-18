@@ -5,6 +5,7 @@ import "github.com/hajimehoshi/ebiten/v2"
 var AssembleImages [numberOfAssemblePartsAssets]*ebiten.Image
 
 // 組み立て用画像一覧 (意図的に_を使用)
+// A: Assemble であることを識別するための識別子 ,B: Black, W: White, S: Side glass, SF: Side and Front glass,
 const (
 	A_case_B_SF = iota
 	A_case_B_S
@@ -25,8 +26,8 @@ const (
 
 	A_mb_Black
 	A_mb_W
-	A_mb_Blue
-	A_mb_G
+	A_mb_Blue //まだassetない
+	A_mb_G    //まだassetない
 
 	A_cooler_B
 	A_cooler_W
