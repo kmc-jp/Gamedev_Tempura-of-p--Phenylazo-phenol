@@ -85,6 +85,7 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*R
 			return &ResultScene{}, fmt.Errorf("NewDrawer() でエラーが発生しました。 \n%w", err)
 		}
 		pcImageConfig := &ebiten.DrawImageOptions{}
+		pcImageConfig.GeoM.Scale(3, 3)
 		pcImageConfig.GeoM.Translate(300, 150) //完成pcの表示位置(要調整)
 		ts := ResultScene{
 			entities:    []Entity{},
