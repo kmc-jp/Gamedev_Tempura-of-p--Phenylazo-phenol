@@ -67,9 +67,11 @@ type ResultScene struct {
 	initScenes              *InitializedScenes
 	partUseConfirmationPart *game.Part
 
-	pcImage       *ebiten.Image
-	pcPosition    *ebiten.DrawImageOptions
-	isGamingColor bool
+	pcImage          *ebiten.Image
+	pcDrawOption     *ebiten.DrawImageOptions
+	gamingBackground *ebiten.Image
+	normalBackground *ebiten.Image
+	isGamingColor    bool
 }
 
 // NewResultScene は ResultScene を生成する。
@@ -85,17 +87,47 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*R
 			return &ResultScene{}, fmt.Errorf("NewDrawer() でエラーが発生しました。 \n%w", err)
 		}
 		pcImageConfig := &ebiten.DrawImageOptions{}
-		pcImageConfig.GeoM.Scale(3, 3)
-		pcImageConfig.GeoM.Translate(300, 150) //完成pcの表示位置(要調整)
+		// 白背景128x80を5倍した640x400に、72x64の完成PCを5倍で中央配置する。
+		pcImageConfig.GeoM.Scale(5, 5)
+		pcImageConfig.GeoM.Translate(266, 40)
+
+		gamingBackgroundData, err := gdata.AssetsManager.Image.NewImageData(
+			"みんげー_リザルト_黒背景",
+			"Backgrounds/みんげー_リザルト_黒背景.png",
+			"Backgrounds/みんげー_リザルト_黒背景.json",
+		)
+		if err != nil {
+			return &ResultScene{}, fmt.Errorf("リザルトのゲーミング背景データの作成に失敗しました。\n%w", err)
+		}
+		_, gamingBackground, err := gdata.AssetsManager.Image.Load(*gamingBackgroundData)
+		if err != nil {
+			return &ResultScene{}, fmt.Errorf("リザルトのゲーミング背景の読み込みに失敗しました。\n%w", err)
+		}
+
+		normalBackgroundData, err := gdata.AssetsManager.Image.NewImageData(
+			"みんげー_リザルト_白背景",
+			"Backgrounds/みんげー_リザルト_白背景.png",
+			"Backgrounds/みんげー_リザルト_白背景.json",
+		)
+		if err != nil {
+			return &ResultScene{}, fmt.Errorf("リザルトの通常背景データの作成に失敗しました。\n%w", err)
+		}
+		_, normalBackground, err := gdata.AssetsManager.Image.Load(*normalBackgroundData)
+		if err != nil {
+			return &ResultScene{}, fmt.Errorf("リザルトの通常背景の読み込みに失敗しました。\n%w", err)
+		}
+
 		ts := ResultScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
 			// text:        text,
-			Input:      Input,
-			gamedata:   gdata,
-			initScenes: initScenes,
-			pcImage:    nil,
-			pcPosition: pcImageConfig,
+			Input:            Input,
+			gamedata:         gdata,
+			initScenes:       initScenes,
+			pcImage:          nil,
+			pcDrawOption:     pcImageConfig,
+			gamingBackground: gamingBackground,
+			normalBackground: normalBackground,
 		}
 		canvas, err := newCanvas(&ts)
 		if err != nil {
@@ -114,10 +146,21 @@ func (s ResultScene) Name() string {
 }
 
 func (s *ResultScene) Draw(screen *ebiten.Image) {
+	if s.gamedata.State == game.Result_Assembled {
+		background := s.normalBackground
+		if s.isGamingColor {
+			background = s.gamingBackground
+		}
+		if background != nil {
+			backgroundOption := &ebiten.DrawImageOptions{}
+			backgroundOption.GeoM.Scale(5, 5)
+			screen.DrawImage(background, backgroundOption)
+		}
+	}
 	s.worldDrawer.Draw(screen, s.entities)
 	s.canvas.Draw(screen)
 	if s.gamedata.State == game.Result_Assembled && s.pcImage != nil {
-		screen.DrawImage(s.pcImage, s.pcPosition)
+		screen.DrawImage(s.pcImage, s.pcDrawOption)
 	}
 	// s.text.Draw(screen)
 }
@@ -143,6 +186,8 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 		//シーン起動時処理
 		s.gamedata.InitialProcess = false
 		s.gamedata.Assemble = game.Parts{}
+		s.pcImage = nil
+		s.isGamingColor = false
 		s.partKindIndex = 0
 		if err := s.refreshCandidates(); err != nil {
 			return nil, transition.None(), err
@@ -223,6 +268,7 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 			if err != nil {
 				return nil, transition.None(), fmt.Errorf("組み立てPC画像の構成に失敗しました\n%w", err)
 			}
+			s.isGamingColor = gaming != parts.A_noAdditionalParts
 			s.pcImage, err = parts.AssembledImage(caseBack, mb, cooler, gpu, caseLid, gaming)
 			if err != nil {
 				return nil, transition.None(), fmt.Errorf("組み立てPC画像の構築に失敗しました\n%w", err)
