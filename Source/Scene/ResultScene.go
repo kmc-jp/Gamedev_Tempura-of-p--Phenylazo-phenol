@@ -65,6 +65,9 @@ type ResultScene struct {
 	gamedata                *game.Gamedata
 	initScenes              *InitializedScenes
 	partUseConfirmationPart *game.Part
+
+	pcImage    *ebiten.Image
+	pcPosition *ebiten.DrawImageOptions
 }
 
 // NewResultScene は ResultScene を生成する。
@@ -79,6 +82,8 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*R
 
 			return &ResultScene{}, fmt.Errorf("NewDrawer() でエラーが発生しました。 \n%w", err)
 		}
+		pcImageConfig := &ebiten.DrawImageOptions{}
+		pcImageConfig.GeoM.Translate(300, 150) //完成pcの表示位置(要調整)
 		ts := ResultScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
@@ -86,6 +91,7 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*R
 			Input:      Input,
 			gamedata:   gdata,
 			initScenes: initScenes,
+			pcPosition: pcImageConfig,
 		}
 		canvas, err := newCanvas(&ts)
 		if err != nil {
@@ -106,6 +112,9 @@ func (s ResultScene) Name() string {
 func (s *ResultScene) Draw(screen *ebiten.Image) {
 	s.worldDrawer.Draw(screen, s.entities)
 	s.canvas.Draw(screen)
+	if s.gamedata.State == game.Result_Assembled {
+		screen.DrawImage(s.pcImage, s.pcPosition)
+	}
 	// s.text.Draw(screen)
 }
 
