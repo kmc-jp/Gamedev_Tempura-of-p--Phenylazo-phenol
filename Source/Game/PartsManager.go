@@ -88,7 +88,7 @@ type Part struct {
 
 	ImgName  string
 	Img      *ebiten.Image
-	imgScale float64
+	ImgScale float64
 }
 
 type Parts []*Part
@@ -255,7 +255,7 @@ func (p *Part) SetRandomRank(a, b, c, d float32) error {
 }
 
 func (p *Part) PartsImgScaleOnPartsList() float64 {
-	return p.imgScale
+	return p.ImgScale
 }
 
 // AvailableParts の順にKindでソート
