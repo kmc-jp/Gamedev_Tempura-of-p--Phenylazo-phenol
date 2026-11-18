@@ -2,6 +2,7 @@ package component
 
 import (
 	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
+	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -30,6 +31,29 @@ func NewMultiRender(main gameobject.Render, subs []gameobject.Render) *MultiRend
 	}
 
 	return &mr
+}
+
+// Factory 状態で受け取って Factory を返す
+func MultiRenderDecorator(subFactories ...Utils.Factory[gameobject.Render]) func(Utils.Factory[gameobject.Render]) Utils.Factory[gameobject.Render] {
+	return func(mainFactory Utils.Factory[gameobject.Render]) Utils.Factory[gameobject.Render] {
+		return func() (gameobject.Render, error) {
+			main, err := mainFactory()
+			if err != nil {
+				return nil, fmt.Errorf("MultiRender の mainFactory での生成に失敗しました。\n%w", err)
+			}
+
+			subs := make([]gameobject.Render, 0, len(subFactories))
+			for i, f := range subFactories {
+				sub, err := f()
+				if err != nil {
+					return nil, fmt.Errorf("MultiRender の subFactories[%d] での生成に失敗しました。/n%w", i, err)
+				}
+				subs[i] = sub
+			}
+
+			return NewMultiRender(main, subs), nil
+		}
+	}
 }
 
 func (mr *MultiRender) Draw() (image *ebiten.Image, DIO *ebiten.DrawImageOptions, Layer string) {
