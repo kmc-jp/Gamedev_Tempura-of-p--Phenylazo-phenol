@@ -95,4 +95,17 @@ var (
 			ImgName:     "Parts/みんげー_LEDテープ",
 		}
 	})
+
+	Sticker = register(func() *game.Part {
+		return &game.Part{
+			Name:        "ステッカー",
+			Kind:        game.Sticker,
+			Weight:      100,
+			Val:         100,
+			Rank:        game.A,
+			Performance: 0,
+			Detail:      "キャラクターのステッカー",
+			ImgName:     "みんげー_キャラステッカー",
+		}
+	})
 )
