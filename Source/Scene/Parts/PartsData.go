@@ -138,7 +138,7 @@ var (
 			Rank:        game.B,
 			Performance: 1000,
 			Detail:      "側面がガラスの黒PCケース",
-			ImgName:     "みんげー_PCケース_黒_蓋閉じてる",
+			ImgName:     "Parts/みんげー_PCケース_黒_蓋閉じてる",
 		}
 	})
 
@@ -152,7 +152,7 @@ var (
 			Rank:        game.B,
 			Performance: 1000,
 			Detail:      "側面と前面がガラスの黒PCケース",
-			ImgName:     "みんげー_PCケース_黒_蓋開いてる",
+			ImgName:     "Parts/みんげー_PCケース_黒_蓋開いてる",
 		}
 	})
 
@@ -166,7 +166,7 @@ var (
 			Rank:        game.B,
 			Performance: 1000,
 			Detail:      "側面がガラスの白PCケース",
-			ImgName:     "みんげー_PCケース_白_蓋閉じてる",
+			ImgName:     "Parts/みんげー_PCケース_白_蓋閉じてる",
 		}
 	})
 
@@ -180,7 +180,7 @@ var (
 			Rank:        game.B,
 			Performance: 1000,
 			Detail:      "側面と前面がガラスの白PCケース",
-			ImgName:     "みんげー_PCケース_白_蓋開いてる",
+			ImgName:     "Parts/みんげー_PCケース_白_蓋開いてる",
 		}
 	})
 
