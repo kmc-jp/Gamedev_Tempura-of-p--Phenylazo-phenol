@@ -1,7 +1,11 @@
 package parts
 
-import game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
+import (
+	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
+	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+)
 
+// パーツリスト表示の画像サイズ指定
 const (
 	CPUImageScale      game.Imgscale = 3
 	GPUBlackImageScale game.Imgscale = 2.2
@@ -12,6 +16,12 @@ const (
 
 	LEDImageScale     game.Imgscale = 3
 	StickerImageScale game.Imgscale = 2
+)
+
+// パーツリスト表示の画像位置オフセットを指定
+var (
+	GPUWhiteOffset = Utils.Vec2{X: 0, Y: 20}
+	NoOffset       = Utils.NewZeroVec2()
 )
 
 var (
@@ -38,6 +48,7 @@ var (
 			Detail:      "CPU の仮パーツデータ",
 			ImgName:     "Parts/みんげー_CPU",
 			ImgScale:    CPUImageScale,
+			ImgOffset:   &NoOffset,
 		}
 	})
 
@@ -54,6 +65,7 @@ var (
 			Detail:      "GPU の仮パーツデータ",
 			ImgName:     "Parts/みんげー_グラボ",
 			ImgScale:    GPUBlackImageScale,
+			ImgOffset:   &NoOffset,
 		}
 	})
 
@@ -70,6 +82,7 @@ var (
 			Detail:      "GPU 白 の仮パーツデータ",
 			ImgName:     "Parts/みんげー_グラボ_白",
 			ImgScale:    GPUWhiteImageScale,
+			ImgOffset:   &GPUWhiteOffset,
 		}
 	})
 
@@ -85,6 +98,7 @@ var (
 			Detail:      "RAM の仮パーツデータ",
 			ImgName:     "Parts/みんげー_メモリ",
 			ImgScale:    RAMImageScale,
+			ImgOffset:   &NoOffset,
 		}
 	})
 
@@ -100,6 +114,7 @@ var (
 			Detail:      "MB黒 の仮パーツデータ",
 			ImgName:     "Parts/みんげー_マザボ",
 			ImgScale:    MBImageScale,
+			ImgOffset:   &NoOffset,
 		}
 	})
 
@@ -115,6 +130,7 @@ var (
 			Detail:      "MB白 の仮パーツデータ",
 			ImgName:     "Parts/みんげー_マザボ_白",
 			ImgScale:    MBImageScale,
+			ImgOffset:   &NoOffset,
 		}
 	})
 
@@ -130,6 +146,7 @@ var (
 			Detail:      "MB青 の仮パーツデータ",
 			ImgName:     "Parts/みんげー_マザボ_青",
 			ImgScale:    MBImageScale,
+			ImgOffset:   &NoOffset,
 		}
 	})
 
@@ -145,6 +162,7 @@ var (
 			Detail:      "MB緑 の仮パーツデータ",
 			ImgName:     "Parts/みんげー_マザボ_緑",
 			ImgScale:    MBImageScale,
+			ImgOffset:   &NoOffset,
 		}
 	})
 
@@ -160,6 +178,7 @@ var (
 			Detail:      "側面がガラスの黒PCケース",
 			ImgName:     "Parts/みんげー_PCケース_黒_蓋閉じてる",
 			ImgScale:    CaseImageScale,
+			ImgOffset:   &NoOffset,
 		}
 	})
 
@@ -175,6 +194,7 @@ var (
 			Detail:      "側面と前面がガラスの黒PCケース",
 			ImgName:     "Parts/みんげー_PCケース_黒_蓋開いてる",
 			ImgScale:    CaseImageScale,
+			ImgOffset:   &NoOffset,
 		}
 	})
 
@@ -190,6 +210,7 @@ var (
 			Detail:      "側面がガラスの白PCケース",
 			ImgName:     "Parts/みんげー_PCケース_白_蓋閉じてる",
 			ImgScale:    CaseImageScale,
+			ImgOffset:   &NoOffset,
 		}
 	})
 
@@ -205,6 +226,7 @@ var (
 			Detail:      "側面と前面がガラスの白PCケース",
 			ImgName:     "Parts/みんげー_PCケース_白_蓋開いてる",
 			ImgScale:    CaseImageScale,
+			ImgOffset:   &NoOffset,
 		}
 	})
 
@@ -220,6 +242,7 @@ var (
 			Detail:      "PC装飾用LEDテープ",
 			ImgName:     "Parts/みんげー_LEDテープ",
 			ImgScale:    LEDImageScale,
+			ImgOffset:   &NoOffset,
 		}
 	})
 
@@ -234,6 +257,7 @@ var (
 			Detail:      "キャラクターのステッカー",
 			ImgName:     "Parts/みんげー_キャラステッカー",
 			ImgScale:    StickerImageScale,
+			ImgOffset:   &NoOffset,
 		}
 	})
 )
