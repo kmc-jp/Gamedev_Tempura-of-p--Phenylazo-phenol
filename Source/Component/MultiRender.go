@@ -31,7 +31,7 @@ func (mr *MultiRender) Draw() (image *ebiten.Image, DIO *ebiten.DrawImageOptions
 	return mr.imgcache, mr.dio, Layer
 }
 
-func (mr MultiRender) Update() error {
+func (mr *MultiRender) Update() error {
 	if err := mr.main.Update(); err != nil {
 		return fmt.Errorf("MultiRender.main.Update() でエラーが発生しました。\n%w", err)
 	}
