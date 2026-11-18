@@ -2,6 +2,8 @@ package serializetarget
 
 import (
 	imageassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Image"
+	component "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Component"
+	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
 	tilemap "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/TileMap"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
@@ -305,6 +307,20 @@ func makeTileData(name string, imgData *imageassets.ImageData, tileSize Utils.Ve
 func makeTileDataWithDIO(name string, imgData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType, DIO *ebiten.DrawImageOptions) func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
 	return func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
 		return tilemap.NewTileData(name, imgData, layer, tileSize, offset, Interact, tilemap.TileData_DIOOption(DIO))
+	}
+}
+
+func makeShelfData(name string, imageManager *imageassets.ImageManager, imgData *imageassets.ImageData, FxData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType) func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
+	return func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
+		asp, img, err := imageManager.Load(*FxData)
+		if err != nil {
+			return nil, fmt.Errorf("エフェクト画像のロードに失敗しました。\n%w", err)
+		}
+
+		FxRender := Utils.CastFactory[*component.AnimRender, gameobject.Render](component.NewAnimRender(asp, img, layer, ""))
+		MultiRender := component.MultiRenderDecorator(FxRender)
+
+		return tilemap.NewTileData(name, imgData, layer, tileSize, offset, Interact, tilemap.TileData_RenderOption(MultiRender))
 	}
 }
 
