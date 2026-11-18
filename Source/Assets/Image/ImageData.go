@@ -12,12 +12,12 @@ type ImageData struct {
 	JsonPath string
 }
 
-func NewImageData(name string, pngpath string, jsonpath string, imageManager *ImageManager) (*ImageData, error) {
-	pngcleaned, err := assetsutil.CheckAndCleanPath(pngpath, imageManager.imageFS)
+func (im *ImageManager) NewImageData(name string, pngpath string, jsonpath string) (*ImageData, error) {
+	pngcleaned, err := assetsutil.CheckAndCleanPath(pngpath, im.imageFS)
 	if err != nil {
 		return nil, fmt.Errorf("pngpath が不正です。\n%w", err)
 	}
-	jsoncleaned, err := assetsutil.CheckAndCleanPath(jsonpath, imageManager.imageFS)
+	jsoncleaned, err := assetsutil.CheckAndCleanPath(jsonpath, im.imageFS)
 	if err != nil {
 		return nil, fmt.Errorf("jsonpath が不正です。\n%w", err)
 	}

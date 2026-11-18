@@ -100,6 +100,7 @@ func (s *PauseScene) Update(active bool) (nextScene Utils.Factory[game.Scene], t
 
 	// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
+		s.gamedata.EnableWorldTimeProgressing()
 		return nil, transition.Pop(), nil
 	}
 

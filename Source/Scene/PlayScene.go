@@ -169,6 +169,12 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 }
 
 func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
+	if s.Gamedata.State == game.Play_Explore {
+		s.Gamedata.EnableWorldTimeProgressing()
+	} else {
+		s.Gamedata.DisableWorldTimeProgressing()
+	}
+
 	if s.Gamedata.InitialProcess {
 		s.Gamedata.InitialProcess = false
 		s.Gamedata.Text = "10"
@@ -246,6 +252,7 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 					return nil, err
 				}
 				pauseScene.gamedata = s.Gamedata
+				pauseScene.gamedata.DisableWorldTimeProgressing()
 				//pauseScene.gamedata.ForNewScene(0)
 				pauseScene.initScenes = s.initScenes
 				return pauseScene, nil

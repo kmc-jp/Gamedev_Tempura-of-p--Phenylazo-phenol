@@ -1,8 +1,11 @@
 package tick
 
+import "fmt"
+
 type WorldTimer struct {
 	Timer
 
+	//ゲームスタートからの経過時間
 	passedTime uint64 //unit: min
 }
 
@@ -20,9 +23,10 @@ const (
 )
 
 func NewWorldTimer() *WorldTimer {
-	t := NewTimer()
-	t.Set(PlayableTime * CountSpeed)
-	return &WorldTimer{Timer: *t, passedTime: 0}
+	timer := &WorldTimer{}
+	timers[&timer.Timer] = struct{}{}
+	timer.Set(PlayableTime * CountSpeed)
+	return timer
 }
 
 func (wtimer *WorldTimer) syncTime() {
@@ -32,4 +36,14 @@ func (wtimer *WorldTimer) syncTime() {
 func (wtimer *WorldTimer) GetPassedTimeInMinite() uint64 {
 	wtimer.syncTime()
 	return wtimer.passedTime
+}
+
+// GetTimeText はゲーム内時刻を hh:mm 形式で返す。
+func (wtimer *WorldTimer) GetTimeText() string {
+	totalMinutes := uint64(Departuretime*60) + wtimer.GetPassedTimeInMinite()
+	endMinutes := uint64(Endtime * 60)
+	if totalMinutes > endMinutes {
+		totalMinutes = endMinutes
+	}
+	return fmt.Sprintf("%02d:%02d", totalMinutes/60, totalMinutes%60)
 }

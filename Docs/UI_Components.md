@@ -94,6 +94,14 @@ Play / Train / Result / SelectStage の Canvas は Scene のポインタや Game
 
 キー入力はScene・Componentの`input.Handler`で解釈し、左右キーを`MoveLeft` / `MoveRight`、Enterを`Confirm`へ接続する。
 
+## Clock
+
+`commonui.Clock` は`Gamedata.WorldTimer`から取得した世界時刻を`hh:mm`形式で表示する専用UIである。通常の`GameDataText`ではなく、時計表示のデータ取得と描画を専用部品にまとめる。
+
+- `NewClock(position, color, gdata, font)`: 時計UIを生成する
+- `Position()` / `SetPosition()`: 表示位置を取得・設定する
+- 時刻の計算と文字列化は`tick.WorldTimer`が担当し、Clockは描画時に現在値を参照する
+
 ## ScrollUI
 
 `ScrollUI` は複数の `CanvasItem` をコンテンツ用オフスクリーン画像へ描画し、ビューポート部分だけを表示する。

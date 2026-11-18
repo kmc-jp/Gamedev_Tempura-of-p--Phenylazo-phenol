@@ -20,7 +20,7 @@ func NewTomlLoader() (*TomlLoader, error) {
 	return &tl, nil
 }
 
-func (tl TomlLoader) Load(data SerializeData, fs fs.FS) (Serializable, error) {
+func (tl *TomlLoader) Load(data SerializeData, fs fs.FS) (Serializable, error) {
 	_, ok := tl.cacheToml[data.Path]
 	if !ok {
 		item, err := tl.fetch(data, fs)
