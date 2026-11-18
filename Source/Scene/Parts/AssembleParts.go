@@ -1,6 +1,13 @@
 package parts
 
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	imageassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Image"
+	"fmt"
+	"path"
+	"strings"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 var AssembleImages [numberOfAssemblePartsAssets]*ebiten.Image
 
@@ -41,8 +48,37 @@ const numberOfAssemblePartsAssets = A_noAdditionalParts
 
 type AssemblePartsImage uint
 
-func LoadAssemblePartsImages() {
+func LoadAssemblePartsImages(imageManager *imageassets.ImageManager) error {
+	AssembleImages = [numberOfAssemblePartsAssets]*ebiten.Image{}
+	return nil
+}
 
+func LoadAssemblePartImage(
+	imageManager *imageassets.ImageManager,
+	part AssemblePartsImage,
+	filename string,
+) error {
+	if part >= AssemblePartsImage(numberOfAssemblePartsAssets) {
+		return fmt.Errorf("Assemble Parts定数が不正です: %d", part)
+	}
+
+	baseName := strings.TrimSuffix(filename, path.Ext(filename))
+	baseName = strings.TrimPrefix(path.Clean(baseName), "Assemble/")
+	pngPath := path.Join("Assemble", baseName+".png")
+	jsonPath := path.Join("Assemble", baseName+".json")
+
+	imageData, err := imageManager.NewImageData(baseName, pngPath, jsonPath)
+	if err != nil {
+		return fmt.Errorf("Assemble Parts画像データの作成に失敗しました。定数: %d, ファイル名: %s\n%w", part, filename, err)
+	}
+
+	_, image, err := imageManager.Load(*imageData)
+	if err != nil {
+		return fmt.Errorf("Assemble Parts画像の読み込みに失敗しました。定数: %d, ファイル名: %s\n%w", part, filename, err)
+	}
+
+	AssembleImages[part] = image
+	return nil
 }
 
 func AssembledImage(

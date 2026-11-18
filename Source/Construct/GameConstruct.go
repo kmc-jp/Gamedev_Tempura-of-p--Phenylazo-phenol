@@ -48,6 +48,9 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 		if err := parts.LoadRegistryImages(assetsManager.Image); err != nil {
 			return nil, fmt.Errorf("parts.LoadRegistryImages(assetsManager.Image) でエラーが発生しました。\n%w", err)
 		}
+		if err := parts.LoadAssemblePartsImages(assetsManager.Image); err != nil {
+			return nil, fmt.Errorf("parts.LoadAssemblePartsImages(assetsManager.Image) でエラーが発生しました。\n%w", err)
+		}
 
 		// 各シーンのマップ情報
 		Stage2URL, err := MakeStage2URL(assetsManager)
