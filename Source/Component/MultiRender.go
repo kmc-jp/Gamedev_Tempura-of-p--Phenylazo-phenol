@@ -13,13 +13,14 @@ type MultiRender struct {
 	main         gameobject.Render
 	subs         []gameobject.Render
 	subrendering bool
+	subupdate    bool
 
 	imgcache *ebiten.Image
 	dio      *ebiten.DrawImageOptions
 }
 
 func (mr *MultiRender) Draw() (image *ebiten.Image, DIO *ebiten.DrawImageOptions, Layer string) {
-	if mr.subrendering {
+	if mr.subupdate && mr.subrendering {
 		mr.imgcache.Clear()
 		img, dio, Layer := mr.main.Draw()
 		mr.imgcache.DrawImage(img, dio)
@@ -39,9 +40,12 @@ func (mr *MultiRender) Update() error {
 	if err := mr.main.Update(); err != nil {
 		return fmt.Errorf("MultiRender.main.Update() でエラーが発生しました。\n%w", err)
 	}
-	for i, rnd := range mr.subs {
-		if err := rnd.Update(); err != nil {
-			return fmt.Errorf("MultiRender.subs[%d].Update() でエラーが発生しました。\n%w", i, err)
+
+	if mr.subupdate {
+		for i, rnd := range mr.subs {
+			if err := rnd.Update(); err != nil {
+				return fmt.Errorf("MultiRender.subs[%d].Update() でエラーが発生しました。\n%w", i, err)
+			}
 		}
 	}
 
@@ -50,6 +54,10 @@ func (mr *MultiRender) Update() error {
 
 func (mr *MultiRender) EnableSubRendering(active bool) {
 	mr.subrendering = active
+}
+
+func (mr *MultiRender) EnableSubUpdate(active bool) {
+	mr.subupdate = active
 }
 
 var _ gameobject.Render = (*MultiRender)(nil)
