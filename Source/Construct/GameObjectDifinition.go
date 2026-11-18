@@ -84,7 +84,11 @@ func NewTileMapObject(
 				}
 
 				NR := func(DIO *ebiten.DrawImageOptions) Utils.Factory[gameobject.Render] {
-					return NewRender(asp, img, DIO, layer)
+					nr := NewRender(asp, img, DIO, layer)
+					if data.RenderFactory != nil {
+						nr = data.RenderFactory(nr) // data.RenderFactory は関数ポインタ型
+					}
+					return nr
 				}
 
 				toFactory := NewTileObject(name, data, Scene, transformFactry, NR)
