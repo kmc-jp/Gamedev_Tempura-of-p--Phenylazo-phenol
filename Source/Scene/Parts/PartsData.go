@@ -202,7 +202,7 @@ var (
 		return &game.Part{
 			Name:        "PCケース白",
 			Kind:        game.Case,
-			Subcategory: game.Case_Black_SideGlass,
+			Subcategory: game.Case_White_SideGlass,
 			Weight:      2000,
 			Val:         2000,
 			Rank:        game.B,
@@ -218,7 +218,7 @@ var (
 		return &game.Part{
 			Name:        "PCケース白",
 			Kind:        game.Case,
-			Subcategory: game.Case_Black_SideFrontGlass,
+			Subcategory: game.Case_White_SideFrontGlass,
 			Weight:      2000,
 			Val:         2000,
 			Rank:        game.B,

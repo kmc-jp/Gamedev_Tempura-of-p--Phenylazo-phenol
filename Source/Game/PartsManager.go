@@ -209,7 +209,7 @@ func (p *Part) Score() float32 {
 // 種類k kindsのパーツを含むならindexとtrue, 含まないなら-1とfalseを返す
 func (pts Parts) Contain(k kinds) (int, bool) {
 	for i, p := range pts {
-		if p.Kind == k {
+		if p != nil && p.Kind == k {
 			return i, true
 		}
 	}

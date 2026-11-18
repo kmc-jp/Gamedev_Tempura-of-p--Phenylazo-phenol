@@ -98,15 +98,9 @@ func (p *Player) interact() error {
 			return fmt.Errorf("target.Interact() でエラーが発生しました。\ntergetpos = %d\n%w", targetpos, err)
 		}
 		foundPart := parts.RandomPartsFromAll()
-		msg := p.scene.Gamedata.AddPartToFoundList(foundPart)
+		p.scene.Gamedata.AddPartToFoundList(foundPart)
 		p.scene.ShowFoundPartLog(foundPart)
 		p.scene.ShowPartPopup(foundPart, p.tw.tf.Position())
-		fmt.Print(msg, "\n")
-		var item []string
-		for _, pt := range p.scene.Gamedata.FoundParts() {
-			item = append(item, pt.Name+" ")
-		}
-		fmt.Print(item, "\n")
 	}
 
 	return nil
