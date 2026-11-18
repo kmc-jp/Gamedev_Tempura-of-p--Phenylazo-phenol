@@ -1,0 +1,47 @@
+package component
+
+import (
+	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
+	"fmt"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
+
+// 複数のレンダリングを重ねるレンダー。
+// レイヤーはmainのものが返る。
+type MultiRender struct {
+	main gameobject.Render
+	subs []gameobject.Render
+
+	imgcache *ebiten.Image
+	dio      *ebiten.DrawImageOptions
+}
+
+func (mr *MultiRender) Draw() (image *ebiten.Image, DIO *ebiten.DrawImageOptions, Layer string) {
+	mr.imgcache.Clear()
+
+	img, dio, Layer := mr.main.Draw()
+	mr.imgcache.DrawImage(img, dio)
+
+	for _, rnd := range mr.subs {
+		img, dio, _ := rnd.Draw()
+		mr.imgcache.DrawImage(img, dio)
+	}
+
+	return mr.imgcache, mr.dio, Layer
+}
+
+func (mr MultiRender) Update() error {
+	if err := mr.main.Update(); err != nil {
+		return fmt.Errorf("MultiRender.main.Update() でエラーが発生しました。\n%w", err)
+	}
+	for i, rnd := range mr.subs {
+		if err := rnd.Update(); err != nil {
+			return fmt.Errorf("MultiRender.subs[%d].Update() でエラーが発生しました。\n%w", i, err)
+		}
+	}
+
+	return nil
+}
+
+var _ gameobject.Render = (*MultiRender)(nil)
