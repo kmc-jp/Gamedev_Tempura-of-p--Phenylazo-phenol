@@ -14,7 +14,7 @@ var AssembleImages [numberOfAssemblePartsAssets]*ebiten.Image
 // 組み立て用画像一覧 (意図的に_を使用)
 // A: Assemble であることを識別するための識別子 ,B: Black, W: White, S: Side glass, SF: Side and Front glass,
 const (
-	A_case_B_SF = iota
+	A_case_B_SF = iota //
 	A_case_B_S
 	A_case_W_SF
 	A_case_W_S
@@ -25,6 +25,9 @@ const (
 	A_case_W_SF_lid
 	A_case_W_S_lid
 	A_case_cardboard_lid
+
+	A_caseSF_lid_gaming
+	A_case_S_lid_gaming
 
 	A_gaming_B_SF
 	A_gaming_B_S
@@ -50,6 +53,7 @@ type AssemblePartsImage uint
 
 func LoadAssemblePartsImages(imageManager *imageassets.ImageManager) error {
 	AssembleImages = [numberOfAssemblePartsAssets]*ebiten.Image{}
+
 	return nil
 }
 
