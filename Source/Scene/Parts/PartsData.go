@@ -184,19 +184,6 @@ var (
 		}
 	})
 
-	CaseExample = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Case_Example",
-			Kind:        game.Case,
-			Weight:      2000,
-			Val:         2000,
-			Rank:        game.B,
-			Performance: 1000,
-			Detail:      "ケースの仮データ",
-			ImgName:     "Assemble/完成版pc見本", //本当はこれを使うわけではない
-		}
-	})
-
 	// 以下、任意パーツ
 	LED = register(func() *game.Part {
 		return &game.Part{
