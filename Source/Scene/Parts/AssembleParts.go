@@ -14,36 +14,34 @@ var AssembleImages [numberOfAssemblePartsAssets]*ebiten.Image
 // 組み立て用画像一覧 (意図的に_を使用)
 // A: Assemble であることを識別するための識別子 ,B: Black, W: White, S: Side glass, SF: Side and Front glass,
 const (
-	A_case_B_SF = iota //
-	A_case_B_S
-	A_case_W_SF
-	A_case_W_S
-	A_case_cardboard
+	A_case_B_SF      = iota //みんげー_PCケース_黒_蓋開いてる
+	A_case_B_S              //みんげー_PCケース_黒_蓋閉じてる
+	A_case_W_SF             //みんげー_PCケース_白_蓋開いてる
+	A_case_W_S              //みんげー_PCケース_白_蓋閉じてる
+	A_case_cardboard        //みんげー_段ボールPCケース
 
-	A_case_B_SF_lid
-	A_case_B_S_lid
-	A_case_W_SF_lid
-	A_case_W_S_lid
-	A_case_cardboard_lid
+	A_case_SF_lid        //みんげー_PCケース_蓋_開いてるとき_通常
+	A_case_S_lid         //みんげー_PCケース_蓋_閉じてるとき_通常
+	A_case_cardboard_lid //みんげー_段ボールPC_蓋
 
-	A_caseSF_lid_gaming
-	A_case_S_lid_gaming
+	A_caseSF_lid_gaming //みんげー_PCケース_蓋_開いてるとき_ゲーミング
+	A_case_S_lid_gaming //みんげー_PCケース_蓋_閉じてるとき_ゲーミング
 
-	A_gaming_B_SF
-	A_gaming_B_S
-	A_gaming_W_SF
-	A_gaming_W_S
+	A_gaming_B_SF //みんげー_ゲーミングカラー_追加パーツ_黒_蓋開いてるとき
+	A_gaming_B_S  //みんげー_ゲーミングカラー_追加パーツ_黒_蓋閉じてるとき
+	A_gaming_W_SF //みんげー_ゲーミングカラー_追加パーツ_白_開いてるとき
+	A_gaming_W_S  //みんげー_ゲーミングカラー_追加パーツ_白_閉じてるとき
 
-	A_mb_Black
-	A_mb_W
-	A_mb_Blue //まだassetない
-	A_mb_G    //まだassetない
+	A_mb_Black //みんげー_マザボ_リザルト用_黒
+	A_mb_W     //みんげー_マザボ_リザルト用_白
+	A_mb_Blue  //まだassetない
+	A_mb_G     //まだassetない
 
-	A_cooler_B
-	A_cooler_W
+	A_cooler_B //みんげー_CPUクーラー_リザルト用_黒
+	A_cooler_W //みんげー_CPUクーラー_リザルト用_白
 
-	A_gpu_B
-	A_gpu_W
+	A_gpu_B //みんげー_グラボ_リザルト用_黒
+	A_gpu_W //みんげー_グラボ_リザルト用_白
 
 	A_noAdditionalParts //任意パーツの有無を選択するためのもの
 )
@@ -53,6 +51,44 @@ type AssemblePartsImage uint
 
 func LoadAssemblePartsImages(imageManager *imageassets.ImageManager) error {
 	AssembleImages = [numberOfAssemblePartsAssets]*ebiten.Image{}
+
+	loads := []struct {
+		part     AssemblePartsImage
+		filename string
+	}{
+		{A_case_B_SF, "みんげー_PCケース_黒_蓋開いてる"},
+		{A_case_B_S, "みんげー_PCケース_黒_蓋閉じてる"},
+		{A_case_W_SF, "みんげー_PCケース_白_蓋開いてる"},
+		{A_case_W_S, "みんげー_PCケース_白_蓋閉じてる"},
+		{A_case_cardboard, "みんげー_段ボールPCケース"},
+
+		{A_case_SF_lid, "みんげー_PCケース_蓋_開いてるとき_通常"},
+		{A_case_S_lid, "みんげー_PCケース_蓋_閉じてるとき_通常"},
+		{A_case_cardboard_lid, "みんげー_段ボールPC_蓋"},
+
+		{A_caseSF_lid_gaming, "みんげー_PCケース_蓋_開いてるとき_ゲーミング"},
+		{A_case_S_lid_gaming, "みんげー_PCケース_蓋_閉じてるとき_ゲーミング"},
+
+		{A_gaming_B_SF, "みんげー_ゲーミングカラー_追加パーツ_黒_蓋開いてるとき"},
+		{A_gaming_B_S, "みんげー_ゲーミングカラー_追加パーツ_黒_蓋閉じてるとき"},
+		{A_gaming_W_SF, "みんげー_ゲーミングカラー_追加パーツ_白_開いてるとき"},
+		{A_gaming_W_S, "みんげー_ゲーミングカラー_追加パーツ_白_蓋閉じてるとき"},
+
+		{A_mb_Black, "みんげー_マザボ_リザルト用_黒"},
+		{A_mb_W, "みんげー_マザボ_リザルト用_白"},
+
+		{A_cooler_B, "みんげー_CPUクーラー_リザルト用_黒"},
+		{A_cooler_W, "みんげー_CPUクーラー_リザルト用_白"},
+
+		{A_gpu_B, "みんげー_グラボ_リザルト用_黒"},
+		{A_gpu_W, "みんげー_グラボ_リザルト用_白"},
+	}
+
+	for _, load := range loads {
+		if err := LoadAssemblePartImage(imageManager, load.part, load.filename); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
