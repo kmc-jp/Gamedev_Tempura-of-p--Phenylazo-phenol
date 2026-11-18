@@ -50,6 +50,7 @@ var AvailableParts = [AvailablePartsKind]kinds{CPU, GPU, RAM, MB, Case}
 
 type kinds uint
 type subcategory uint
+type Imgscale float64
 
 // パーツの状態ランク, UI上でのアルファベット表記はしない
 // Value倍率を定義
@@ -88,7 +89,7 @@ type Part struct {
 
 	ImgName  string
 	Img      *ebiten.Image
-	ImgScale float64
+	ImgScale Imgscale
 }
 
 type Parts []*Part
@@ -255,7 +256,7 @@ func (p *Part) SetRandomRank(a, b, c, d float32) error {
 }
 
 func (p *Part) PartsImgScaleOnPartsList() float64 {
-	return p.ImgScale
+	return float64(p.ImgScale)
 }
 
 // AvailableParts の順にKindでソート
