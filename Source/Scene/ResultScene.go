@@ -4,6 +4,7 @@ import (
 	audioassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Audio"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
+	parts "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Parts"
 	partsdata "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Parts"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
@@ -92,6 +93,7 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*R
 			Input:      Input,
 			gamedata:   gdata,
 			initScenes: initScenes,
+			pcImage:    nil,
 			pcPosition: pcImageConfig,
 		}
 		canvas, err := newCanvas(&ts)
@@ -113,7 +115,7 @@ func (s ResultScene) Name() string {
 func (s *ResultScene) Draw(screen *ebiten.Image) {
 	s.worldDrawer.Draw(screen, s.entities)
 	s.canvas.Draw(screen)
-	if s.gamedata.State == game.Result_Assembled {
+	if s.gamedata.State == game.Result_Assembled && s.pcImage != nil {
 		screen.DrawImage(s.pcImage, s.pcPosition)
 	}
 	// s.text.Draw(screen)
@@ -211,6 +213,20 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 	// 組み立てPC観察フェーズ
 	if s.gamedata.State == game.Result_Assembled {
 		//所持パーツをもとに利用する絵を決定
+		if err := parts.CheckAssemblePartsInfo(s.gamedata.Assemble); err != nil {
+			return nil, transition.None(), fmt.Errorf("parts.CheckAssemblePartsInfo()でエラーが発生しました\n%w\n", err)
+		}
+
+		if s.pcImage == nil {
+			caseBack, mb, cooler, gpu, caseLid, gaming, err := parts.DeterminePartsConfiguration(s.gamedata.Assemble)
+			if err != nil {
+				return nil, transition.None(), fmt.Errorf("組み立てPC画像の構成に失敗しました\n%w", err)
+			}
+			s.pcImage, err = parts.AssembledImage(caseBack, mb, cooler, gpu, caseLid, gaming)
+			if err != nil {
+				return nil, transition.None(), fmt.Errorf("組み立てPC画像の構築に失敗しました\n%w", err)
+			}
+		}
 		//完成PCを表示
 
 		if s.canvas.IsInstalledPartsFinished() {

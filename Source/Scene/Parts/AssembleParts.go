@@ -2,6 +2,7 @@ package parts
 
 import (
 	imageassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Image"
+	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	"fmt"
 	"path"
 	"strings"
@@ -128,17 +129,166 @@ func AssembledImage(
 	gpu AssemblePartsImage,
 	caseLid AssemblePartsImage,
 	gaming AssemblePartsImage,
-) *ebiten.Image {
+) (*ebiten.Image, error) {
 	pc := ebiten.NewImage(72, 64)
-	pc.DrawImage(AssembleImages[caseBack], nil)
-	pc.DrawImage(AssembleImages[mb], nil)
-	pc.DrawImage(AssembleImages[cooler], nil)
-	pc.DrawImage(AssembleImages[gpu], nil)
-	pc.DrawImage(AssembleImages[caseLid], nil)
-	if gaming == A_noAdditionalParts {
-		return pc
-	} else {
-		pc.DrawImage(AssembleImages[gaming], nil)
-		return pc
+
+	required := []struct {
+		name string
+		part AssemblePartsImage
+		draw bool
+	}{
+		{"ケース本体", caseBack, true},
+		{"マザボ", mb, true},
+		{"CPUクーラー", cooler, true},
+		{"グラフィックボード", gpu, true},
+		{"ケースの蓋", caseLid, caseLid != A_noAdditionalParts},
+		{"ゲーミング追加パーツ", gaming, gaming != A_noAdditionalParts},
 	}
+	for _, image := range required {
+		if !image.draw {
+			continue
+		}
+		if image.part >= AssemblePartsImage(numberOfAssemblePartsAssets) {
+			return nil, fmt.Errorf("%sに無効な画像定数が指定されています: %d", image.name, image.part)
+		}
+		if AssembleImages[image.part] == nil {
+			return nil, fmt.Errorf("%sの画像が読み込まれていません", image.name)
+		}
+		pc.DrawImage(AssembleImages[image.part], nil)
+	}
+
+	if gaming == A_noAdditionalParts {
+		return pc, nil
+	}
+	return pc, nil
+}
+
+func findAssemblePart(pts game.Parts, kind uint) *game.Part {
+	for _, part := range pts {
+		if part != nil && uint(part.Kind) == kind {
+			return part
+		}
+	}
+	return nil
+}
+
+func DeterminePartsConfiguration(pts game.Parts) (AssemblePartsImage, AssemblePartsImage, AssemblePartsImage, AssemblePartsImage, AssemblePartsImage, AssemblePartsImage, error) {
+	var (
+		caseback AssemblePartsImage
+		mb       AssemblePartsImage
+		cooler   AssemblePartsImage
+		gpu      AssemblePartsImage
+		caselid  AssemblePartsImage
+		gaming   = AssemblePartsImage(A_noAdditionalParts)
+	)
+
+	gpuPart := findAssemblePart(pts, uint(game.GPU))
+	if gpuPart == nil {
+		return 0, 0, 0, 0, 0, 0, fmt.Errorf("組み立てパーツにGPUがありません")
+	}
+	if gpuPart.Subcategory == game.GPU_Black {
+		gpu = A_gpu_B
+	} else if gpuPart.Subcategory == game.GPU_White {
+		gpu = A_gpu_W
+	} else {
+		return 0, 0, 0, 0, 0, 0, fmt.Errorf("GPUに対して無効なSubcategoryです")
+	}
+
+	mbPart := findAssemblePart(pts, uint(game.MB))
+	if mbPart == nil {
+		return 0, 0, 0, 0, 0, 0, fmt.Errorf("組み立てパーツにマザボがありません")
+	}
+	switch mbPart.Subcategory {
+	case game.MB_Black:
+		mb = A_mb_Black
+		cooler = A_cooler_B
+	case game.MB_White:
+		mb = A_mb_W
+		cooler = A_cooler_W
+	case game.MB_Blue:
+		mb = A_mb_Blue
+		cooler = A_cooler_B
+	case game.MB_Green:
+		mb = A_mb_G
+		cooler = A_cooler_B
+	default:
+		return 0, 0, 0, 0, 0, 0, fmt.Errorf("マザボに対して無効なSubcategoryです")
+	}
+
+	casePart := findAssemblePart(pts, uint(game.Case))
+	if casePart == nil {
+		return 0, 0, 0, 0, 0, 0, fmt.Errorf("組み立てパーツにケースがありません")
+	}
+	_, hasLED := pts.Contain(game.LED)
+	switch casePart.Subcategory {
+	case game.Case_Black_SideFrontGlass:
+		caseback = A_case_B_SF
+		caselid = A_case_SF_lid
+		if hasLED {
+			caselid = A_caseSF_lid_gaming
+			gaming = A_gaming_B_SF
+		}
+	case game.Case_Black_SideGlass:
+		caseback = A_case_B_S
+		caselid = A_case_S_lid
+		if hasLED {
+			caselid = A_case_S_lid_gaming
+			gaming = A_gaming_B_S
+		}
+	case game.Case_White_SideFrontGlass:
+		caseback = A_case_W_SF
+		caselid = A_case_SF_lid
+		if hasLED {
+			caselid = A_caseSF_lid_gaming
+			gaming = A_gaming_W_SF
+		}
+	case game.Case_White_SideGlass:
+		caseback = A_case_W_S
+		caselid = A_case_S_lid
+		if hasLED {
+			caselid = A_case_S_lid_gaming
+			gaming = A_gaming_W_S
+		}
+	default:
+		return 0, 0, 0, 0, 0, 0, fmt.Errorf("ケースに対して無効なSubcategoryです")
+	}
+	return caseback, mb, cooler, gpu, caselid, gaming, nil
+}
+
+func CheckAssemblePartsInfo(pts game.Parts) error {
+	gpuPart := findAssemblePart(pts, uint(game.GPU))
+	if gpuPart == nil {
+		return fmt.Errorf("組み立てパーツにGPUがありません")
+	}
+	if gpuPart.Subcategory != game.GPU_Black && gpuPart.Subcategory != game.GPU_White {
+		return fmt.Errorf("GPUに対して無効なSubcategoryです")
+	}
+
+	mbPart := findAssemblePart(pts, uint(game.MB))
+	if mbPart == nil {
+		return fmt.Errorf("組み立てパーツにマザボがありません")
+	}
+	switch mbPart.Subcategory {
+	case game.MB_Black:
+	case game.MB_White:
+	case game.MB_Blue:
+	case game.MB_Green:
+	default:
+		return fmt.Errorf("マザボに対して無効なSubcategoryです")
+	}
+
+	casePart := findAssemblePart(pts, uint(game.Case))
+	if casePart == nil {
+		return fmt.Errorf("組み立てパーツにケースがありません")
+	}
+	switch casePart.Subcategory {
+	case game.Case_Black_SideFrontGlass:
+	case game.Case_Black_SideGlass:
+	case game.Case_White_SideFrontGlass:
+	case game.Case_White_SideGlass:
+	default:
+		return fmt.Errorf("ケースに対して無効なSubcategoryです")
+	}
+
+	return nil
 }
