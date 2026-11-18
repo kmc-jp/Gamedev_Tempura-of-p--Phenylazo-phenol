@@ -10,25 +10,29 @@ import (
 // 複数のレンダリングを重ねるレンダー。
 // レイヤーはmainのものが返る。
 type MultiRender struct {
-	main gameobject.Render
-	subs []gameobject.Render
+	main         gameobject.Render
+	subs         []gameobject.Render
+	subrendering bool
 
 	imgcache *ebiten.Image
 	dio      *ebiten.DrawImageOptions
 }
 
 func (mr *MultiRender) Draw() (image *ebiten.Image, DIO *ebiten.DrawImageOptions, Layer string) {
-	mr.imgcache.Clear()
-
-	img, dio, Layer := mr.main.Draw()
-	mr.imgcache.DrawImage(img, dio)
-
-	for _, rnd := range mr.subs {
-		img, dio, _ := rnd.Draw()
+	if mr.subrendering {
+		mr.imgcache.Clear()
+		img, dio, Layer := mr.main.Draw()
 		mr.imgcache.DrawImage(img, dio)
-	}
 
-	return mr.imgcache, mr.dio, Layer
+		for _, rnd := range mr.subs {
+			img, dio, _ := rnd.Draw()
+			mr.imgcache.DrawImage(img, dio)
+		}
+
+		return mr.imgcache, mr.dio, Layer
+	} else {
+		return mr.main.Draw()
+	}
 }
 
 func (mr *MultiRender) Update() error {
@@ -42,6 +46,10 @@ func (mr *MultiRender) Update() error {
 	}
 
 	return nil
+}
+
+func (mr *MultiRender) EnableSubRendering(active bool) {
+	mr.subrendering = active
 }
 
 var _ gameobject.Render = (*MultiRender)(nil)
