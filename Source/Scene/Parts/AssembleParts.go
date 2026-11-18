@@ -35,7 +35,7 @@ const (
 	A_gpu_B
 	A_gpu_W
 
-	A_noAdditionalParts
+	A_noAdditionalParts //任意パーツの有無を選択するためのもの
 )
 const numberOfAssemblePartsAssets = A_noAdditionalParts
 
