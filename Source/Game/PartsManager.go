@@ -31,9 +31,13 @@ const (
 
 	MB_Black
 	MB_White
+	MB_Blue
+	MB_Green
 
-	Case_Black
-	Case_White
+	Case_Black_SideFrontGlass
+	Case_Black_SideGlass
+	Case_White_SideFrontGlass
+	Case_White_SideGlass
 )
 
 const (
