@@ -231,9 +231,13 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 		//完成PCを表示
 
 		if s.canvas.IsInstalledPartsFinished() {
-			if err := s.gamedata.NextState(); err != nil {
-				return nil, transition.None(), fmt.Errorf("InstalledPartsUI完了後の状態遷移に失敗しました: %w", err)
+			if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+				if err := s.gamedata.NextState(); err != nil {
+					return nil, transition.None(), fmt.Errorf("InstalledPartsUI完了後の状態遷移に失敗しました: %w", err)
+				}
+				return
 			}
+
 		}
 	}
 
