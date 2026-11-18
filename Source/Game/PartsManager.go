@@ -1,6 +1,7 @@
 package game
 
 import (
+	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 	"math/rand"
 	"slices"
@@ -18,6 +19,7 @@ const (
 
 	//ここより上に必須パーツの定義、const hogePartsKind と AvailableParts も要更新 ↓ .
 	LED
+	Sticker
 
 	//ここより上に任意パーツの定義
 	Trash
@@ -31,20 +33,25 @@ const (
 
 	MB_Black
 	MB_White
+	MB_Blue
+	MB_Green
 
-	Case_Black
-	Case_White
+	Case_Black_SideFrontGlass
+	Case_Black_SideGlass
+	Case_White_SideFrontGlass
+	Case_White_SideGlass
 )
 
 const (
 	AvailablePartsKind = 5 // 有効なパーツ種の数
-	ArbitraryPartsKind = 1 // 任意のパーツ種の数
+	ArbitraryPartsKind = 2 // 任意のパーツ種の数
 )
 
 var AvailableParts = [AvailablePartsKind]kinds{CPU, GPU, RAM, MB, Case}
 
 type kinds uint
 type subcategory uint
+type Imgscale float64
 
 // パーツの状態ランク, UI上でのアルファベット表記はしない
 // Value倍率を定義
@@ -60,6 +67,7 @@ type rank uint
 // パーツのレアリティ(s : star)
 const (
 	S0 rarity = iota //原則使用しない
+
 	S1
 	S2
 	S3
@@ -80,8 +88,10 @@ type Part struct {
 
 	Detail string
 
-	ImgName string
-	Img     *ebiten.Image
+	ImgName   string
+	Img       *ebiten.Image
+	ImgScale  Imgscale
+	ImgOffset *Utils.Vec2
 }
 
 type Parts []*Part
@@ -245,6 +255,10 @@ func (p *Part) SetRandomRank(a, b, c, d float32) error {
 		p.Rank = D
 	}
 	return nil
+}
+
+func (p *Part) PartsImgScaleOnPartsList() float64 {
+	return float64(p.ImgScale)
 }
 
 // AvailableParts の順にKindでソート
