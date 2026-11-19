@@ -6,6 +6,7 @@ import (
 	parts "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Parts"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
+	"fmt"
 )
 
 type ShelfTile struct {
@@ -42,11 +43,19 @@ func (s *ShelfTile) Interact(player *Player) error {
 		}
 	}
 
+	if foundPart != nil {
+		if foundPart.Kind != game.Trash {
+			s.scene.MessageWindowDisplayTimer.Set(20)
+			s.scene.Canvas().SetMessageWindowText(fmt.Sprintf("%s を見つけた", foundPart.Name))
+
+		}
+	}
 	s.scene.Gamedata.AddPartToFoundList(foundPart)
 	s.scene.ShowFoundPartLog(foundPart)
 	s.scene.ShowPartPopup(foundPart, player.tw.tf.Position())
 
 	return nil
+
 }
 
 func (s *ShelfTile) Update(active bool) error {

@@ -220,6 +220,9 @@ func (s *SelectStageScene) updateScene(active bool) (nextScene Utils.Factory[gam
 		s.selector.Fire(selection.Down)
 	}
 
+	dst, time, _ := s.destination()
+	s.canvas.SetMessageWindowText(fmt.Sprintf("%s: 移動時間 %d 分  Enterで出発", stageinfo.Location2String[dst], time))
+
 	// 決定
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 		dst, min, err := s.destination()
