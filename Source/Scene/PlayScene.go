@@ -1,6 +1,7 @@
 package scene
 
 import (
+	audioassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Audio"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
@@ -11,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 	input "github.com/quasilyte/ebitengine-input"
 )
 
@@ -110,6 +112,8 @@ type PlayScene struct {
 	cameraCenter             Utils.Position
 	purchaseConfirmationPart *game.Part
 	exitStoreFromExplore     bool
+
+	bgmPlayer *audio.Player
 }
 
 // NewPlayScene は PlayScene を生成する。
@@ -123,6 +127,22 @@ func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], newCanvas func(*PlaySc
 		if err != nil {
 			return &PlayScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
+		const bgmcount = 2
+		bgmpaths := [bgmcount]string{
+			// "bgm/shop1.wav", // フォーマットが違うらしい
+			"bgm/shop2.mp3",
+			"bgm/shop3.mp3",
+		}
+		path := bgmpaths[0]
+		ad, err := gdata.AssetsManager.Audio.NewAudioData(path, audioassets.BGM)
+		if err != nil {
+			return &PlayScene{}, fmt.Errorf("gdata.AssetsManager.Audio.NewAudioData() でエラーが発生しました。 \n%w", err)
+		}
+		pl, err := gdata.AssetsManager.Audio.Load(ad)
+		if err != nil {
+			return &PlayScene{}, fmt.Errorf("gdata.AssetsManager.Audio.Load() でエラーが発生しました。 \n%w", err)
+		}
+		pl.Play()
 		ps := PlayScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
@@ -133,6 +153,7 @@ func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], newCanvas func(*PlaySc
 			Gamedata:                  gdata,
 			initScenes:                initScenes,
 			Stage:                     stage,
+			bgmPlayer:                 pl,
 		}
 		canvas, err := newCanvas(&ps)
 		if err != nil {
@@ -357,6 +378,9 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 			accepted, confirmed := s.canvas.ExitStoreConfirmationResult()
 			if confirmed {
 				if accepted {
+					// bgmを止める
+					s.bgmPlayer.Pause()
+
 					return func() (game.Scene, error) {
 						nextScene, err := s.initScenes.InitSelectStageScene()
 						if err != nil {
