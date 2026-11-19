@@ -1,11 +1,13 @@
 package component
 
 import (
+	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
 )
 
 type RegisterTile struct {
+	scene *scene.PlayScene
 }
 
 func (s RegisterTile) Interact() error {
@@ -18,9 +20,11 @@ func (s RegisterTile) Update(active bool) error {
 	return nil
 }
 
-func NewRegisterTile() Utils.Factory[*RegisterTile] {
+func NewRegisterTile(scene *scene.PlayScene) Utils.Factory[*RegisterTile] {
 	return func() (*RegisterTile, error) {
-		return &RegisterTile{}, nil
+		return &RegisterTile{
+			scene: scene,
+		}, nil
 	}
 }
 
