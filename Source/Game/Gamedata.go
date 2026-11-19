@@ -241,10 +241,15 @@ func (g *Gamedata) removePart(list *Parts, p *Part) bool {
 }
 
 // Gamedata.sell をもとに売却処理
-func (g *Gamedata) SellPart() {
-	g.Money += g.sell.Value()
-	g.Weight += g.sell.Weight
+// 売却価格, 空いた重量, パーツの名前を返す
+func (g *Gamedata) SellPart() (int, int, string) {
+	name := g.sell.Name
+	value := g.sell.Value()
+	weight := g.sell.Weight
+	g.Money += value
+	g.Weight += weight
 	g.sell = nil
+	return value, weight, name
 }
 
 // 売却するパーツの選択処理

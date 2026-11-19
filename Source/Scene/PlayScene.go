@@ -6,6 +6,7 @@ import (
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
 	stageinfo "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/StageInfo"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
+	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
 	"strconv"
 
@@ -97,6 +98,9 @@ type PlayScene struct {
 	// selectListRevision は Play_Select に入るたびに増える。Canvasが観測してパーツ一覧を開く。
 	selectListRevision int
 
+	timer                     *tick.Timer
+	MessageWindowDisplayTimer *tick.Timer
+
 	// text       *ui.Text
 	Input      *input.Handler
 	Gamedata   *game.Gamedata
@@ -122,10 +126,12 @@ func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], newCanvas func(*PlaySc
 			entities:    []Entity{},
 			worldDrawer: camera,
 			// text:       text,
-			Input:      Input,
-			Gamedata:   gdata,
-			initScenes: initScenes,
-			Stage:      stage,
+			Input:                     Input,
+			timer:                     tick.NewTimer(),
+			MessageWindowDisplayTimer: tick.NewTimer(),
+			Gamedata:                  gdata,
+			initScenes:                initScenes,
+			Stage:                     stage,
 		}
 		canvas, err := newCanvas(&ps)
 		if err != nil {
@@ -184,10 +190,12 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 		s.Gamedata.DisableWorldTimeProgressing()
 	}
 
+	if s.MessageWindowDisplayTimer.Expired() {
+		s.canvas.SetMessageWindowText("")
+	}
+
 	if s.Gamedata.InitialProcess {
 		s.Gamedata.InitialProcess = false
-		s.Gamedata.Text = "10"
-		// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
 
 	}
 
@@ -205,10 +213,14 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 
 	if s.Gamedata.State == game.Play_Sell {
 		// TrainSceneで保存したパーツを売却し、探索へ進む。
+		s.timer.Set(50)
 		if s.Gamedata.IsSellPartExists() {
-			s.Gamedata.SellPart()
+			v, w, n := s.Gamedata.SellPart()
+			s.canvas.SetMessageWindowText(fmt.Sprintf("%s を %d 円で売って %d 持ち運べる量が増えた", n, v, w))
 		}
-		s.Gamedata.State = game.Play_Explore
+		if s.timer.Expired() {
+			s.Gamedata.State = game.Play_Explore
+		}
 
 		return nil, transition.None(), nil
 	}
@@ -272,6 +284,9 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 	}
 
 	if s.Gamedata.State == game.Play_Select {
+		if s.MessageWindowDisplayTimer.Expired() {
+			s.canvas.SetMessageWindowText("Space で買うパーツを選択  Enter で決定")
+		}
 		if s.canvas.IsPurchaseConfirmationOpen() {
 			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
 				s.canvas.MovePurchaseConfirmationLeft()
@@ -292,15 +307,19 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 				}
 				switch s.Gamedata.BuyFoundPart(part) {
 				case game.NoItem:
-					fmt.Print("購入可能な商品がありません")
+					s.MessageWindowDisplayTimer.Set(20)
+					s.canvas.SetMessageWindowText("購入可能な商品がありません")
 				case game.Lack_money:
-					fmt.Print("所持金が不足しています")
+					s.MessageWindowDisplayTimer.Set(20)
+					s.canvas.SetMessageWindowText("所持金が不足しています")
 				case game.Lack_weight:
-					fmt.Print("重量オーバーです")
+					s.MessageWindowDisplayTimer.Set(20)
+					s.canvas.SetMessageWindowText("重量オーバーです")
 				case game.Buy:
-					fmt.Printf("%s を購入した", part.Name)
+					s.MessageWindowDisplayTimer.Set(20)
+					s.canvas.SetMessageWindowText(fmt.Sprintf("%s を購入した", part.Name))
 				default:
-					fmt.Print("不正な値がBuyFoundPart()から渡されました")
+					return nil, transition.None(), fmt.Errorf("不正な値がBuyFoundPart()から渡されました")
 				}
 			}
 			return
@@ -429,4 +448,8 @@ func (s *PlayScene) removeExpiredEntities() {
 
 func (s PlayScene) SetCameraCenter(center Utils.Position) {
 	s.worldDrawer.SetCenter(center)
+}
+
+func (s *PlayScene) Canvas() PlayCanvasAPI {
+	return s.canvas
 }
