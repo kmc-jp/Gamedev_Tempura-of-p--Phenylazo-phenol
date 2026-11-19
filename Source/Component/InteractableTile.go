@@ -22,7 +22,7 @@ func InteractiveTiles(Type tilemap.InteractType, scene *scene.PlayScene, render 
 	case tilemap.Shelf:
 		mr, ok := render.(*MultiRender)
 		if !ok {
-			return nil, fmt.Errorf("*MultiRenderではないRenderがついたShelfがあります。\n")
+			return nil, fmt.Errorf("*MultiRenderではないRenderがついたShelfがあります。")
 		}
 		return Utils.CastFactory[*ShelfTile, InteractableTile](NewShelfTile(scene, mr)), nil
 	case tilemap.Register:
