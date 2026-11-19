@@ -24,6 +24,7 @@ type InteractType int
 const (
 	None InteractType = iota
 	Shelf
+	Register
 )
 
 func IsIntaractive(t InteractType) bool {

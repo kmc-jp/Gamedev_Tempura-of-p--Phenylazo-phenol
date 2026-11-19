@@ -63,7 +63,7 @@ package "scene" {
     note bottom of XxxCanvasAPI
     Canvas APIは対応するScene構造体と同じファイルに定義する。
     IsXxxCanvas()は識別用で処理を持たない。
-    Title / Pause / SelectStage は Update・Draw・識別用メソッドだけ。
+    Title / SelectStage は Update・Draw・識別用メソッドだけ。
     end note
 
     class GameObject {
@@ -98,8 +98,9 @@ package "scenecanvas" {
 
     note bottom of XxxCanvas
     SelectStage は Scene の選択中の駅・現在地を毎フレーム観測し、RouteMapUI（路線図）へ反映する。
-    Title / Pause は共通ヘルパー newTextCanvas で、
+    Title は共通ヘルパー newTextCanvas で、
     案内用のTextを1個だけ持つCanvasを構築する。
+    Pause は Scene の選択中の項目を観測し、PauseMenu（縦並びボタン）と確認へ反映する。
     Play / Train / Result はScene・Gamedataのリビジョン番号を毎フレーム観測し、
     反映済みの番号と違えば表示を作り直す。
     end note
@@ -277,8 +278,8 @@ note left of XxxScene
 Sceneはscene packageに定義された
 XxxCanvasAPI interfaceだけを利用する。
 具体的なscenecanvas実装やUIは知らない。
-Title / Pause は Canvas を NewXxxScene の引数で、
-Play / Train / Result / SelectStage は Canvas の生成関数を NewXxxScene の引数で受け取り、
+Title は Canvas を NewXxxScene の引数で、
+Play / Train / Result / SelectStage / Pause は Canvas の生成関数を NewXxxScene の引数で受け取り、
 Scene の生成直後に呼んで注入する。
 end note
 

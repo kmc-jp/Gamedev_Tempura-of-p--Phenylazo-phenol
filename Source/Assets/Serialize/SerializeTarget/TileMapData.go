@@ -69,6 +69,7 @@ type tileType int
 const (
 	object tileType = iota
 	shelf
+	register
 )
 
 // tileTypeのデシリアライズに使えるようにする
@@ -78,6 +79,8 @@ func (tt *tileType) UnmarshalText(text []byte) error {
 		*tt = object
 	case "shelf":
 		*tt = shelf
+	case "register":
+		*tt = register
 	case "":
 		*tt = object
 	default:
@@ -431,6 +434,8 @@ func Interactivity(Type tileType) (tilemap.InteractType, error) {
 		return tilemap.None, nil
 	case shelf:
 		return tilemap.Shelf, nil
+	case register:
+		return tilemap.Register, nil
 	default:
 		return tilemap.None, fmt.Errorf("未設定の tileType です。\ntileType = %d", Type)
 	}

@@ -20,11 +20,14 @@ type StationConfig struct {
 // 省略すると駅の位置関係から自動で決まる。
 //   - FromKey: From の駅で To へ進むキー
 //   - ToKey:   To の駅で From へ戻るキー
+//
+// Minutes は2駅間の所要時間（分）。省略すると 0。
 type LineConfig struct {
 	From    string
 	To      string
 	FromKey string
 	ToKey   string
+	Minutes uint64
 }
 
 var string2Direction = map[string]selection.Direction{
@@ -90,7 +93,7 @@ func (c StageMapConfig) Construct() (any, error) {
 		if err != nil {
 			return nil, fmt.Errorf("路線 %s - %s の ToKey が不正です。\n%w", line.From, line.To, err)
 		}
-		stageMap.Lines = append(stageMap.Lines, stageinfo.Line{From: from, To: to, FromKey: fromKey, ToKey: toKey})
+		stageMap.Lines = append(stageMap.Lines, stageinfo.Line{From: from, To: to, FromKey: fromKey, ToKey: toKey, Minutes: line.Minutes})
 	}
 
 	if err := stageMap.Validate(); err != nil {

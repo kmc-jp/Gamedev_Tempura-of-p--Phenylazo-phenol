@@ -30,6 +30,9 @@ type TrainCanvasAPI interface {
 	ScrollPartsListUp()
 	// ShowSellPartConfirmation は選択中パーツの売却確認を表示する。
 	ShowSellPartConfirmation() bool
+	ShowNextPartsTab() error
+	ShowPreviousPartsTab() error
+	IsNoSellTabSelected() bool
 	MoveSellPartConfirmationLeft()
 	MoveSellPartConfirmationRight()
 	ConfirmSellPart()
@@ -50,6 +53,8 @@ type TrainScene struct {
 	partsListRevision int
 
 	bgDrawer BackGroundDrawer
+
+	timer *tick.Timer
 
 	// text       *ui.Text
 	Input                    *input.Handler
@@ -73,10 +78,12 @@ func NewTrainScene(worldDrawer Utils.Factory[WorldDrawer], bgDrawer Utils.Factor
 		if err != nil {
 			return &TrainScene{}, fmt.Errorf("BGDrawer() でエラーが発生しました。 \n%w", err)
 		}
+		timer := tick.NewTimer()
 		trs := TrainScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
 			bgDrawer:    bgCamera,
+			timer:       timer,
 			// text:       text,
 			Input:      Input,
 			Gamedata:   gdata,
@@ -135,12 +142,12 @@ func (s *TrainScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 			return
 		}
 
-		s.Gamedata.Timer = tick.NewTimer()
-		s.Gamedata.Timer.Set(50)
+		s.timer = tick.NewTimer()
+		s.timer.Set(50)
 	}
 
 	// 到着演出のタイマー満了時に1回だけ、一覧を表示する時点に達したことをCanvasへ伝える
-	if s.Gamedata.Timer.Expired() && s.partsListRevision == 0 {
+	if s.timer.Expired() && s.partsListRevision == 0 {
 		s.partsListRevision++
 	}
 
@@ -169,10 +176,12 @@ func (s *TrainScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 				part := s.sellPartConfirmationPart
 				s.sellPartConfirmationPart = nil
 				s.canvas.HideSellPartConfirmation()
-				if accepted && part != nil && !s.Gamedata.IsSellPartExists() {
+				if accepted && part != nil {
 					if !s.Gamedata.ChooseSellPartByPointer(part) {
 						return nil, transition.None(), fmt.Errorf("売却対象パーツの保存に失敗しました")
 					}
+					s.Gamedata.IncrementVisited()
+					return s.Gamedata.NextStage(), transition.NewScene(), nil
 				}
 			}
 			return
@@ -183,6 +192,21 @@ func (s *TrainScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 		}
 		if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
 			s.canvas.ScrollPartsListDown()
+		}
+		if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
+			if err := s.canvas.ShowPreviousPartsTab(); err != nil {
+				return nil, transition.None(), fmt.Errorf("パーツ一覧タブの切り替えに失敗しました。\n%w", err)
+			}
+		}
+		if s.Input.ActionIsJustPressed(inputconfig.ActionMoveRight) {
+			if err := s.canvas.ShowNextPartsTab(); err != nil {
+				return nil, transition.None(), fmt.Errorf("パーツ一覧タブの切り替えに失敗しました。\n%w", err)
+			}
+		}
+		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) && s.canvas.IsNoSellTabSelected() {
+			s.Gamedata.CancelSellPartSelection()
+			s.Gamedata.IncrementVisited()
+			return s.Gamedata.NextStage(), transition.NewScene(), nil
 		}
 		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) && !s.Gamedata.IsSellPartExists() {
 			part := s.canvas.SelectedPart()
@@ -206,8 +230,8 @@ func (s *TrainScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 		}, transition.Push(), nil
 	}
 
-	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) &&
-		(s.Gamedata.Visited() == 0 || s.Gamedata.IsSellPartExists()) {
+	if s.Gamedata.Visited() == 0 &&
+		s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 		s.Gamedata.IncrementVisited()
 		return s.Gamedata.NextStage(), transition.NewScene(), nil
 	}

@@ -18,12 +18,16 @@ func TitleSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inpu
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		titleCanvas, err := scenecanvas.NewTitleCanvas(gdata.Font)
+		BGDrawerFactory, err := MakeBGDrawerFactory(assetsManager, "Backgrounds/みんげー_タイトル画面.png", "Backgrounds/みんげー_タイトル画面.json")
 		if err != nil {
-			return nil, fmt.Errorf("scenecanvas.NewTitleCanvas() でエラーが発生しました。\n%w", err)
+			return nil, fmt.Errorf("MakeBGDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		titlescene, err := scene.NewTitleScene(DrawerFactory, titleCanvas, inputHandler, gdata, initScenes)()
+		newCanvas := func(s *scene.TitleScene) (scene.TitleCanvasAPI, error) {
+			return scenecanvas.NewTitleCanvas(s)
+		}
+
+		titlescene, err := scene.NewTitleScene(DrawerFactory, BGDrawerFactory, newCanvas, inputHandler, gdata, initScenes)()
 		if err != nil {
 			return nil, fmt.Errorf("NewTitleScene() でエラーが発生しました。\n%w", err)
 		}

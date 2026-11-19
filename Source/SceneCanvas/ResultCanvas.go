@@ -29,6 +29,7 @@ type ResultCanvas struct {
 	installedParts  *resultui.InstalledParts
 	partsList       *ui.PartsListUI
 	partUseConfirm  *commonui.Confirm
+	scoreDisplay    *resultui.ScoreDisplay
 
 	// shownRevision は一覧に反映済みの ResultScene.CandidatesRevision。
 	shownRevision int
@@ -112,8 +113,20 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 		return nil, fmt.Errorf("commonui.NewConfirm() でエラーが発生しました。\n%w", err)
 	}
 
+	scoreDisplay, err := resultui.NewScoreDisplay(resultui.ScoreDisplayConfig{
+		Font:            ui.FontFace(gdata.Font, 60),
+		TextColor:       color.Black(),
+		BackgroundColor: color.LightGray(),
+		Padding:         12,
+		ShuffleFrames:   10,
+		DigitFrames:     6,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("スコア表示UIの生成に失敗しました。\n%w", err)
+	}
+
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{guide, benchmarkPrompt, installedParts, partsList, partUseConfirm} {
+	for _, item := range []canvas.CanvasItem{guide, benchmarkPrompt, installedParts, partsList, partUseConfirm, scoreDisplay} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("結果画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -127,6 +140,7 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 		installedParts:  installedParts,
 		partsList:       partsList,
 		partUseConfirm:  partUseConfirm,
+		scoreDisplay:    scoreDisplay,
 	}, nil
 }
 
@@ -173,8 +187,12 @@ func (c *ResultCanvas) Update(active bool) error {
 
 // Draw implements [scene.ResultCanvasAPI].
 func (c *ResultCanvas) Draw(screen *ebiten.Image) {
+	bounds := screen.Bounds()
+	c.scoreDisplay.SetCenter(utils.Position{
+		X: float64(bounds.Dx() / 2),
+		Y: float64(bounds.Dy() / 2),
+	})
 	if c.partUseConfirm.Visible() {
-		bounds := screen.Bounds()
 		confirmSize := c.partUseConfirm.Size()
 		c.partUseConfirm.SetPosition(utils.Position{
 			X: float64((bounds.Dx() - confirmSize.X) / 2),
@@ -228,6 +246,14 @@ func (c *ResultCanvas) PartUseConfirmationResult() (bool, bool) {
 
 func (c *ResultCanvas) HidePartUseConfirmation() {
 	c.partUseConfirm.Hide()
+}
+
+func (c *ResultCanvas) StartScoreDisplay(score int) {
+	c.scoreDisplay.Start(score)
+}
+
+func (c *ResultCanvas) IsScoreDisplayFinished() bool {
+	return c.scoreDisplay.IsFinished()
 }
 
 // SelectedPart implements [scene.ResultCanvasAPI].

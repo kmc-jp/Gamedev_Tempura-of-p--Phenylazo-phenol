@@ -50,12 +50,17 @@ func NewTrainCanvas(s *scene.TrainScene, gdata *game.Gamedata) (*TrainCanvas, er
 
 	worldTimeText, err := commonui.NewClock(
 		utils.Position{},
-		color.White(),
+		color.Black(),
 		gdata,
-		ui.FontFace(gdata.Font, 15),
+		ui.FontFace(gdata.Font, 25),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("commonui.NewClock() でエラーが発生しました。\n%w", err)
+	}
+
+	gameDataUI, err := newGameDataUI(gdata)
+	if err != nil {
+		return nil, err
 	}
 
 	partsList, err := newPartsList(gdata)
@@ -80,7 +85,7 @@ func NewTrainCanvas(s *scene.TrainScene, gdata *game.Gamedata) (*TrainCanvas, er
 	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{worldTimeText, guide, partsList, sellConfirm} {
+	for _, item := range []canvas.CanvasItem{worldTimeText, gameDataUI, guide, partsList, sellConfirm} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("電車画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -102,7 +107,7 @@ func (c *TrainCanvas) Update(active bool) error {
 	listRevision := c.scene.PartsListRevision()
 	partsRevision := c.gdata.PartsRevision()
 	if listRevision > 0 && (listRevision != c.shownListRevision || partsRevision != c.shownPartsRevision) {
-		if err := c.partsList.ShowParts(c.gdata.OwnedParts()); err != nil {
+		if err := c.partsList.ShowSellParts(c.gdata.OwnedParts()); err != nil {
 			return fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
 		}
 		c.partsList.Show()
@@ -138,6 +143,18 @@ func (c *TrainCanvas) ScrollPartsListDown() {
 // ScrollPartsListUp implements [scene.TrainCanvasAPI].
 func (c *TrainCanvas) ScrollPartsListUp() {
 	c.partsList.SelectPrevious()
+}
+
+func (c *TrainCanvas) ShowNextPartsTab() error {
+	return c.partsList.NextTab()
+}
+
+func (c *TrainCanvas) ShowPreviousPartsTab() error {
+	return c.partsList.PreviousTab()
+}
+
+func (c *TrainCanvas) IsNoSellTabSelected() bool {
+	return c.partsList.Visible() && c.partsList.ActiveTab() == ui.PartsListNoSell
 }
 
 func (c *TrainCanvas) ShowSellPartConfirmation() bool {
