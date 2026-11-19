@@ -64,6 +64,7 @@ func (mr *MultiRender) Draw() (image *ebiten.Image, DIO *ebiten.DrawImageOptions
 	if mr.subupdate && mr.subrendering {
 		// mr.imgcache.Clear()
 		mr.imgqueuecache[0], mr.dioqueuecache[0], Layer = mr.main.Draw()
+		mainimg := mr.imgqueuecache[0]
 		// mr.imgcache.DrawImage(img, dio)
 
 		for i, rnd := range mr.subs {
@@ -71,16 +72,8 @@ func (mr *MultiRender) Draw() (image *ebiten.Image, DIO *ebiten.DrawImageOptions
 			// mr.imgcache.DrawImage(img, dio)
 		}
 
-		mxw, mxh := 0, 0
-
-		for _, img := range mr.imgqueuecache {
-			w, h := img.Bounds().Dx(), img.Bounds().Dy()
-			mxw = max(mxw, w)
-			mxh = max(mxh, h)
-		}
-
-		if mr.imgcache.Bounds().Dx() != mxw || mr.imgcache.Bounds().Dy() != mxh {
-			mr.imgcache = ebiten.NewImage(mxw, mxh)
+		if mr.imgcache.Bounds().Dx() != mainimg.Bounds().Dx() || mr.imgcache.Bounds().Dy() != mainimg.Bounds().Dy() {
+			mr.imgcache = ebiten.NewImage(mainimg.Bounds().Dx(), mainimg.Bounds().Dy())
 		} else {
 			mr.imgcache.Clear()
 		}
