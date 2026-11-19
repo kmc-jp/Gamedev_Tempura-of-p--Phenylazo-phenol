@@ -12,7 +12,7 @@ type ShelfTile struct {
 	scene       *scene.PlayScene
 	render      *MultiRender
 	isSparkling bool
-	spTimer     tick.Timer
+	spTimer     *tick.Timer
 	nomalGet    int
 }
 
@@ -32,6 +32,7 @@ func (s *ShelfTile) Interact(player *Player) error {
 		foundPart = parts.RandomPartsFromAll(false)
 		s.nomalGet = 0
 		s.isSparkling = false
+		s.spTimer.Set(0)
 	} else if s.nomalGet < nomalmax {
 		foundPart = parts.RandomPartsFromAll(true)
 		s.nomalGet++
@@ -64,6 +65,7 @@ func NewShelfTile(scene *scene.PlayScene, render *MultiRender) Utils.Factory[*Sh
 		return &ShelfTile{
 			scene:       scene,
 			render:      render,
+			spTimer:     tick.NewTimer(),
 			isSparkling: false,
 		}, nil
 	}
