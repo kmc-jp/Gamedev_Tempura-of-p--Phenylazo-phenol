@@ -2,8 +2,8 @@ package component
 
 import (
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
+	parts "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Parts"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
-	"fmt"
 )
 
 type ShelfTile struct {
@@ -11,7 +11,11 @@ type ShelfTile struct {
 }
 
 func (s ShelfTile) Interact(player *Player) error {
-	fmt.Printf("Interact with Shelf.\n")
+	foundPart := parts.RandomPartsFromAll()
+	s.scene.Gamedata.AddPartToFoundList(foundPart)
+	s.scene.ShowFoundPartLog(foundPart)
+	s.scene.ShowPartPopup(foundPart, player.tw.tf.Position())
+
 	return nil
 }
 
