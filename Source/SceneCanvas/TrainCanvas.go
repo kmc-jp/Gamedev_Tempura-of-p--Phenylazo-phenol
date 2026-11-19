@@ -17,11 +17,12 @@ import (
 // TrainCanvas は TrainScene のUI構成である。案内テキストと所持パーツ一覧を持つ。
 // 一覧を表示する時点はSceneが決めるため、Sceneのポインタを持って観測する。
 type TrainCanvas struct {
-	scene       *scene.TrainScene
-	gdata       *game.Gamedata
-	canvas      *canvas.Canvas
-	partsList   *ui.PartsListUI
-	sellConfirm *commonui.Confirm
+	scene         *scene.TrainScene
+	gdata         *game.Gamedata
+	canvas        *canvas.Canvas
+	partsList     *ui.PartsListUI
+	sellConfirm   *commonui.Confirm
+	messageWindow *commonui.MessageWindow
 
 	// shownListRevision は反映済みの TrainScene.PartsListRevision。
 	shownListRevision int
@@ -84,19 +85,25 @@ func NewTrainCanvas(s *scene.TrainScene, gdata *game.Gamedata) (*TrainCanvas, er
 		return nil, fmt.Errorf("commonui.NewConfirm() でエラーが発生しました。\n%w", err)
 	}
 
+	messageWindow, err := newMessageWindow(gdata)
+	if err != nil {
+		return nil, err
+	}
+
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{worldTimeText, gameDataUI, guide, partsList, sellConfirm} {
+	for _, item := range []canvas.CanvasItem{worldTimeText, gameDataUI, guide, partsList, sellConfirm, messageWindow} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("電車画面のCanvas構築に失敗しました。\n%w", err)
 		}
 	}
 
 	return &TrainCanvas{
-		scene:       s,
-		gdata:       gdata,
-		canvas:      c,
-		partsList:   partsList,
-		sellConfirm: sellConfirm,
+		scene:         s,
+		gdata:         gdata,
+		canvas:        c,
+		partsList:     partsList,
+		sellConfirm:   sellConfirm,
+		messageWindow: messageWindow,
 	}, nil
 }
 
@@ -119,8 +126,13 @@ func (c *TrainCanvas) Update(active bool) error {
 
 // Draw implements [scene.TrainCanvasAPI].
 func (c *TrainCanvas) Draw(screen *ebiten.Image) {
+	bounds := screen.Bounds()
+	messageSize := c.messageWindow.Size()
+	c.messageWindow.SetPosition(utils.Position{
+		X: float64((bounds.Dx() - messageSize.X) / 2),
+		Y: float64(bounds.Dy() - messageSize.Y - 5),
+	})
 	if c.sellConfirm.Visible() {
-		bounds := screen.Bounds()
 		confirmSize := c.sellConfirm.Size()
 		c.sellConfirm.SetPosition(utils.Position{
 			X: float64((bounds.Dx() - confirmSize.X) / 2),
@@ -191,6 +203,10 @@ func (c *TrainCanvas) HideSellPartConfirmation() {
 
 func (c *TrainCanvas) SelectedPart() *game.Part {
 	return c.partsList.SelectedPart()
+}
+
+func (c *TrainCanvas) SetMessageWindowText(value string) {
+	c.messageWindow.SetText(value)
 }
 
 var _ scene.TrainCanvasAPI = (*TrainCanvas)(nil)

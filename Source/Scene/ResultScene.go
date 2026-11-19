@@ -42,6 +42,7 @@ type ResultCanvasAPI interface {
 	IsPartUseConfirmationOpen() bool
 	PartUseConfirmationResult() (bool, bool)
 	HidePartUseConfirmation()
+	SetMessageWindowText(string)
 	StartScoreDisplay(score int)
 	IsScoreDisplayFinished() bool
 

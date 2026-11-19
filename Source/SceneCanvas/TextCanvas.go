@@ -9,9 +9,12 @@ import (
 	canvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Canvas"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
+	commonui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI/CommonUI"
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
+	"image"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
@@ -114,4 +117,26 @@ func newGameDataUI(gdata *game.Gamedata) (*ui.GameDataUI, error) {
 	}
 	gameDataUI.SetBackgroundColor(color.White())
 	return gameDataUI, nil
+}
+
+// newMessageWindow はPlayCanvasと同じデザインの常時表示メッセージウィンドウを生成する。
+func newMessageWindow(gdata *game.Gamedata) (*commonui.MessageWindow, error) {
+	font := ui.FontFace(gdata.Font, 20)
+	_, messageHeight := text.Measure("メッセージ", font, font.Size*1.5)
+	messageWindow, err := commonui.NewMessageWindow(commonui.MessageWindowConfig{
+		Size: image.Point{
+			X: 600,
+			Y: int(math.Ceil(messageHeight)) + 10,
+		},
+		Font:            font,
+		TextColor:       color.Black(),
+		BackgroundColor: color.SkyBlue().MakeTansparentColor(0.2),
+		Padding:         image.Point{X: 10, Y: 5},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("commonui.NewMessageWindow() でエラーが発生しました。\n%w", err)
+	}
+	messageWindow.ClearText()
+	messageWindow.ShowText()
+	return messageWindow, nil
 }
