@@ -1,6 +1,7 @@
 package scene
 
 import (
+	audioassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Audio"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
@@ -10,6 +11,7 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 	input "github.com/quasilyte/ebitengine-input"
 )
 
@@ -52,6 +54,9 @@ type TitleScene struct {
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
+
+	bgmData   *audioassets.AudioData
+	bgmPlayer *audio.Player
 }
 
 // NewTitleScene は TitleScene を生成する。
@@ -79,6 +84,14 @@ func NewTitleScene(worldDrawer Utils.Factory[WorldDrawer], bgDrawer Utils.Factor
 			selector.AddTransition(items[i+1], selection.Up, items[i], nil)
 		}
 
+		const bgmPath = "bgm/title.mp3"
+		ad, err := gdata.AssetsManager.Audio.NewAudioData(bgmPath, audioassets.BGM)
+		if err != nil {
+			return &TitleScene{}, fmt.Errorf("gdata.AssetsManager.Audio.NewAudioData() でエラーが発生しました。\npath : %s\n%w", bgmPath, err)
+		}
+		bgmpl, err := gdata.AssetsManager.Audio.Load(ad)
+		bgmpl.Play()
+
 		ts := TitleScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
@@ -88,6 +101,8 @@ func NewTitleScene(worldDrawer Utils.Factory[WorldDrawer], bgDrawer Utils.Factor
 			Input:      Input,
 			gamedata:   gdata,
 			initScenes: initScenes,
+			bgmData:    &ad,
+			bgmPlayer:  bgmpl,
 		}
 		canvas, err := newCanvas(&ts)
 		if err != nil {
@@ -176,6 +191,9 @@ func (s *TitleScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 
 // startGame はステージ選択画面へ向かう。
 func (s *TitleScene) startGame() Utils.Factory[game.Scene] {
+	// bgmを止める
+	s.bgmPlayer.Pause()
+
 	return func() (game.Scene, error) {
 		nextScene, err := s.initScenes.InitSelectStageScene()
 		if err != nil {
