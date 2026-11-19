@@ -15,12 +15,16 @@ type InteractableTile interface {
 
 // tilemap.InteractType を、対応するコンポーネントのファクトリに変換する
 // nil かもしれないので対応できるようにせよ
-func InteractiveTiles(Type tilemap.InteractType, scene *scene.PlayScene) (Utils.Factory[InteractableTile], error) {
+func InteractiveTiles(Type tilemap.InteractType, scene *scene.PlayScene, render gameobject.Render) (Utils.Factory[InteractableTile], error) {
 	switch Type {
 	case tilemap.None:
 		return nil, nil
 	case tilemap.Shelf:
-		return Utils.CastFactory[*ShelfTile, InteractableTile](NewShelfTile(scene)), nil
+		mr, ok := render.(*MultiRender)
+		if !ok {
+			return nil, fmt.Errorf("*MultiRenderではないRenderがついたShelfがあります。")
+		}
+		return Utils.CastFactory[*ShelfTile, InteractableTile](NewShelfTile(scene, mr)), nil
 	case tilemap.Register:
 		return Utils.CastFactory[*RegisterTile, InteractableTile](NewRegisterTile(scene)), nil
 	default:

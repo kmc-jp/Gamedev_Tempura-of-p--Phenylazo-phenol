@@ -60,14 +60,14 @@ func (tm *TileMap) SetGameObject(
 ) error {
 	println("TileMap.SetGameObject()")
 
-	tilecount := map[tilemap.TileData]int{}
+	tilecount := map[string]int{}
 	fmt.Printf("tilecount : %d\n", len(tm.Tiles))
 
 	for pos, t := range tm.Tiles {
 		data := t.Data
-		// 名前
-		i, _ := tilecount[data]
-		tilecount[data] = i + 1 // キーが存在しなければ i = 0 なので問題なし
+		// 名前(重複チェック)
+		i, _ := tilecount[data.Name]
+		tilecount[data.Name] = i + 1 // キーが存在しなければ i = 0 なので問題なし
 		name := fmt.Sprintf("%s%d", data.Name, i+1)
 
 		// 位置
@@ -86,7 +86,7 @@ func (tm *TileMap) SetGameObject(
 		scene.AddEntity(obj)
 
 		// 干渉可能タイル設定
-		Interact, err := InteractiveTiles(data.Interact, scene)
+		Interact, err := InteractiveTiles(data.Interact, scene, obj.Render())
 		if err != nil {
 			return fmt.Errorf("InteractiveTiles(data.Interact) でエラーが発生しました。\ndata.Interact = %d\n%w", data.Interact, err)
 		}
