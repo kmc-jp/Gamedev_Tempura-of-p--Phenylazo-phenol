@@ -36,6 +36,10 @@ func (s *ShelfTile) Interact(player *Player) error {
 	} else if s.nomalGet < nomalmax {
 		foundPart = parts.RandomPartsFromAll(true)
 		s.nomalGet++
+
+		if s.nomalGet == nomalmax {
+			// 棚が品切れになった時の処理をどうするか
+		}
 	}
 
 	s.scene.Gamedata.AddPartToFoundList(foundPart)
