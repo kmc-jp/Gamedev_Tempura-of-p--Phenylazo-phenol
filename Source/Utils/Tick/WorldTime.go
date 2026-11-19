@@ -7,6 +7,8 @@ type WorldTimer struct {
 
 	//ゲームスタートからの経過時間
 	passedTime uint64 //unit: min
+
+	isPM bool
 }
 
 // CountSpeed 経過ごとに WorldTime 1 min 経過
@@ -33,6 +35,13 @@ func (wtimer *WorldTimer) syncTime() {
 	wtimer.passedTime = wtimer.GetCurrentTick() / countSpeed_tick
 }
 
+func (wtimer *WorldTimer) setIsPM() {
+	departureMin := Departuretime * 60
+	if uint64(departureMin)+wtimer.passedTime >= 12*60 {
+		wtimer.isPM = true
+	}
+}
+
 func (wtimer *WorldTimer) GetPassedTimeInMinite() uint64 {
 	wtimer.syncTime()
 	return wtimer.passedTime
@@ -45,5 +54,15 @@ func (wtimer *WorldTimer) GetTimeText() string {
 	if totalMinutes > endMinutes {
 		totalMinutes = endMinutes
 	}
-	return fmt.Sprintf("%02d:%02d", totalMinutes/60, totalMinutes%60)
+	if !wtimer.isPM {
+		wtimer.setIsPM()
+	}
+	ampm := ""
+	switch wtimer.isPM {
+	case true:
+		ampm = "PM"
+	case false:
+		ampm = "AM"
+	}
+	return fmt.Sprintf("%s  %02d:%02d", ampm, totalMinutes/60, totalMinutes%60)
 }
