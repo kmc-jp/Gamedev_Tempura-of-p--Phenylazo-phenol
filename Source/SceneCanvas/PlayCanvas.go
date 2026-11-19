@@ -10,10 +10,8 @@ import (
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
 	"image"
-	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 // PlayCanvas は PlayScene のUI構成である。
@@ -44,7 +42,7 @@ const (
 	messageWindowTextSize     = 20
 	messageWindowPaddingX     = 10
 	messageWindowPaddingY     = 5
-	messageWindowBottomMargin = 20
+	messageWindowBottomMargin = 5
 	confirmWidth              = 280
 	confirmHeight             = 110
 	confirmPadding            = 12
@@ -54,8 +52,8 @@ const (
 
 var (
 	foundPartLogTextColor        = color.Black()
-	messageWindowTextColor       = color.White()
-	messageWindowBackgroundColor = color.SemiTransparentBlack()
+	messageWindowTextColor       = color.Black()
+	messageWindowBackgroundColor = color.SkyBlue().MakeTansparentColor(0.2)
 )
 
 // NewPlayCanvas は PlayCanvas を生成する。
@@ -165,11 +163,11 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	}
 
 	messageFont := ui.FontFace(gdata.Font, messageWindowTextSize)
-	messageWidth, messageHeight := text.Measure("探索終了", messageFont, messageFont.Size*1.5)
+	//_, messageHeight := text.Measure("探索終了", messageFont, messageFont.Size*1.5)
 	messageWindow, err := commonui.NewMessageWindow(commonui.MessageWindowConfig{
 		Size: image.Point{
-			X: int(math.Ceil(messageWidth)) + messageWindowPaddingX*2,
-			Y: int(math.Ceil(messageHeight)) + messageWindowPaddingY*2,
+			X: 600,
+			Y: 30 + messageWindowPaddingY*2,
 		},
 		Font:            messageFont,
 		TextColor:       messageWindowTextColor,
