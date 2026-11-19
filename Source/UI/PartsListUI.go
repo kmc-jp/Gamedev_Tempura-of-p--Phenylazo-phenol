@@ -31,6 +31,7 @@ const (
 	PartsListFound PartsListTab = iota
 	PartsListOwned
 	PartsListExit
+	PartsListNoSell
 )
 
 type PartsListUI struct {
@@ -41,9 +42,11 @@ type PartsListUI struct {
 	cards         []*PartCard
 	contentHeight int
 	selected      int
-	lists         [3]game.Parts
+	lists         [4]game.Parts
 	activeTab     PartsListTab
 	showTabs      bool
+	tabLabels     []string
+	tabCount      int
 	visible       bool
 	empty         *Text
 }
@@ -84,16 +87,32 @@ func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont 
 // 表示状態は変更しないため、表示するには Show を呼ぶ。
 func (p *PartsListUI) ShowFoundParts(found, owned game.Parts) error {
 	p.showTabs = true
+	p.tabLabels = []string{"発見したパーツ", "所持パーツ", "店を出る"}
+	p.tabCount = len(p.tabLabels)
 	p.lists[PartsListFound] = found
 	p.lists[PartsListOwned] = owned
 	p.activeTab = PartsListFound
 	return p.rebuild(found, 0)
 }
 
+// ShowSellParts は所持パーツと「パーツを売らない」のタブ付き一覧を構築する。
+// 表示状態は変更しないため、表示するには Show を呼ぶ。
+func (p *PartsListUI) ShowSellParts(owned game.Parts) error {
+	p.showTabs = true
+	p.tabLabels = []string{"所持パーツ", "パーツを売らない"}
+	p.tabCount = len(p.tabLabels)
+	p.lists[PartsListOwned] = owned
+	p.lists[PartsListNoSell] = nil
+	p.activeTab = PartsListOwned
+	return p.rebuild(owned, 0)
+}
+
 // ShowParts はタブなしの単一パーツ一覧を構築する。
 // 表示状態は変更しないため、表示するには Show を呼ぶ。
 func (p *PartsListUI) ShowParts(parts game.Parts) error {
 	p.showTabs = false
+	p.tabLabels = nil
+	p.tabCount = 0
 	p.lists[PartsListFound] = parts
 	return p.rebuild(parts, 0)
 }
@@ -176,12 +195,36 @@ func (p *PartsListUI) moveTab(delta int) error {
 	if !p.showTabs || delta == 0 {
 		return nil
 	}
-	next := int(p.activeTab) + delta
-	if next < int(PartsListFound) {
-		next = int(PartsListFound)
+	if p.tabCount == 2 {
+		next := p.activeTab
+		if delta > 0 && p.activeTab == PartsListOwned {
+			next = PartsListNoSell
+		} else if delta < 0 && p.activeTab == PartsListNoSell {
+			next = PartsListOwned
+		}
+		if next == p.activeTab {
+			return nil
+		}
+		p.activeTab = next
+		if p.activeTab == PartsListNoSell {
+			return p.rebuild(nil, 0)
+		}
+		return p.rebuild(p.lists[PartsListOwned], 0)
 	}
-	if next > int(PartsListExit) {
-		next = int(PartsListExit)
+	next := int(p.activeTab) + delta
+	minTab := int(PartsListFound)
+	if p.tabCount == 2 {
+		minTab = int(PartsListOwned)
+	}
+	if next < minTab {
+		next = minTab
+	}
+	maxTab := int(PartsListExit)
+	if p.tabCount == 2 {
+		maxTab = int(PartsListNoSell)
+	}
+	if next > maxTab {
+		next = maxTab
 	}
 	if next == int(p.activeTab) {
 		return nil
@@ -241,6 +284,9 @@ func (p *PartsListUI) rebuild(parts game.Parts, selected int) error {
 		emptyText := "所持パーツはありません"
 		if p.activeTab == PartsListExit {
 			emptyText = "Enterキーでパーツを買わずに店を出る\n"
+		}
+		if p.activeTab == PartsListNoSell {
+			emptyText = "Enterキーで売却パーツを選択せずに進む"
 		}
 		empty, err := NewText(
 			utils.Position{X: p.position.X + 20, Y: p.position.Y + 80 + float64(p.tabOffset())},
@@ -379,13 +425,19 @@ func (p *PartsListUI) drawScrollBar(screen *ebiten.Image) {
 }
 
 func (p *PartsListUI) drawTabs(screen *ebiten.Image) {
-	tabWidth := (partsListWidth - 40) / 3
-	for i, label := range []string{"発見したパーツ", "所持パーツ", "店を出る"} {
+	tabWidth := (partsListWidth - 40) / p.tabCount
+	for i, label := range p.tabLabels {
 		x := int(p.position.X) + 20 + i*tabWidth
 		y := int(p.position.Y) + 35
 		tabRect := image.Rect(x, y, x+tabWidth, y+partsListTabHeight)
 		uiutils.FillRect(screen, tabRect, stdcolor.RGBA{R: 220, G: 220, B: 220, A: 255})
-		if PartsListTab(i) == p.activeTab {
+		tab := PartsListTab(i)
+		if p.tabCount == 2 && i == 0 {
+			tab = PartsListOwned
+		} else if p.tabCount == 2 && i == 1 {
+			tab = PartsListNoSell
+		}
+		if tab == p.activeTab {
 			uiutils.DrawBorder(screen, tabRect, partsListBorderWidth, uiutils.SelectionBorderColor)
 		}
 		DrawText(utils.Position{X: float64(x + 10), Y: float64(y + 2)}, gamecolor.Black(), label, p.font, screen)
