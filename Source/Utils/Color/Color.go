@@ -29,6 +29,12 @@ func (c *Color) SetTransParent(tp float32) {
 	c.A = tp
 }
 
+func (c *Color) MakeTansparentColor(tp float32) *Color {
+	newc := c
+	newc.SetTransParent(tp)
+	return newc
+}
+
 func Red() *Color {
 	return &Color{1, 0, 0, 1}
 }
