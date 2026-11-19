@@ -6,6 +6,7 @@
 #   FromKey: From の駅で To へ進むキー / ToKey: To の駅で From へ戻るキー
 #   例: [[Lines]] From = "Departure" To = "Red" FromKey = "Left" ToKey = "Right"
 # 書いた向きは明示が優先され、書かない向きは自動のまま。
+# Minutes: その路線の所要時間（分）。省略すると 0。
 Width = 320
 Height = 240
 
@@ -44,29 +45,36 @@ From = "Departure"
 To = "Red"
 FromKey = "Up"
 ToKey = "Down"
+Minutes = 10
 
 [[Lines]]
 From = "Departure"
 To = "Green"
 FromKey = "Right"
 ToKey = "Down"
+Minutes = 20
 
 [[Lines]]
 From = "Red"
 To = "Green"
+Minutes = 15
 
 [[Lines]]
 From = "Red"
 To = "Blue"
+Minutes = 10
 
 [[Lines]]
 From = "Green"
 To = "Orange"
+Minutes = 10
 
 [[Lines]]
 From = "Blue"
 To = "Purple"
+Minutes = 15
 
 [[Lines]]
 From = "Orange"
 To = "Purple"
+Minutes = 15

@@ -4,7 +4,6 @@ import (
 	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
-	parts "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Parts"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
@@ -93,14 +92,10 @@ func (p *Player) interact() error {
 	targetpos := mypos.Add(p.dir)
 
 	if tgt, ok := p.tw.tm.Interact[targetpos]; ok {
-		err := tgt.Interact()
+		err := tgt.Interact(p)
 		if err != nil {
 			return fmt.Errorf("target.Interact() でエラーが発生しました。\ntergetpos = %d\n%w", targetpos, err)
 		}
-		foundPart := parts.RandomPartsFromAll()
-		p.scene.Gamedata.AddPartToFoundList(foundPart)
-		p.scene.ShowFoundPartLog(foundPart)
-		p.scene.ShowPartPopup(foundPart, p.tw.tf.Position())
 	}
 
 	return nil
