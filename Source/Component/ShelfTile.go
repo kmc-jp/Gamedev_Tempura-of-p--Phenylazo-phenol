@@ -13,7 +13,7 @@ type ShelfTile struct {
 	render      *MultiRender
 	isSparkling bool
 	spTimer     *tick.Timer
-	nomalGet    int
+	normalGet   int
 }
 
 // レア棚の制御
@@ -30,14 +30,14 @@ func (s *ShelfTile) Interact(player *Player) error {
 		// キラキラ表示があれば停止
 		s.render.EnableSubUpdate(false)
 		foundPart = parts.RandomPartsFromAll(false)
-		s.nomalGet = 0
+		s.normalGet = 0
 		s.isSparkling = false
 		s.spTimer.Set(0)
-	} else if s.nomalGet < normalmax_Shelf {
+	} else if s.normalGet < normalmax_Shelf {
 		foundPart = parts.RandomPartsFromAll(true)
-		s.nomalGet++
+		s.normalGet++
 
-		if s.nomalGet == normalmax_Shelf {
+		if s.normalGet == normalmax_Shelf {
 			// 棚が品切れになった時の処理をどうするか
 		}
 	}
