@@ -50,7 +50,7 @@ func MultiRenderDecorator(subFactories ...Utils.Factory[gameobject.Render]) func
 			for i, f := range subFactories {
 				sub, err := f()
 				if err != nil {
-					return nil, fmt.Errorf("MultiRender の subFactories[%d] での生成に失敗しました。/n%w", i, err)
+					return nil, fmt.Errorf("MultiRender の subFactories[%d] での生成に失敗しました。\n%w", i, err)
 				}
 				subs[i] = sub
 			}
