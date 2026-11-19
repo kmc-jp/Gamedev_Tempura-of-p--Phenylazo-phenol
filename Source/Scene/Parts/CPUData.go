@@ -1,254 +1,123 @@
 package parts
 
-import game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
-
-var (
-	empty = register(func() *game.Part {
-		return &game.Part{}
-	})
-
-	CPUExample = register(func() *game.Part {
-		return &game.Part{
-			Name:        "CPU_Example",
-			Kind:        game.CPU,
-			Rarity:      game.S2,
-			Weight:      100,
-			Val:         10000,
-			Performance: 1000,
-			Detail:      "CPU の仮パーツデータ",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-	})
-
-	CPU1 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Nitel Pure i5 3500",
-			Kind:        game.CPU,
-			Rarity:      game.S2,
-			Weight:      100,
-			Val:         10000,
-			Performance: 5000,
-			Detail:      "Nitel社のCPU。いろいろなパソコンに使われている。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-	})
-
-	CPU2 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Nitel Pure i5 3500T",
-			Kind:        game.CPU,
-			Rarity:      game.S2,
-			Weight:      100,
-			Val:         12000,
-			Performance: 5100,
-			Detail:      "Nitel社のCPU。いろいろなパソコンに使われている。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-	})
-
-	CPU3 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Nitel Pure i7 3700",
-			Kind:        game.CPU,
-			Rarity:      game.S2,
-			Weight:      100,
-			Val:         15000,
-			Performance: 7000,
-			Detail:      "Nitel社のCPU。いろいろな高性能パソコンに使われている。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-	})
-
-	CPU4 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Nitel Pure i7 3700T",
-			Kind:        game.CPU,
-			Rarity:      game.S2,
-			Weight:      100,
-			Val:         17000,
-			Performance: 7100,
-			Detail:      "Nitel社のCPU。いろいろな高性能パソコンに使われている。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-	})
-
-	CPU5 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Nitel Pure i9 3900",
-			Kind:        game.CPU,
-			Rarity:      game.S3,
-			Weight:      100,
-			Val:         28000,
-			Performance: 9000,
-			Detail:      "Nitel社のCPU。いろいろなゲーミングパソコンに使われている。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-	})
-
-	CPU6 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Nitel Pure i9 3990TS",
-			Kind:        game.CPU,
-			Rarity:      game.S3,
-			Weight:      100,
-			Val:         35000,
-			Performance: 9500,
-			Detail:      "Nitel社のCPU。高性能ゲーミングパソコンならこれ。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-	})
-
-	CPU7 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Nitel Pure i3 2100",
-			Kind:        game.CPU,
-			Rarity:      game.S1,
-			Weight:      100,
-			Val:         5000,
-			Performance: 2500,
-			Detail:      "Nitel社のCPU。性能は微妙かも。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-	})
-
-	CPU8 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Nitel Pure i5 2500",
-			Kind:        game.CPU,
-			Rarity:      game.S2,
-			Weight:      100,
-			Val:         7000,
-			Performance: 3900,
-			Detail:      "Nitel社のCPU。まあこれで十分。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-	})
-
-	CPU9 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Nitel Pure i7 2700",
-			Kind:        game.CPU,
-			Rarity:      game.S2,
-			Weight:      100,
-			Val:         10000,
-			Performance: 6000,
-			Detail:      "Nitel社のCPU。いろいろなパソコンに使われている。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-	})
-
-	CPU10 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Nitel Pure i9 2900",
-			Kind:        game.CPU,
-			Rarity:      game.S3,
-			Weight:      100,
-			Val:         20000,
-			Performance: 8500,
-			Detail:      "Nitel社のCPU。ゲーミングパソコンに使われている。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-	})
-
-	CPU11 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Nitel Pure i5 550",
-			Kind:        game.CPU,
-			Rarity:      game.S1,
-			Weight:      100,
-			Val:         5000,
-			Performance: 2600,
-			Detail:      "Nitel社のCPU。古いけどそこそこ使える。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-
-	})
-
-	CPU12 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Nitel Pure i7 750",
-			Kind:        game.CPU,
-			Rarity:      game.S2,
-			Weight:      100,
-			Val:         7000,
-			Performance: 3600,
-			Detail:      "Nitel社のCPU。古いけどそこそこ使える。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-
-	})
-
-	CPU13 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Nitel Pure i9 950",
-			Kind:        game.CPU,
-			Rarity:      game.S2,
-			Weight:      100,
-			Val:         10000,
-			Performance: 3500,
-			Detail:      "Nitel社のCPU。古いけどまあ使える。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-
-	})
-
-	CPU31 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Ryzin5 3400U",
-			Kind:        game.CPU,
-			Rarity:      game.S2,
-			Weight:      100,
-			Val:         10000,
-			Performance: 5000,
-			Detail:      "ADD社のCPU。いろいろなパソコンに入ってる。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-
-	})
-
-	CPU32 = register(func() *game.Part {
-		return &game.Part{
-			Name:        "Ryzin5 3400U",
-			Kind:        game.CPU,
-			Rarity:      game.S2,
-			Weight:      100,
-			Val:         10000,
-			Performance: 5000,
-			Detail:      "ADD社のCPU。いろいろなパソコンに入ってる。",
-			ImgName:     "Parts/みんげー_CPU",
-			ImgScale:    CPUImageScale,
-			ImgOffset:   &NoOffset,
-		}
-
-	})
+import (
+	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
+	"strconv"
 )
+
+type cpuModelSpec struct {
+	name        string
+	grade       string
+	performance int
+	value       int
+	detail      string
+}
+
+func registerCPU(spec cpuModelSpec) {
+	rarity := game.S1
+	if spec.grade == "i5" {
+		rarity = game.S2
+	}
+	if spec.grade == "i7" {
+		rarity = game.S2
+	}
+	if spec.grade == "i9" {
+		rarity = game.S3
+	}
+	register(func() *game.Part {
+		return &game.Part{
+			Name:        spec.name,
+			Kind:        game.CPU,
+			Rarity:      rarity,
+			Weight:      100,
+			Val:         spec.value,
+			Performance: spec.performance,
+			Detail:      spec.detail,
+			ImgName:     "Parts/みんげー_CPU",
+			ImgScale:    CPUImageScale,
+			ImgOffset:   &NoOffset,
+		}
+	})
+}
+
+func init() {
+	nitelGenerations := []int{2100, 3100, 4100, 5100, 6100}
+	nitelBasePerformance := map[string]int{
+		"i3": 2200,
+		"i5": 4000,
+		"i7": 5800,
+		"i9": 8000,
+	}
+	nitelBaseValue := map[string]int{
+		"i3": 5000,
+		"i5": 9000,
+		"i7": 14000,
+		"i9": 22000,
+	}
+
+	for generationIndex, generation := range nitelGenerations {
+		specs := []struct {
+			grade       string
+			suffix      string
+			performance int
+			value       int
+		}{
+			{grade: "i3", suffix: "", performance: 0, value: 0},
+			{grade: "i5", suffix: "", performance: 0, value: 0},
+			{grade: "i5", suffix: "T", performance: 100, value: 1500},
+			{grade: "i7", suffix: "", performance: 0, value: 0},
+			{grade: "i7", suffix: "T", performance: 150, value: 2000},
+			{grade: "i9", suffix: "S", performance: 350, value: 3500},
+		}
+
+		for _, spec := range specs {
+			name := "Nitel Pure " + spec.grade + " " + strconv.Itoa(generation) + spec.suffix
+			registerCPU(cpuModelSpec{
+				name:        name,
+				grade:       spec.grade,
+				performance: nitelBasePerformance[spec.grade] + generationIndex*700 + spec.performance,
+				value:       nitelBaseValue[spec.grade] + generationIndex*2500 + spec.value,
+				detail:      "Nitel社の" + spec.grade + "世代CPU。",
+			})
+		}
+	}
+
+	ryzinGenerations := []int{2300, 3300, 4300, 5300, 6300}
+	ryzinBasePerformance := map[string]int{
+		"i3": 2600,
+		"i5": 4400,
+		"i7": 6200,
+		"i9": 8500,
+	}
+	ryzinBaseValue := map[string]int{
+		"i3": 6000,
+		"i5": 10000,
+		"i7": 15000,
+		"i9": 23000,
+	}
+
+	for generationIndex, generation := range ryzinGenerations {
+		specs := []struct {
+			grade       string
+			suffix      string
+			performance int
+			value       int
+		}{
+			{grade: "i3", suffix: "", performance: 0, value: 0},
+			{grade: "i5", suffix: "U", performance: 500, value: 1800},
+			{grade: "i7", suffix: "U", performance: 550, value: 2200},
+			{grade: "i9", suffix: "X", performance: 900, value: 4000},
+		}
+
+		for _, spec := range specs {
+			name := "Ryzin" + spec.grade[1:] + " " + strconv.Itoa(generation) + spec.suffix
+			registerCPU(cpuModelSpec{
+				name:        name,
+				grade:       spec.grade,
+				performance: ryzinBasePerformance[spec.grade] + generationIndex*700 + spec.performance,
+				value:       ryzinBaseValue[spec.grade] + generationIndex*2800 + spec.value,
+				detail:      "Ryzin社の" + spec.grade + "世代CPU。",
+			})
+		}
+	}
+}
