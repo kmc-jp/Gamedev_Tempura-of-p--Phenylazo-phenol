@@ -10,3 +10,9 @@ var Sticker = register(func() *game.Part {
 		ImgScale: StickerImageScale, ImgOffset: &NoOffset,
 	}
 })
+
+func init() {
+	for range 29 {
+		register(Sticker)
+	}
+}

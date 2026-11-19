@@ -10,3 +10,9 @@ var LED = register(func() *game.Part {
 		ImgScale: LEDImageScale, ImgOffset: &NoOffset,
 	}
 })
+
+func init() {
+	for range 29 {
+		register(LED)
+	}
+}
