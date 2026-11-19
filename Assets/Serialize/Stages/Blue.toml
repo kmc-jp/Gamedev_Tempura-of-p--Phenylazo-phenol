@@ -19,8 +19,18 @@ Sparkle = {Name = "Sparkle", JsonPath = "TileEffects/みんげー_キラキラ�
 
 [ObjectMap]
 "-1, 0" = {Tile =  "register", Layer = "Object"}
-"1,1" = {Tile =  "shelf", Layer = "Object"}
-"4,1" = {Tile =  "shelf", Layer = "Object"}
-"7,1" = {Tile =  "shelf", Layer = "Object"}
-"10,1" = {Tile =  "shelf", Layer = "Object"}
-"15, 4" = {Tile = "basket", Layer = "Object"}
+
+"-3,-4" = {Tile =  "basket", Layer = "Object"}
+"0,-4" = {Tile =  "basket", Layer = "Object"}
+"6,-2" = {Tile =  "basket", Layer = "Object"}
+"6,3" = {Tile =  "basket", Layer = "Object"}
+"-1, 8" = {Tile = "basket", Layer = "Object"}
+"3, 8" = {Tile = "basket", Layer = "Object"}
+"5, 8" = {Tile = "basket", Layer = "Object"}
+"10, 8" = {Tile = "basket", Layer = "Object"}
+
+"3, -2" = {Tile = "shelf", Layer = "Object"}
+"9, -2" = {Tile = "shelf", Layer = "Object"}
+"-2, 3" = {Tile = "shelf", Layer = "Object"}
+"3, 3" = {Tile = "shelf", Layer = "Object"}
+"9, 3" = {Tile = "shelf", Layer = "Object"}
