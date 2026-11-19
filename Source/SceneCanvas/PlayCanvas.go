@@ -23,6 +23,7 @@ type PlayCanvas struct {
 	canvas           *canvas.Canvas
 	partsList        *ui.PartsListUI
 	foundPartLog     *commonui.LogWindow
+	actionLog        *commonui.LogWindow
 	messageWindow    *commonui.MessageWindow
 	purchaseConfirm  *commonui.Confirm
 	exitStoreConfirm *commonui.Confirm
@@ -98,6 +99,18 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		return nil, fmt.Errorf("commonui.NewLogWindow() でエラーが発生しました。\n%w", err)
 	}
 
+	actionLog, err := commonui.NewLogWindow(
+		utils.Position{},
+		gdata.Font,
+		20,
+		color.Black(),
+		20,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("アクション用LogWindowの生成に失敗しました。\n%w", err)
+	}
+	actionLog.SetBackground(color.LightGray().MakeTansparentColor(0.2), image.Point{X: 12, Y: 8})
+
 	messageFont := ui.FontFace(gdata.Font, messageWindowTextSize)
 	//_, messageHeight := text.Measure("探索終了", messageFont, messageFont.Size*1.5)
 	messageWindow, err := commonui.NewMessageWindow(commonui.MessageWindowConfig{
@@ -149,7 +162,7 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{worldTimeText, partsList, gameDataUI, foundPartLog, messageWindow, purchaseConfirm, exitStoreConfirm} {
+	for _, item := range []canvas.CanvasItem{worldTimeText, partsList, gameDataUI, foundPartLog, actionLog, messageWindow, purchaseConfirm, exitStoreConfirm} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("プレイ画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -161,6 +174,7 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		canvas:                  c,
 		partsList:               partsList,
 		foundPartLog:            foundPartLog,
+		actionLog:               actionLog,
 		messageWindow:           messageWindow,
 		purchaseConfirm:         purchaseConfirm,
 		exitStoreConfirm:        exitStoreConfirm,
@@ -202,6 +216,7 @@ func (c *PlayCanvas) Draw(screen *ebiten.Image) {
 		X: float64(bounds.Dx()/2 - foundPartLogOffsetX),
 		Y: float64(bounds.Dy()/2 - foundPartLogOffsetY),
 	})
+	c.actionLog.SetCenter(float64(bounds.Dx()/2), float64(bounds.Dy()/2)+100)
 	messageSize := c.messageWindow.Size()
 	c.messageWindow.SetPosition(utils.Position{
 		X: float64((bounds.Dx() - messageSize.X) / 2),
@@ -357,6 +372,10 @@ func (c *PlayCanvas) openPartsList() error {
 
 func (c *PlayCanvas) SetMessageWindowText(s string) {
 	c.messageWindow.SetText(s)
+}
+
+func (c *PlayCanvas) SetActionLogText(value string) {
+	c.actionLog.SetText(value)
 }
 
 var _ scene.PlayCanvasAPI = (*PlayCanvas)(nil)

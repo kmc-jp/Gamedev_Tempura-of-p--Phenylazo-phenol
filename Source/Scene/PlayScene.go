@@ -72,6 +72,7 @@ type PlayCanvasAPI interface {
 	HideExitStoreConfirmation()
 
 	SetMessageWindowText(string)
+	SetActionLogText(string)
 
 	// ---- 問い合わせ ----
 
@@ -284,9 +285,7 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 	}
 
 	if s.Gamedata.State == game.Play_Select {
-		if s.MessageWindowDisplayTimer.Expired() {
-			s.canvas.SetMessageWindowText("Space で買うパーツを選択  Enter で決定")
-		}
+		s.canvas.SetMessageWindowText("Space で買うパーツを選択  Enter で決定")
 		if s.canvas.IsPurchaseConfirmationOpen() {
 			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
 				s.canvas.MovePurchaseConfirmationLeft()
@@ -307,17 +306,13 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 				}
 				switch s.Gamedata.BuyFoundPart(part) {
 				case game.NoItem:
-					s.MessageWindowDisplayTimer.Set(20)
-					s.canvas.SetMessageWindowText("購入可能な商品がありません")
+					s.canvas.SetActionLogText("購入可能な商品がありません")
 				case game.Lack_money:
-					s.MessageWindowDisplayTimer.Set(20)
-					s.canvas.SetMessageWindowText("所持金が不足しています")
+					s.canvas.SetActionLogText("所持金が不足しています")
 				case game.Lack_weight:
-					s.MessageWindowDisplayTimer.Set(20)
-					s.canvas.SetMessageWindowText("重量オーバーです")
+					s.canvas.SetActionLogText("重量オーバーです")
 				case game.Buy:
-					s.MessageWindowDisplayTimer.Set(20)
-					s.canvas.SetMessageWindowText(fmt.Sprintf("%s を購入した", part.Name))
+					s.canvas.SetActionLogText(fmt.Sprintf("%s を購入した", part.Name))
 				default:
 					return nil, transition.None(), fmt.Errorf("不正な値がBuyFoundPart()から渡されました")
 				}

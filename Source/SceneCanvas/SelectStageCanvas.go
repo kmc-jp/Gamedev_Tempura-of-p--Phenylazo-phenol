@@ -24,6 +24,7 @@ type SelectStageCanvas struct {
 	routeMap      *ui.RouteMapUI[stageinfo.Location]
 	guide         *ui.Text
 	messageWindow *commonui.MessageWindow
+	actionLog     *commonui.LogWindow
 
 	// labels は駅の表示名。案内文の組み立てに使う。
 	labels map[stageinfo.Location]string
@@ -93,15 +94,19 @@ func NewSelectStageCanvas(s *scene.SelectStageScene, gdata *game.Gamedata) (*Sel
 	if err != nil {
 		return nil, err
 	}
+	actionLog, err := newActionLog(gdata)
+	if err != nil {
+		return nil, err
+	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{routeMap, worldTimeText, gameDataUI, guide, messageWindow} {
+	for _, item := range []canvas.CanvasItem{routeMap, worldTimeText, gameDataUI, guide, messageWindow, actionLog} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("ステージ選択画面のCanvas構築に失敗しました。\n%w", err)
 		}
 	}
 
-	sc := &SelectStageCanvas{scene: s, canvas: c, routeMap: routeMap, guide: guide, messageWindow: messageWindow}
+	sc := &SelectStageCanvas{scene: s, canvas: c, routeMap: routeMap, guide: guide, messageWindow: messageWindow, actionLog: actionLog}
 	sc.syncWithScene()
 	return sc, nil
 }
@@ -123,6 +128,7 @@ func (c *SelectStageCanvas) Update(active bool) error {
 // Draw implements [scene.SelectStageCanvasAPI].
 func (c *SelectStageCanvas) Draw(screen *ebiten.Image) {
 	bounds := screen.Bounds()
+	c.actionLog.SetCenter(float64(bounds.Dx()/2), float64(bounds.Dy()/2))
 	messageSize := c.messageWindow.Size()
 	c.messageWindow.SetPosition(utils.Position{
 		X: float64((bounds.Dx() - messageSize.X) / 2),
@@ -133,6 +139,10 @@ func (c *SelectStageCanvas) Draw(screen *ebiten.Image) {
 
 func (c *SelectStageCanvas) SetMessageWindowText(value string) {
 	c.messageWindow.SetText(value)
+}
+
+func (c *SelectStageCanvas) SetActionLogText(value string) {
+	c.actionLog.SetText(value)
 }
 
 // IsSelectStageCanvas implements [scene.SelectStageCanvasAPI].
