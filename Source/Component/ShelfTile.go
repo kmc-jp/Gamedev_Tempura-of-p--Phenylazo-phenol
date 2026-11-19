@@ -14,15 +14,19 @@ type ShelfTile struct {
 
 func (s ShelfTile) Interact(player *Player) error {
 	foundPart := parts.RandomPartsFromAll()
-	if foundPart.Kind != game.Trash {
-		s.scene.MessageWindowDisplayTimer.Set(20)
+	if foundPart != nil {
+		if foundPart.Kind != game.Trash {
+			s.scene.MessageWindowDisplayTimer.Set(20)
+			s.scene.Canvas().SetMessageWindowText(fmt.Sprintf("%s を見つけた", foundPart.Name))
+
+		}
 	}
-	s.scene.Canvas().SetMessageWindowText(fmt.Sprintf("%s を見つけた", foundPart.Name))
 	s.scene.Gamedata.AddPartToFoundList(foundPart)
 	s.scene.ShowFoundPartLog(foundPart)
 	s.scene.ShowPartPopup(foundPart, player.tw.tf.Position())
 
 	return nil
+
 }
 
 func (s ShelfTile) Update(active bool) error {
