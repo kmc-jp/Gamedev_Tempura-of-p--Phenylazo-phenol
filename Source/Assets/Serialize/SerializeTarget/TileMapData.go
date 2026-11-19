@@ -317,7 +317,7 @@ func makeShelfData(name string, imageManager *imageassets.ImageManager, imgData 
 			return nil, fmt.Errorf("エフェクト画像のロードに失敗しました。\n%w", err)
 		}
 
-		FxRender := Utils.CastFactory[*component.AnimRender, gameobject.Render](component.NewAnimRender(asp, img, layer, ""))
+		FxRender := Utils.CastFactory[*component.StdRender, gameobject.Render](component.NewLayerableRender(asp, img, layer))
 		MultiRender := component.MultiRenderDecorator(FxRender)
 
 		return tilemap.NewTileData(name, imgData, layer, tileSize, offset, Interact, tilemap.TileData_RenderOption(MultiRender))
