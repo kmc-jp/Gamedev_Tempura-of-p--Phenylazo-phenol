@@ -12,6 +12,10 @@ type Color struct {
 	A float32
 }
 
+func NewColor(r, g, b, a float32) *Color {
+	return &Color{R: r, G: g, B: b, A: a}
+}
+
 func (c *Color) ToRGBA() stdcolor.RGBA {
 	return stdcolor.RGBA{
 		R: uint8(c.R * 255),
@@ -19,6 +23,10 @@ func (c *Color) ToRGBA() stdcolor.RGBA {
 		B: uint8(c.B * 255),
 		A: uint8(c.A * 255),
 	}
+}
+
+func (c *Color) SetTransParent(tp float32) {
+	c.A = tp
 }
 
 func Red() *Color {
