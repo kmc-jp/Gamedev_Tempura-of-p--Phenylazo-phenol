@@ -10,6 +10,8 @@ import (
 
 // 複数のレンダリングを重ねるレンダー。
 // レイヤーはmainのものが返る。
+// subrendering と subupdate の一方がfalseならSubは描画停止
+// subrendering は false だが subupdate は true のとき、アニメーションだけ裏で進行する
 type MultiRender struct {
 	main         gameobject.Render
 	subs         []gameobject.Render
