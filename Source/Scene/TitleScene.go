@@ -28,13 +28,15 @@ type TitleScene struct {
 
 	canvas TitleCanvasAPI
 
+	bgDrawer BackGroundDrawer
+
 	// text       *ui.Text
 	Input      *input.Handler
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
 }
 
-func NewTitleScene(worldDrawer Utils.Factory[WorldDrawer], canvas TitleCanvasAPI, Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TitleScene] {
+func NewTitleScene(worldDrawer Utils.Factory[WorldDrawer], bgDrawer Utils.Factory[BackGroundDrawer], canvas TitleCanvasAPI, Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*TitleScene] {
 	return func() (*TitleScene, error) {
 		camera, err := worldDrawer()
 		if err != nil {
@@ -44,9 +46,14 @@ func NewTitleScene(worldDrawer Utils.Factory[WorldDrawer], canvas TitleCanvasAPI
 		if canvas == nil {
 			return &TitleScene{}, fmt.Errorf("TitleSceneのcanvas が nil です")
 		}
+		bgCamera, err := bgDrawer()
+		if err != nil {
+			return &TitleScene{}, fmt.Errorf("BGDrawer() でエラーが発生しました。 \n%w", err)
+		}
 		ts := TitleScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
+			bgDrawer:    bgCamera,
 			canvas:      canvas,
 			// text:       text,
 			Input:      Input,
@@ -63,6 +70,7 @@ func (s TitleScene) Name() string {
 }
 
 func (s *TitleScene) Draw(screen *ebiten.Image) {
+	s.bgDrawer.Draw(screen, *s.gamedata)
 	s.worldDrawer.Draw(screen, s.entities)
 	s.canvas.Draw(screen)
 }
