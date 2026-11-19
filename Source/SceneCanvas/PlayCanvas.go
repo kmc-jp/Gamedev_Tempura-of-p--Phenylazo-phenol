@@ -66,19 +66,6 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		return nil, fmt.Errorf("gdata が nil です")
 	}
 
-	timeText, err := ui.NewGameDataText(
-		utils.Position{X: 0, Y: 20},
-		color.Red(),
-		gdata,
-		func(g game.Gamedata) string {
-			return fmt.Sprintf("探索フェーズ 残り時間: %s", g.Text)
-		},
-		ui.FontFace(gdata.Font, 15),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("ui.NewGameDataText() でエラーが発生しました。\n%w", err)
-	}
-
 	worldTimeText, err := commonui.NewClock(
 		utils.Position{X: 0, Y: 0},
 		color.Black(),
@@ -162,7 +149,7 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{worldTimeText, timeText, partsList, gameDataUI, foundPartLog, messageWindow, purchaseConfirm, exitStoreConfirm} {
+	for _, item := range []canvas.CanvasItem{worldTimeText, partsList, gameDataUI, foundPartLog, messageWindow, purchaseConfirm, exitStoreConfirm} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("プレイ画面のCanvas構築に失敗しました。\n%w", err)
 		}
