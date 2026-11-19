@@ -222,7 +222,10 @@ func (s *SelectStageScene) updateScene(active bool) (nextScene Utils.Factory[gam
 
 	// 決定
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
-		_, min, err := s.destination()
+		dst, min, err := s.destination()
+		if dst == stageinfo.Departure {
+			return s.confirm()
+		}
 		if err != nil {
 			return nil, transition.None(), fmt.Errorf("s.destination() でエラーが発生しました\n%w\n", err)
 		}
