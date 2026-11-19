@@ -24,6 +24,8 @@ const (
 	PartsListTabFound
 	// PartsListTabOwned は「所持パーツ」タブを表す。
 	PartsListTabOwned
+	// PartsListTabExit は「店を出る」タブを表す。
+	PartsListTabExit
 )
 
 // PlayCanvasAPI は PlayScene が利用するCanvasの契約である。
@@ -170,7 +172,11 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 
 func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
 	if s.Gamedata.State == game.Play_Explore {
-		s.Gamedata.EnableWorldTimeProgressing()
+		if s.canvas.IsPartsListOpen() {
+			s.Gamedata.DisableWorldTimeProgressing()
+		} else {
+			s.Gamedata.EnableWorldTimeProgressing()
+		}
 	} else {
 		s.Gamedata.DisableWorldTimeProgressing()
 	}
@@ -209,12 +215,22 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 			if err := s.canvas.TogglePartsList(); err != nil {
 				return nil, transition.None(), fmt.Errorf("パーツ一覧の開閉に失敗しました。\n%w", err)
 			}
+			if s.canvas.IsPartsListOpen() {
+				s.Gamedata.DisableWorldTimeProgressing()
+			} else {
+				s.Gamedata.EnableWorldTimeProgressing()
+			}
 		}
 
 		// 一覧の表示中は一覧の操作だけを受け付け、探索を止める
 		if s.canvas.IsPartsListOpen() {
 			if err := s.handlePartsListInput(); err != nil {
 				return nil, transition.None(), err
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) &&
+				s.canvas.CurrentPartsTab() == PartsListTabExit {
+				s.Gamedata.State = game.Play_ExitStore
+				s.canvas.ShowExitStoreConfirmation()
 			}
 			return
 		}
@@ -321,7 +337,8 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 
 		}
 
-		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) &&
+			s.canvas.CurrentPartsTab() == PartsListTabExit {
 			s.Gamedata.State = game.Play_ExitStore
 			s.canvas.ShowExitStoreConfirmation()
 			return

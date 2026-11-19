@@ -35,8 +35,8 @@ const (
 
 	A_mb_Black //みんげー_マザボ_リザルト用_黒
 	A_mb_W     //みんげー_マザボ_リザルト用_白
-	A_mb_Blue  //まだassetない
-	A_mb_G     //まだassetない
+	A_mb_Blue  //みんげー_マザボ_リザルト用_青
+	A_mb_G     //みんげー_マザボ_リザルト用_緑
 
 	A_cooler_B //みんげー_CPUクーラー_リザルト用_黒
 	A_cooler_W //みんげー_CPUクーラー_リザルト用_白
@@ -77,6 +77,8 @@ func LoadAssemblePartsImages(imageManager *imageassets.ImageManager) error {
 
 		{A_mb_Black, "みんげー_マザボ_リザルト用_黒"},
 		{A_mb_W, "みんげー_マザボ_リザルト用_白"},
+		{A_mb_Blue, "みんげー_マザボ_リザルト用_青"},
+		{A_mb_G, "みんげー_マザボ_リザルト用_緑"},
 
 		{A_cooler_B, "みんげー_CPUクーラー_リザルト用_黒"},
 		{A_cooler_W, "みんげー_CPUクーラー_リザルト用_白"},

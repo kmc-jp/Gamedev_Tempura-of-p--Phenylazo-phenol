@@ -412,6 +412,8 @@ func (c *PlayCanvas) CurrentPartsTab() scene.PartsListTab {
 		return scene.PartsListTabFound
 	case ui.PartsListOwned:
 		return scene.PartsListTabOwned
+	case ui.PartsListExit:
+		return scene.PartsListTabExit
 	}
 	return scene.PartsListTabNone
 }

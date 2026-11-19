@@ -102,7 +102,7 @@ func (c *TrainCanvas) Update(active bool) error {
 	listRevision := c.scene.PartsListRevision()
 	partsRevision := c.gdata.PartsRevision()
 	if listRevision > 0 && (listRevision != c.shownListRevision || partsRevision != c.shownPartsRevision) {
-		if err := c.partsList.ShowParts(c.gdata.OwnedParts()); err != nil {
+		if err := c.partsList.ShowSellParts(c.gdata.OwnedParts()); err != nil {
 			return fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
 		}
 		c.partsList.Show()
@@ -138,6 +138,18 @@ func (c *TrainCanvas) ScrollPartsListDown() {
 // ScrollPartsListUp implements [scene.TrainCanvasAPI].
 func (c *TrainCanvas) ScrollPartsListUp() {
 	c.partsList.SelectPrevious()
+}
+
+func (c *TrainCanvas) ShowNextPartsTab() error {
+	return c.partsList.NextTab()
+}
+
+func (c *TrainCanvas) ShowPreviousPartsTab() error {
+	return c.partsList.PreviousTab()
+}
+
+func (c *TrainCanvas) IsNoSellTabSelected() bool {
+	return c.partsList.Visible() && c.partsList.ActiveTab() == ui.PartsListNoSell
 }
 
 func (c *TrainCanvas) ShowSellPartConfirmation() bool {
