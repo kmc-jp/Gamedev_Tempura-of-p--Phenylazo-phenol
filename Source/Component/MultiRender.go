@@ -63,7 +63,7 @@ func MultiRenderDecorator(subFactories ...Utils.Factory[gameobject.Render]) func
 func (mr *MultiRender) Draw() (image *ebiten.Image, DIO *ebiten.DrawImageOptions, Layer string) {
 	if mr.subupdate && mr.subrendering {
 		// mr.imgcache.Clear()
-		mr.imgqueuecache[1], mr.dioqueuecache[1], Layer = mr.main.Draw()
+		mr.imgqueuecache[0], mr.dioqueuecache[0], Layer = mr.main.Draw()
 		// mr.imgcache.DrawImage(img, dio)
 
 		for i, rnd := range mr.subs {
