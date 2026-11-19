@@ -7,6 +7,8 @@ import (
 	tilemap "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/TileMap"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
+	"math"
+	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -26,6 +28,9 @@ type TileMapData struct {
 
 	// タイル名のキーとデータの組
 	TileData map[string]TileData
+
+	// エフェクト名のキーとデータの組
+	EffectData map[string]EffectData
 
 	// Floor 以外のタイルで敷き詰めたい床
 	// 位置 "x,y" とタイルキーの組
@@ -50,6 +55,13 @@ type TileData struct {
 	Offset     Utils.Vec2
 	Type       tileType
 	Reversible bool
+	Effect     string
+}
+
+type EffectData struct {
+	Name     string
+	JsonPath string
+	PngPath  string
 }
 
 type tileType int
@@ -107,6 +119,16 @@ func (tmd TileMapData) Construct() (any, error) {
 		return nil, fmt.Errorf("TileMapData が初期化されていません。 *TileMapData.Init() を実行してください。")
 	}
 
+	// エフェクトアセットを取り込む
+	Fx := map[string]*imageassets.ImageData{}
+	for Fxkey, FxData := range tmd.EffectData {
+		imgdata, err := tmd.imageManager.NewImageData(FxData.Name, FxData.PngPath, FxData.JsonPath)
+		if err != nil {
+			return nil, fmt.Errorf("ImageDataの生成でエラーが発生しました。\nKey : %s\n%w", Fxkey, err)
+		}
+		Fx[Fxkey] = imgdata
+	}
+
 	// タイル種別の一覧
 	// レイヤーを入れればタイルがデータが返ってくるようになってる
 	Tiles := map[string](func(string, Utils.Vec2) (*tilemap.TileData, error)){}
@@ -132,21 +154,46 @@ func (tmd TileMapData) Construct() (any, error) {
 			return nil, fmt.Errorf("Interactivity(tiledata.Type) で失敗しました。\n%w", err)
 		}
 
-		tile := makeTileData(tiledata.Name, imagedata, tileSize, interactivity)
-		Tiles[tilekey] = tile
-		Offsets[tilekey] = tiledata.Offset
+		// エフェクト
+		if fx, ok := Fx[tiledata.Effect]; ok {
+			const scale = 2. //　マジックナンバー失礼
 
-		if tiledata.Reversible {
-			tsv2 := tmd.TileSize.ToVec2()
-			DIO := &ebiten.DrawImageOptions{}
-			DIO.GeoM.Scale(-1, 1)
-			DIO.GeoM.Translate(tsv2.X, 0)
-			revtile := makeTileDataWithDIO(tiledata.Name, imagedata, tileSize, interactivity, DIO)
-			ReverseTiles[tilekey] = revtile
-			ReverseOffsets[tilekey] = tiledata.Offset.HadamardProd(Utils.Vec2{X: -1, Y: 1})
+			tile := makeShelfData(tiledata.Name, tmd.imageManager, imagedata, fx, tileSize, interactivity, scale, false)
+			Tiles[tilekey] = tile
+			Offsets[tilekey] = tiledata.Offset
+			if tiledata.Reversible {
+				// タイル反転用DIO作成
+				tsv2 := tmd.TileSize.ToVec2()
+				DIO := &ebiten.DrawImageOptions{}
+				DIO.GeoM.Scale(-1, 1)
+				DIO.GeoM.Translate(tsv2.X, 0)
+				revtile := makeShelfData(tiledata.Name, tmd.imageManager, imagedata, fx, tileSize, interactivity, scale, true, tilemap.TileData_DIOOption(DIO))
+				ReverseTiles[tilekey] = revtile
+				ReverseOffsets[tilekey] = tiledata.Offset.HadamardProd(Utils.Vec2{X: -1, Y: 1})
+				return nil, fmt.Errorf("反転処理にバグがあるので止めました。\nこのエラーを消して実行し、反転させたエフェクト付きタイルの位置が適切に処理されているか確認してください。")
+			} else {
+				ReverseTiles[tilekey] = tile
+				ReverseOffsets[tilekey] = tiledata.Offset
+			}
+		} else if tiledata.Effect != "" {
+			return nil, fmt.Errorf("エフェクトのキーが間違っています。\nkey : %s", tiledata.Effect)
 		} else {
-			ReverseTiles[tilekey] = tile
-			ReverseOffsets[tilekey] = tiledata.Offset
+			tile := makeTileData(tiledata.Name, imagedata, tileSize, interactivity)
+			Tiles[tilekey] = tile
+			Offsets[tilekey] = tiledata.Offset
+
+			if tiledata.Reversible {
+				tsv2 := tmd.TileSize.ToVec2()
+				DIO := &ebiten.DrawImageOptions{}
+				DIO.GeoM.Scale(-1, 1)
+				DIO.GeoM.Translate(tsv2.X, 0)
+				revtile := makeTileDataWithDIO(tiledata.Name, imagedata, tileSize, interactivity, DIO)
+				ReverseTiles[tilekey] = revtile
+				ReverseOffsets[tilekey] = tiledata.Offset.HadamardProd(Utils.Vec2{X: -1, Y: 1})
+			} else {
+				ReverseTiles[tilekey] = tile
+				ReverseOffsets[tilekey] = tiledata.Offset
+			}
 		}
 	}
 
@@ -310,17 +357,35 @@ func makeTileDataWithDIO(name string, imgData *imageassets.ImageData, tileSize U
 	}
 }
 
-func makeShelfData(name string, imageManager *imageassets.ImageManager, imgData *imageassets.ImageData, FxData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType) func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
+func makeShelfData(name string, imageManager *imageassets.ImageManager, imgData *imageassets.ImageData, FxData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType, scale float64, reverse bool, opts ...tilemap.TileDataOpt) func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
 	return func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
-		asp, img, err := imageManager.Load(*FxData)
+		mainAsp, _, err := imageManager.Load(*imgData)
+		if err != nil {
+			return nil, fmt.Errorf("棚画像のロードに失敗しました。\n%w", err)
+		}
+		fxAsp, fxImg, err := imageManager.Load(*FxData)
 		if err != nil {
 			return nil, fmt.Errorf("エフェクト画像のロードに失敗しました。\n%w", err)
 		}
 
-		FxRender := Utils.CastFactory[*component.StdRender, gameobject.Render](component.NewLayerableRender(asp, img, layer))
+		mw, mh := float64(mainAsp.FrameWidth), float64(mainAsp.FrameHeight)
+		fw, fh := float64(fxAsp.FrameWidth)*scale, float64(fxAsp.FrameHeight)*scale
+
+		dio := &ebiten.DrawImageOptions{}
+		if reverse {
+			dio.GeoM.Scale(-scale, scale)
+			dio.GeoM.Translate(fw, 0) // 反転で負側に出た分を戻す
+		} else {
+			dio.GeoM.Scale(scale, scale)
+		}
+		dio.GeoM.Translate(math.Floor((mw-fw)/2), math.Floor((mh-fh)/2)) // 中心合わせ
+
+		FxRender := Utils.CastFactory[*component.StdRender, gameobject.Render](component.NewLayerableRender(fxAsp, fxImg, layer, component.SR_WithDrawImageOptions(dio)))
 		MultiRender := component.MultiRenderDecorator(FxRender)
 
-		return tilemap.NewTileData(name, imgData, layer, tileSize, offset, Interact, tilemap.TileData_RenderOption(MultiRender))
+		allOpts := append(slices.Clone(opts), tilemap.TileData_RenderOption(MultiRender))
+
+		return tilemap.NewTileData(name, imgData, layer, tileSize, offset, Interact, allOpts...)
 	}
 }
 
