@@ -172,7 +172,11 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 
 func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
 	if s.Gamedata.State == game.Play_Explore {
-		s.Gamedata.EnableWorldTimeProgressing()
+		if s.canvas.IsPartsListOpen() {
+			s.Gamedata.DisableWorldTimeProgressing()
+		} else {
+			s.Gamedata.EnableWorldTimeProgressing()
+		}
 	} else {
 		s.Gamedata.DisableWorldTimeProgressing()
 	}
@@ -210,6 +214,11 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 		if s.Input.ActionIsJustPressed(inputconfig.ActionPartsList) {
 			if err := s.canvas.TogglePartsList(); err != nil {
 				return nil, transition.None(), fmt.Errorf("パーツ一覧の開閉に失敗しました。\n%w", err)
+			}
+			if s.canvas.IsPartsListOpen() {
+				s.Gamedata.DisableWorldTimeProgressing()
+			} else {
+				s.Gamedata.EnableWorldTimeProgressing()
 			}
 		}
 
