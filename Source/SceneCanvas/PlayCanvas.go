@@ -20,15 +20,14 @@ import (
 // 残り時間、空き重量・所持金、パーツ一覧、発見パーツのログ、メッセージウィンドウを持つ。
 // 一覧を開く時点はSceneが決めるため、Sceneのポインタを持って観測する。
 type PlayCanvas struct {
-	scene             *scene.PlayScene
-	gdata             *game.Gamedata
-	canvas            *canvas.Canvas
-	partsList         *ui.PartsListUI
-	foundPartLog      *commonui.LogWindow
-	messageWindow     *commonui.MessageWindow
-	purchaseConfirm   *commonui.Confirm
-	exitStoreConfirm  *commonui.Confirm
-	messageWindowText string
+	scene            *scene.PlayScene
+	gdata            *game.Gamedata
+	canvas           *canvas.Canvas
+	partsList        *ui.PartsListUI
+	foundPartLog     *commonui.LogWindow
+	messageWindow    *commonui.MessageWindow
+	purchaseConfirm  *commonui.Confirm
+	exitStoreConfirm *commonui.Confirm
 
 	// shownSelectListRevision は反映済みの PlayScene.SelectListRevision。
 	shownSelectListRevision int
@@ -230,7 +229,6 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		messageWindow:           messageWindow,
 		purchaseConfirm:         purchaseConfirm,
 		exitStoreConfirm:        exitStoreConfirm,
-		messageWindowText:       "探索中",
 		shownSelectListRevision: s.SelectListRevision(),
 		shownPartsRevision:      gdata.PartsRevision(),
 	}, nil
@@ -253,14 +251,7 @@ func (c *PlayCanvas) Update(active bool) error {
 		}
 		c.shownPartsRevision = c.gdata.PartsRevision()
 	}
-	messageText := "探索終了"
-	if c.gdata.State == game.Play_Explore {
-		messageText = "探索中"
-	}
-	if c.messageWindowText != messageText {
-		c.messageWindow.SetText(messageText)
-		c.messageWindowText = messageText
-	}
+
 	return c.canvas.Update(active)
 }
 
@@ -427,6 +418,10 @@ func (c *PlayCanvas) openPartsList() error {
 	c.partsList.Show()
 	c.shownPartsRevision = c.gdata.PartsRevision()
 	return nil
+}
+
+func (c *PlayCanvas) SetMessageWindowText(s string) {
+	c.messageWindow.SetText(s)
 }
 
 var _ scene.PlayCanvasAPI = (*PlayCanvas)(nil)

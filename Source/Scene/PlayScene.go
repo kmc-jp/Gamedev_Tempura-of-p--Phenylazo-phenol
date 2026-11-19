@@ -70,6 +70,8 @@ type PlayCanvasAPI interface {
 	ExitStoreConfirmationResult() (bool, bool)
 	HideExitStoreConfirmation()
 
+	SetMessageWindowText(string)
+
 	// ---- 問い合わせ ----
 
 	// SelectedFoundPart は選択中の発見済みパーツを返す。
