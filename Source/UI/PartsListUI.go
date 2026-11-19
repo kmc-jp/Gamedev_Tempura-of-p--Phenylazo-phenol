@@ -30,6 +30,7 @@ type PartsListTab uint8
 const (
 	PartsListFound PartsListTab = iota
 	PartsListOwned
+	PartsListExit
 )
 
 type PartsListUI struct {
@@ -40,7 +41,7 @@ type PartsListUI struct {
 	cards         []*PartCard
 	contentHeight int
 	selected      int
-	lists         [2]game.Parts
+	lists         [3]game.Parts
 	activeTab     PartsListTab
 	showTabs      bool
 	visible       bool
@@ -79,7 +80,7 @@ func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont 
 // 非表示中は受け付けない（何もしない、SelectedPart は nil を返す）。
 // 一覧の構築（ShowFoundParts / ShowParts / RefreshFoundParts）は、非表示のまま構築してから Show できるよう、表示状態によらず行う。
 
-// ShowFoundParts は発見したパーツ・所持パーツのタブ付き一覧を構築する。
+// ShowFoundParts は発見したパーツ・所持パーツ・店を出るのタブ付き一覧を構築する。
 // 表示状態は変更しないため、表示するには Show を呼ぶ。
 func (p *PartsListUI) ShowFoundParts(found, owned game.Parts) error {
 	p.showTabs = true
@@ -165,6 +166,7 @@ func (p *PartsListUI) ActiveTab() PartsListTab {
 func (p *PartsListUI) RefreshFoundParts(found, owned game.Parts) error {
 	p.lists[PartsListFound] = found
 	p.lists[PartsListOwned] = owned
+	p.lists[PartsListExit] = nil
 	return p.rebuild(p.lists[p.activeTab], p.selected)
 }
 
@@ -178,8 +180,8 @@ func (p *PartsListUI) moveTab(delta int) error {
 	if next < int(PartsListFound) {
 		next = int(PartsListFound)
 	}
-	if next > int(PartsListOwned) {
-		next = int(PartsListOwned)
+	if next > int(PartsListExit) {
+		next = int(PartsListExit)
 	}
 	if next == int(p.activeTab) {
 		return nil
@@ -236,10 +238,14 @@ func (p *PartsListUI) rebuild(parts game.Parts, selected int) error {
 	}
 	p.empty = nil
 	if len(parts) == 0 {
+		emptyText := "所持パーツはありません"
+		if p.activeTab == PartsListExit {
+			emptyText = "Enterキーでパーツを買わずに店を出る\n"
+		}
 		empty, err := NewText(
 			utils.Position{X: p.position.X + 20, Y: p.position.Y + 80 + float64(p.tabOffset())},
 			gamecolor.Black(),
-			"所持パーツはありません",
+			emptyText,
 			p.font,
 		)
 		if err == nil {
@@ -373,8 +379,8 @@ func (p *PartsListUI) drawScrollBar(screen *ebiten.Image) {
 }
 
 func (p *PartsListUI) drawTabs(screen *ebiten.Image) {
-	tabWidth := (partsListWidth - 40) / 2
-	for i, label := range []string{"発見したパーツ", "所持パーツ"} {
+	tabWidth := (partsListWidth - 40) / 3
+	for i, label := range []string{"発見したパーツ", "所持パーツ", "店を出る"} {
 		x := int(p.position.X) + 20 + i*tabWidth
 		y := int(p.position.Y) + 35
 		tabRect := image.Rect(x, y, x+tabWidth, y+partsListTabHeight)
