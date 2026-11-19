@@ -29,8 +29,8 @@ func NewMultiRender(main gameobject.Render, subs []gameobject.Render) *MultiRend
 		subrendering:  true,
 		subupdate:     true,
 		imgcache:      ebiten.NewImage(1, 1),
-		imgqueuecache: make([]*ebiten.Image, 0, len(subs)+1),
-		dioqueuecache: make([]*ebiten.DrawImageOptions, 0, len(subs)+1),
+		imgqueuecache: make([]*ebiten.Image, len(subs)+1),
+		dioqueuecache: make([]*ebiten.DrawImageOptions, len(subs)+1),
 		dio:           &ebiten.DrawImageOptions{},
 	}
 
@@ -46,7 +46,7 @@ func MultiRenderDecorator(subFactories ...Utils.Factory[gameobject.Render]) func
 				return nil, fmt.Errorf("MultiRender の mainFactory での生成に失敗しました。\n%w", err)
 			}
 
-			subs := make([]gameobject.Render, 0, len(subFactories))
+			subs := make([]gameobject.Render, len(subFactories))
 			for i, f := range subFactories {
 				sub, err := f()
 				if err != nil {
