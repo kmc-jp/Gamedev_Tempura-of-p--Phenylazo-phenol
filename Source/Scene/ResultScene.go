@@ -11,6 +11,7 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 	input "github.com/quasilyte/ebitengine-input"
 )
 
@@ -77,6 +78,9 @@ type ResultScene struct {
 	gamingBackground *ebiten.Image
 	normalBackground *ebiten.Image
 	isGamingColor    bool
+
+	selectpartsBGM *audio.Player
+	resultBGM      *audio.Player
 }
 
 // NewResultScene は ResultScene を生成する。
@@ -122,6 +126,27 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*R
 			return &ResultScene{}, fmt.Errorf("リザルトの通常背景の読み込みに失敗しました。\n%w", err)
 		}
 
+		const (
+			partsaudiopath  = "bgm/partsselect.mp3"
+			resultaudiopath = "bgm/result.wav"
+		)
+		partsad, err := gdata.AssetsManager.Audio.NewAudioData(partsaudiopath, audioassets.BGM)
+		if err != nil {
+			return &ResultScene{}, fmt.Errorf("gdata.AssetsManager.Audio.NewAudioData() でエラーが発生しました。\npath : %s\n%w", partsaudiopath, err)
+		}
+		partspl, err := gdata.AssetsManager.Audio.Load(partsad)
+		if err != nil {
+			return &ResultScene{}, fmt.Errorf("gdata.AssetsManager.Audio.Load(partsad) でエラーが発生しました。\npath : %s\n%w", partsaudiopath, err)
+		}
+		resultad, err := gdata.AssetsManager.Audio.NewAudioData(resultaudiopath, audioassets.BGM)
+		if err != nil {
+			return &ResultScene{}, fmt.Errorf("gdata.AssetsManager.Audio.NewAudioData() でエラーが発生しました。\npath : %s\n%w", resultaudiopath, err)
+		}
+		resultpl, err := gdata.AssetsManager.Audio.Load(resultad)
+		if err != nil {
+			return &ResultScene{}, fmt.Errorf("gdata.AssetsManager.Audio.Load(partsad) でエラーが発生しました。\npath : %s\n%w", resultaudiopath, err)
+		}
+
 		ts := ResultScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
@@ -133,6 +158,8 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*R
 			pcDrawOption:     pcImageConfig,
 			gamingBackground: gamingBackground,
 			normalBackground: normalBackground,
+			selectpartsBGM:   partspl,
+			resultBGM:        resultpl,
 		}
 		canvas, err := newCanvas(&ts)
 		if err != nil {
@@ -208,6 +235,10 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 	}
 
 	if s.gamedata.State == game.Result_SelectParts {
+		// bgm設定
+		s.selectpartsBGM.Play()
+		s.resultBGM.Pause()
+
 		//組み立てに使うパーツを選択
 		if s.canvas.IsPartUseConfirmationOpen() {
 			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
@@ -265,6 +296,10 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 
 	// 組み立てPC観察フェーズ
 	if s.gamedata.State == game.Result_Assembled {
+		// bgm設定
+		s.selectpartsBGM.Pause()
+		s.resultBGM.Play()
+
 		//所持パーツをもとに利用する絵を決定
 		if err := parts.CheckAssemblePartsInfo(s.gamedata.Assemble); err != nil {
 			return nil, transition.None(), fmt.Errorf("parts.CheckAssemblePartsInfo()でエラーが発生しました\n%w\n", err)
@@ -328,6 +363,10 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 	if s.gamedata.State == game.Result_QuitGame {
 
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+			// bgm設定
+			s.selectpartsBGM.Pause()
+			s.resultBGM.Pause()
+
 			return func() (game.Scene, error) {
 				nextScene, err := s.initScenes.InitTitleScene()
 				if err != nil {
