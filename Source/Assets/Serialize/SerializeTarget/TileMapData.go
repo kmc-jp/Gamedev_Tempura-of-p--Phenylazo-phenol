@@ -161,7 +161,7 @@ func (tmd TileMapData) Construct() (any, error) {
 		if fx, ok := Fx[tiledata.Effect]; ok {
 			const scale = 2. //　マジックナンバー失礼
 
-			tile := makeShelfData(tiledata.Name, tmd.imageManager, imagedata, fx, tileSize, interactivity, scale, false)
+			tile := makeEffectTileData(tiledata.Name, tmd.imageManager, imagedata, fx, tileSize, interactivity, scale, false)
 			Tiles[tilekey] = tile
 			Offsets[tilekey] = tiledata.Offset
 			if tiledata.Reversible {
@@ -170,7 +170,7 @@ func (tmd TileMapData) Construct() (any, error) {
 				DIO := &ebiten.DrawImageOptions{}
 				DIO.GeoM.Scale(-1, 1)
 				DIO.GeoM.Translate(tsv2.X, 0)
-				revtile := makeShelfData(tiledata.Name, tmd.imageManager, imagedata, fx, tileSize, interactivity, scale, true, tilemap.TileData_DIOOption(DIO))
+				revtile := makeEffectTileData(tiledata.Name, tmd.imageManager, imagedata, fx, tileSize, interactivity, scale, true, tilemap.TileData_DIOOption(DIO))
 				ReverseTiles[tilekey] = revtile
 				ReverseOffsets[tilekey] = tiledata.Offset.HadamardProd(Utils.Vec2{X: -1, Y: 1})
 				return nil, fmt.Errorf("反転処理にバグがあるので止めました。\nこのエラーを消して実行し、反転させたエフェクト付きタイルの位置が適切に処理されているか確認してください。")
@@ -360,7 +360,7 @@ func makeTileDataWithDIO(name string, imgData *imageassets.ImageData, tileSize U
 	}
 }
 
-func makeShelfData(name string, imageManager *imageassets.ImageManager, imgData *imageassets.ImageData, FxData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType, scale float64, reverse bool, opts ...tilemap.TileDataOpt) func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
+func makeEffectTileData(name string, imageManager *imageassets.ImageManager, imgData *imageassets.ImageData, FxData *imageassets.ImageData, tileSize Utils.Vec2Int, Interact tilemap.InteractType, scale float64, reverse bool, opts ...tilemap.TileDataOpt) func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
 	return func(layer string, offset Utils.Vec2) (*tilemap.TileData, error) {
 		mainAsp, _, err := imageManager.Load(*imgData)
 		if err != nil {
