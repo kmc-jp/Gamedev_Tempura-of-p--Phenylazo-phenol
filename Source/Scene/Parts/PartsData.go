@@ -36,6 +36,7 @@ var (
 		}
 	})
 
+	// CPU
 	CPUExample = register(func() *game.Part {
 		return &game.Part{
 			Name:        "CPU_Example",
@@ -52,6 +53,7 @@ var (
 		}
 	})
 
+	// GPU
 	GPUBlack = register(func() *game.Part {
 		return &game.Part{
 			Name:        "黒GPU",
@@ -86,6 +88,7 @@ var (
 		}
 	})
 
+	// RAM
 	RAMExample = register(func() *game.Part {
 		return &game.Part{
 			Name:        "RAM_Example",
@@ -102,6 +105,7 @@ var (
 		}
 	})
 
+	// MB
 	MBBlack = register(func() *game.Part {
 		return &game.Part{
 			Name:        "マザーボード黒",
@@ -166,6 +170,7 @@ var (
 		}
 	})
 
+	// Case
 	CaseBlackSideGlass = register(func() *game.Part {
 		return &game.Part{
 			Name:        "PCケース黒",
@@ -231,6 +236,7 @@ var (
 	})
 
 	// 以下、任意パーツ
+	// LED
 	LED = register(func() *game.Part {
 		return &game.Part{
 			Name:        "LED_Tape",
@@ -246,6 +252,7 @@ var (
 		}
 	})
 
+	// Sticker
 	Sticker = register(func() *game.Part {
 		return &game.Part{
 			Name:        "ステッカー",
