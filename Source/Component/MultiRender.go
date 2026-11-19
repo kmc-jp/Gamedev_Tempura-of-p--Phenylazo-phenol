@@ -16,18 +16,22 @@ type MultiRender struct {
 	subrendering bool
 	subupdate    bool
 
-	imgcache *ebiten.Image
-	dio      *ebiten.DrawImageOptions
+	imgcache      *ebiten.Image
+	imgqueuecache []*ebiten.Image
+	dio           *ebiten.DrawImageOptions
+	dioqueuecache []*ebiten.DrawImageOptions
 }
 
 func NewMultiRender(main gameobject.Render, subs []gameobject.Render) *MultiRender {
 	mr := MultiRender{
-		main:         main,
-		subs:         subs,
-		subrendering: true,
-		subupdate:    true,
-		imgcache:     ebiten.NewImage(1, 1),
-		dio:          &ebiten.DrawImageOptions{},
+		main:          main,
+		subs:          subs,
+		subrendering:  true,
+		subupdate:     true,
+		imgcache:      ebiten.NewImage(1, 1),
+		imgqueuecache: make([]*ebiten.Image, 0, len(subs)+1),
+		dioqueuecache: make([]*ebiten.DrawImageOptions, 0, len(subs)+1),
+		dio:           &ebiten.DrawImageOptions{},
 	}
 
 	return &mr
@@ -58,13 +62,31 @@ func MultiRenderDecorator(subFactories ...Utils.Factory[gameobject.Render]) func
 
 func (mr *MultiRender) Draw() (image *ebiten.Image, DIO *ebiten.DrawImageOptions, Layer string) {
 	if mr.subupdate && mr.subrendering {
-		mr.imgcache.Clear()
-		img, dio, Layer := mr.main.Draw()
-		mr.imgcache.DrawImage(img, dio)
+		// mr.imgcache.Clear()
+		mr.imgqueuecache[1], mr.dioqueuecache[1], Layer = mr.main.Draw()
+		// mr.imgcache.DrawImage(img, dio)
 
-		for _, rnd := range mr.subs {
-			img, dio, _ := rnd.Draw()
-			mr.imgcache.DrawImage(img, dio)
+		for i, rnd := range mr.subs {
+			mr.imgqueuecache[i+1], mr.dioqueuecache[i+1], _ = rnd.Draw()
+			// mr.imgcache.DrawImage(img, dio)
+		}
+
+		mxw, mxh := 0, 0
+
+		for _, img := range mr.imgqueuecache {
+			w, h := img.Bounds().Dx(), img.Bounds().Dy()
+			mxw = max(mxw, w)
+			mxh = max(mxh, h)
+		}
+
+		if mr.imgcache.Bounds().Dx() != mxw || mr.imgcache.Bounds().Dy() != mxh {
+			mr.imgcache = ebiten.NewImage(mxw, mxh)
+		} else {
+			mr.imgcache.Clear()
+		}
+
+		for i := 0; i < len(mr.imgqueuecache); i++ {
+			mr.imgcache.DrawImage(mr.imgqueuecache[i], mr.dioqueuecache[i])
 		}
 
 		return mr.imgcache, mr.dio, Layer
