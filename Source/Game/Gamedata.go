@@ -71,7 +71,7 @@ type Gamedata struct {
 // Gamedata初期値
 const (
 	InitialWeight = 5000
-	InitialMoney  = 50000
+	InitialMoney  = 100000
 )
 
 // Flag 識別名

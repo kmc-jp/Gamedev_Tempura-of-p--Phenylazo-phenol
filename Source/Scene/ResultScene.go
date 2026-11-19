@@ -42,6 +42,8 @@ type ResultCanvasAPI interface {
 	IsPartUseConfirmationOpen() bool
 	PartUseConfirmationResult() (bool, bool)
 	HidePartUseConfirmation()
+	StartScoreDisplay(score int)
+	IsScoreDisplayFinished() bool
 
 	// ---- 問い合わせ ----
 
@@ -66,6 +68,7 @@ type ResultScene struct {
 	gamedata                *game.Gamedata
 	initScenes              *InitializedScenes
 	partUseConfirmationPart *game.Part
+	benchmarkScoreStarted   bool
 
 	pcImage          *ebiten.Image
 	pcDrawOption     *ebiten.DrawImageOptions
@@ -158,10 +161,11 @@ func (s *ResultScene) Draw(screen *ebiten.Image) {
 		}
 	}
 	s.worldDrawer.Draw(screen, s.entities)
-	s.canvas.Draw(screen)
-	if s.gamedata.State == game.Result_Assembled && s.pcImage != nil {
+	if (s.gamedata.State == game.Result_Assembled || s.gamedata.State == game.Result_Benchmark || s.gamedata.State == game.Result_QuitGame) && s.pcImage != nil {
 		screen.DrawImage(s.pcImage, s.pcDrawOption)
 	}
+	s.canvas.Draw(screen)
+
 	// s.text.Draw(screen)
 }
 
@@ -189,6 +193,7 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 		s.pcImage = nil
 		s.isGamingColor = false
 		s.partKindIndex = 0
+		s.benchmarkScoreStarted = false
 		if err := s.refreshCandidates(); err != nil {
 			return nil, transition.None(), err
 		}
@@ -289,13 +294,19 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 
 	// ベンチマークフェーズ
 	if s.gamedata.State == game.Result_Benchmark {
-		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+		if s.benchmarkScoreStarted && s.canvas.IsScoreDisplayFinished() {
+			s.gamedata.State = game.Result_QuitGame
+			return
+		}
+		if !s.benchmarkScoreStarted && s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 			var score float32
 			for _, v := range s.gamedata.Assemble {
 				score += v.Score()
 			}
-			fmt.Print("ベンチマーク計測結果", int(score), "\n")
-			s.gamedata.State = game.Result_QuitGame
+			finalScore := int(score)
+			fmt.Print("ベンチマーク計測結果", finalScore, "\n")
+			s.canvas.StartScoreDisplay(finalScore)
+			s.benchmarkScoreStarted = true
 
 			// 仮で音を鳴らす
 			explosionSound, err := s.gamedata.AssetsManager.Audio.NewAudioData("爆発1.mp3", audioassets.SE)
