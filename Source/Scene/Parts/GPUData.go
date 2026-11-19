@@ -83,12 +83,12 @@ func init() {
 			value := 12000 + generationIndex*12000 + gradeIndex*7000
 
 			registerGPU(gpuModelSpec{
-				name:        manufacturer + " RPX RTX " + strconv.Itoa(generation.seriesBase+grade),
+				name:        manufacturer + " RPX " + strconv.Itoa(generation.seriesBase+grade),
 				isWhite:     isWhite,
 				rarityLevel: rarityLevel,
 				value:       value,
 				performance: performance,
-				detail:      manufacturer + "製のRPX世代グラフィックスボード。",
+				detail:      manufacturer + "製のグラフィックスボード。",
 			})
 		}
 	}
@@ -136,7 +136,7 @@ func init() {
 				rarityLevel: rarityLevel,
 				value:       value,
 				performance: performance,
-				detail:      manufacturer + "製のrideon世代グラフィックスボード。",
+				detail:      manufacturer + "製のグラフィックスボード。",
 			})
 		}
 	}
