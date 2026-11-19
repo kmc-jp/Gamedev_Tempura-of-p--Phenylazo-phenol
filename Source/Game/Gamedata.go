@@ -89,9 +89,10 @@ const (
 	Play_EnterStore
 	Play_Sell
 	Play_Explore
-	Play_Timeup
+	Play_Register
 	Play_Select
 	Play_ExitStore
+	Play_Timeup
 
 	Train_Default
 

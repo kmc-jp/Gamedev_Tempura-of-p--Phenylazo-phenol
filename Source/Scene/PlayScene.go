@@ -245,22 +245,6 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 
 		s.Gamedata.Timer.Set(10)
 
-		//制限時間内プレイ中の制御
-		if s.Gamedata.Timer.Expired() {
-			num, _ := strconv.Atoi(s.Gamedata.Text)
-			num--
-			s.Gamedata.Text = strconv.Itoa(num)
-
-			if num <= 0 {
-				s.Gamedata.Timer.Set(0)
-				s.Gamedata.State = game.Play_Timeup
-
-				s.Gamedata.Text = "0\nTimeUp 次の店に移動します"
-			}
-		}
-		// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
-
-		// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
 			return func() (game.Scene, error) {
 				pauseScene, err := s.initScenes.InitPauseScene()
@@ -277,7 +261,7 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 	}
 
 	//TimeUp後の処理
-	if s.Gamedata.State == game.Play_Timeup {
+	if s.Gamedata.State == game.Play_Register {
 		s.Gamedata.Timer.Set(50)
 		if s.Gamedata.Timer.Expired() {
 			s.Gamedata.Timer.Set(0)
@@ -377,6 +361,11 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 			}
 		}
 
+	}
+
+	if s.Gamedata.State == game.Play_Timeup {
+		// worldtime時間切れの処理
+		return
 	}
 
 	return
