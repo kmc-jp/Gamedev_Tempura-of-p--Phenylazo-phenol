@@ -220,6 +220,14 @@ func (s *SelectStageScene) updateScene(active bool) (nextScene Utils.Factory[gam
 
 	// 決定
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+		_, min, err := s.destination()
+		if err != nil {
+			return nil, transition.None(), fmt.Errorf("s.destination() でエラーが発生しました\n%w\n", err)
+		}
+		if !s.gamedata.WorldTimer.EnoughTimeLeft(min) {
+			return nil, transition.None(), nil
+		}
+		s.gamedata.WorldTimer.Skip(uint16(min))
 		return s.confirm()
 	}
 
