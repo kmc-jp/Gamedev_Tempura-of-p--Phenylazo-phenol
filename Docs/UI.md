@@ -156,8 +156,8 @@ SceneごとのCanvas APIの違いは次の表のとおりである。
 
 | Canvas API | 入力用 | 問い合わせ | Canvasが観測するもの |
 |---|---|---|---|
-| `PauseCanvasAPI` | なし | なし | なし |
 | `TitleCanvasAPI` | なし（カーソル移動・決定はSceneが`selection.Graph`で行う） | なし | `TitleScene.SelectedMenuItem`・`SelectionRevision` |
+| `PauseCanvasAPI` | `ShowTitleConfirmation`、`MoveTitleConfirmationLeft/Right`、`ConfirmTitle`、`HideTitleConfirmation` | `IsTitleConfirmationOpen`、`TitleConfirmationResult` | `PauseScene.SelectionRevision`・`SelectedMenuItem` |
 | `SelectStageCanvasAPI` | なし（カーソル移動・決定はSceneが`selection.Graph`で行う） | なし | `SelectStageScene.SelectedLocation`・`CurrentLocation`・`StageMap` |
 | `PlayCanvasAPI` | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab` | `IsPartsListOpen`、`CurrentPartsTab`、`SelectedFoundPart` | `PlayScene.SelectListRevision`、`Gamedata.PartsRevision` |
 | `TrainCanvasAPI` | `ScrollPartsListDown/Up` | なし | `TrainScene.PartsListRevision`、`Gamedata.PartsRevision` |
@@ -165,7 +165,7 @@ SceneごとのCanvas APIの違いは次の表のとおりである。
 
 注意点:
 
-- CanvasがSceneのポインタを持つScene（Play / Train / Result / SelectStage / Title）は、Canvasの生成関数（`func(*XxxScene) (XxxCanvasAPI, error)`）を`NewXxxScene`の引数で受け取り、Scene自身の生成直後に呼んで注入する。注入忘れや`nil`はScene生成時のエラーになる。CanvasはSceneの具体型に依存する（別Sceneを誤って受け取らないため、interfaceにはしない）。
+- CanvasがSceneのポインタを持つScene（Play / Train / Result / SelectStage / Title / Pause）は、Canvasの生成関数（`func(*XxxScene) (XxxCanvasAPI, error)`）を`NewXxxScene`の引数で受け取り、Scene自身の生成直後に呼んで注入する。注入忘れや`nil`はScene生成時のエラーになる。CanvasはSceneの具体型に依存する（別Sceneを誤って受け取らないため、interfaceにはしない）。
 - Sceneの`Update`は本体の処理の後で`canvas.Update`を呼び、同じフレームの状態変化をCanvasが観測できるようにする。
 - Canvasは`Gamedata.Timer.Expired()`を呼ばない。通知を消費するため、Sceneが満了を検知できなくなる。タイマー判定はSceneが行い、結果を公開メソッドで渡す。
 - 購入はSceneが行う。Sceneは`CurrentPartsTab`で発見タブの表示中かを確かめ、それ以外なら何もしない。発見タブなら`SelectedFoundPart`で受け取ったパーツを`Gamedata.BuyFoundPart`へ渡し、購入後の一覧の再構築はCanvasが`Gamedata.PartsRevision`の変化を観測して行う。
