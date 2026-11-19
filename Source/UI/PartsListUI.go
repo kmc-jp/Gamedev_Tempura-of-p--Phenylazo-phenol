@@ -16,7 +16,7 @@ import (
 
 const (
 	partsListWidth     = 600
-	partsListHeight    = 340
+	partsListHeight    = 325
 	partCardHeight     = 100
 	partCardGap        = 10
 	scrollBarWidth     = 8
