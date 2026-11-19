@@ -20,7 +20,7 @@ type ShelfTile struct {
 const (
 	prob         = 0.001
 	particletime = 200
-	nomalmax     = 5
+	normalmax    = 5
 )
 
 func (s *ShelfTile) Interact(player *Player) error {
@@ -33,11 +33,11 @@ func (s *ShelfTile) Interact(player *Player) error {
 		s.nomalGet = 0
 		s.isSparkling = false
 		s.spTimer.Set(0)
-	} else if s.nomalGet < nomalmax {
+	} else if s.nomalGet < normalmax {
 		foundPart = parts.RandomPartsFromAll(true)
 		s.nomalGet++
 
-		if s.nomalGet == nomalmax {
+		if s.nomalGet == normalmax {
 			// 棚が品切れになった時の処理をどうするか
 		}
 	}
