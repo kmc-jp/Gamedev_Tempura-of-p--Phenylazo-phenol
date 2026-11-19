@@ -26,8 +26,8 @@ func NewMultiRender(main gameobject.Render, subs []gameobject.Render) *MultiRend
 	mr := MultiRender{
 		main:          main,
 		subs:          subs,
-		subrendering:  true,
-		subupdate:     true,
+		subrendering:  false,
+		subupdate:     false,
 		imgcache:      ebiten.NewImage(1, 1),
 		imgqueuecache: make([]*ebiten.Image, len(subs)+1),
 		dioqueuecache: make([]*ebiten.DrawImageOptions, len(subs)+1),
