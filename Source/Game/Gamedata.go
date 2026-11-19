@@ -21,8 +21,6 @@ type Gamedata struct {
 	//シーン読み込み時の初回実行制御用
 	InitialProcess bool
 
-	Timer *tick.Timer
-
 	//世界時間用のタイマー
 	WorldTimer *tick.WorldTimer
 
@@ -108,7 +106,6 @@ type state uint
 
 func NewGamedata() *Gamedata {
 	g := &Gamedata{
-		Timer:           tick.NewTimer(),
 		WorldTimer:      tick.NewWorldTimer(),
 		Weight:          InitialWeight,
 		Money:           InitialMoney,

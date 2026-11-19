@@ -243,8 +243,6 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 		}
 		s.removeExpiredEntities()
 
-		s.Gamedata.Timer.Set(10)
-
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
 			return func() (game.Scene, error) {
 				pauseScene, err := s.initScenes.InitPauseScene()
@@ -262,13 +260,9 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 
 	//TimeUp後の処理
 	if s.Gamedata.State == game.Play_Register {
-		s.Gamedata.Timer.Set(50)
-		if s.Gamedata.Timer.Expired() {
-			s.Gamedata.Timer.Set(0)
-			// パーツ一覧はCanvasが selectListRevision の変化を観測して表示する
-			s.Gamedata.State = game.Play_Select
-			s.selectListRevision++
-		}
+		// パーツ一覧はCanvasが selectListRevision の変化を観測して表示する
+		s.Gamedata.State = game.Play_Select
+		s.selectListRevision++
 
 		return
 	}
