@@ -93,6 +93,7 @@ const (
 	Play_Timeup
 
 	Train_Default
+	Train_SelectSellPart
 
 	Result_SelectParts
 	Result_Assembled
