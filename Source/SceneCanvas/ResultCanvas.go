@@ -119,8 +119,6 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 		return nil, err
 	}
 
-	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{guide, benchmarkPrompt, installedParts, partsList, partUseConfirm, messageWindow} {
 	scoreDisplay, err := resultui.NewScoreDisplay(resultui.ScoreDisplayConfig{
 		Font:            ui.FontFace(gdata.Font, 60),
 		TextColor:       color.Black(),
@@ -134,7 +132,7 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{guide, benchmarkPrompt, installedParts, partsList, partUseConfirm, scoreDisplay} {
+	for _, item := range []canvas.CanvasItem{guide, benchmarkPrompt, installedParts, partsList, partUseConfirm, messageWindow, scoreDisplay} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("結果画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -201,7 +199,7 @@ func (c *ResultCanvas) Draw(screen *ebiten.Image) {
 	c.messageWindow.SetPosition(utils.Position{
 		X: float64((bounds.Dx() - messageSize.X) / 2),
 		Y: float64(bounds.Dy() - messageSize.Y - 5),
-  })
+	})
 	c.scoreDisplay.SetCenter(utils.Position{
 		X: float64(bounds.Dx() / 2),
 		Y: float64(bounds.Dy() / 2),
