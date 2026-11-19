@@ -118,7 +118,7 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 		TextColor:       color.Black(),
 		BackgroundColor: color.LightGray(),
 		Padding:         12,
-		ShuffleFrames:   2,
+		ShuffleFrames:   10,
 		DigitFrames:     6,
 	})
 	if err != nil {
