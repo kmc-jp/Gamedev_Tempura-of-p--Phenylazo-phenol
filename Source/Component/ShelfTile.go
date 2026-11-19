@@ -18,9 +18,9 @@ type ShelfTile struct {
 
 // レア棚の制御
 const (
-	prob         = 0.001
-	particletime = 200
-	normalmax    = 5
+	prob_Shelf         = 0.001
+	particletime_Shelf = 200
+	normalmax_Shelf    = 5
 )
 
 func (s *ShelfTile) Interact(player *Player) error {
@@ -33,11 +33,11 @@ func (s *ShelfTile) Interact(player *Player) error {
 		s.nomalGet = 0
 		s.isSparkling = false
 		s.spTimer.Set(0)
-	} else if s.nomalGet < normalmax {
+	} else if s.nomalGet < normalmax_Shelf {
 		foundPart = parts.RandomPartsFromAll(true)
 		s.nomalGet++
 
-		if s.nomalGet == normalmax {
+		if s.nomalGet == normalmax_Shelf {
 			// 棚が品切れになった時の処理をどうするか
 		}
 	}
@@ -50,11 +50,11 @@ func (s *ShelfTile) Interact(player *Player) error {
 }
 
 func (s *ShelfTile) Update(active bool) error {
-	if !s.isSparkling && Utils.WithProbability(prob) {
+	if !s.isSparkling && Utils.WithProbability(prob_Shelf) {
 		s.render.EnableSubUpdate(true)
 
 		s.isSparkling = true
-		s.spTimer.Set(particletime)
+		s.spTimer.Set(particletime_Shelf)
 	} else if s.isSparkling && s.spTimer.Expired() {
 		s.render.EnableSubUpdate(false)
 		s.isSparkling = false
