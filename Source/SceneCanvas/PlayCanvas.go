@@ -84,7 +84,7 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		utils.Position{X: 0, Y: 0},
 		color.White(),
 		gdata,
-		ui.FontFace(gdata.Font, 15),
+		ui.FontFace(gdata.Font, 25),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("commonui.NewClock() でエラーが発生しました。\n%w", err)
