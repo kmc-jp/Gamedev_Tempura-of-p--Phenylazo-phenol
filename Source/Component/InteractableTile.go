@@ -20,6 +20,8 @@ func InteractiveTiles(Type tilemap.InteractType) (Utils.Factory[InteractableTile
 		return nil, nil
 	case tilemap.Shelf:
 		return Utils.CastFactory[*ShelfTile, InteractableTile](NewShelfTile()), nil
+	case tilemap.Register:
+		return Utils.CastFactory[*RegisterTile, InteractableTile](NewRegisterTile()), nil
 	default:
 		return nil, fmt.Errorf("未定義の Type が渡されました。\nInteractiveTiles() または tilemap.InteractType の定義を確認してください。")
 	}
