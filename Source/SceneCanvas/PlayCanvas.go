@@ -90,17 +90,49 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		return nil, fmt.Errorf("commonui.NewClock() でエラーが発生しました。\n%w", err)
 	}
 
+	if gdata.AssetsManager == nil {
+		return nil, fmt.Errorf("gdata.AssetsManager が nil です")
+	}
+
+	weightIconData, err := gdata.AssetsManager.Image.NewImageData(
+		"みんげー_リュックサック_アイコン",
+		"UI/みんげー_リュックサック_アイコン.png",
+		"UI/みんげー_リュックサック_アイコン.json",
+	)
+	if err != nil {
+		return nil, fmt.Errorf("リュックサックアイコンのImageData作成に失敗しました。\n%w", err)
+	}
+	_, weightIcon, err := gdata.AssetsManager.Image.Load(*weightIconData)
+	if err != nil {
+		return nil, fmt.Errorf("リュックサックアイコンの読み込みに失敗しました。\n%w", err)
+	}
+
+	moneyIconData, err := gdata.AssetsManager.Image.NewImageData(
+		"みんげー_がま口アイコン",
+		"UI/みんげー_がま口アイコン.png",
+		"UI/みんげー_がま口アイコン.json",
+	)
+	if err != nil {
+		return nil, fmt.Errorf("がま口アイコンのImageData作成に失敗しました。\n%w", err)
+	}
+	_, moneyIcon, err := gdata.AssetsManager.Image.Load(*moneyIconData)
+	if err != nil {
+		return nil, fmt.Errorf("がま口アイコンの読み込みに失敗しました。\n%w", err)
+	}
+
 	gameDataUI, err := ui.NewGameDataUI(
 		gdata,
 		[]ui.GameDataUIItem{
 			{
+				Image: weightIcon,
 				Text: func(g game.Gamedata) string {
 					return fmt.Sprintf("空き重量: %d", g.Weight)
 				},
 				Font:  ui.FontFace(gdata.Font, 15),
-				Color: color.White(),
+				Color: color.Black(),
 			},
 			{
+				Image: moneyIcon,
 				Text: func(g game.Gamedata) string {
 					return fmt.Sprintf("所持金: %d", g.Money)
 				},
@@ -114,6 +146,7 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	if err != nil {
 		return nil, fmt.Errorf("ui.NewGameDataUI() でエラーが発生しました。\n%w", err)
 	}
+	gameDataUI.SetBackgroundColor(color.White())
 
 	partsList, err := newPartsList(gdata)
 	if err != nil {

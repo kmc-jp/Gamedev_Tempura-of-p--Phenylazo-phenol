@@ -3,9 +3,12 @@ package ui
 import (
 	canvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Canvas"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
+	uiutils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI/UIUtils"
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
+	"image"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -19,10 +22,12 @@ type GameDataUIItem struct {
 }
 
 type GameDataUI struct {
-	gdata  *game.Gamedata
-	items  []GameDataUIItem
-	margin float64
-	gap    float64
+	gdata           *game.Gamedata
+	items           []GameDataUIItem
+	margin          float64
+	gap             float64
+	backgroundColor *color.Color
+	backgroundPad   float64
 }
 
 func NewGameDataUI(
@@ -53,10 +58,11 @@ func NewGameDataUI(
 	}
 
 	return &GameDataUI{
-		gdata:  gdata,
-		items:  items,
-		margin: margin,
-		gap:    gap,
+		gdata:         gdata,
+		items:         items,
+		margin:        margin,
+		gap:           gap,
+		backgroundPad: 5,
 	}, nil
 }
 
@@ -64,7 +70,12 @@ func (u *GameDataUI) Update(active bool) error {
 	return nil
 }
 
-func (u *GameDataUI) Draw(screen *ebiten.Image) {
+// SetBackgroundColor は GamedataUI の背景色を設定する。
+func (u *GameDataUI) SetBackgroundColor(backgroundColor *color.Color) {
+	u.backgroundColor = backgroundColor
+}
+
+func (u *GameDataUI) contentSize() (float64, float64) {
 	data := *u.gdata
 	width := 0.0
 	height := 0.0
@@ -84,9 +95,23 @@ func (u *GameDataUI) Draw(screen *ebiten.Image) {
 		}
 	}
 	width -= u.gap
+	return width, height
+}
 
+func (u *GameDataUI) Draw(screen *ebiten.Image) {
+	data := *u.gdata
+	width, height := u.contentSize()
 	x := float64(screen.Bounds().Dx()) - u.margin - width
 	y := u.margin
+
+	if u.backgroundColor != nil {
+		left := int(math.Floor(x - u.backgroundPad))
+		top := int(math.Floor(y - u.backgroundPad))
+		right := int(math.Ceil(x + width + u.backgroundPad))
+		bottom := int(math.Ceil(y + height + u.backgroundPad))
+		uiutils.FillRect(screen, image.Rect(left, top, right, bottom), u.backgroundColor.ToRGBA())
+	}
+
 	for _, item := range u.items {
 		value := item.Text(data)
 		textWidth, textHeight := text.Measure(value, item.Font, item.Font.Size*1.5)
