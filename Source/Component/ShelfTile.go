@@ -7,7 +7,8 @@ import (
 )
 
 type ShelfTile struct {
-	scene *scene.PlayScene
+	scene  *scene.PlayScene
+	render *MultiRender
 }
 
 func (s ShelfTile) Interact(player *Player) error {
@@ -24,10 +25,11 @@ func (s ShelfTile) Update(active bool) error {
 	return nil
 }
 
-func NewShelfTile(scene *scene.PlayScene) Utils.Factory[*ShelfTile] {
+func NewShelfTile(scene *scene.PlayScene, render *MultiRender) Utils.Factory[*ShelfTile] {
 	return func() (*ShelfTile, error) {
 		return &ShelfTile{
-			scene: scene,
+			scene:  scene,
+			render: render,
 		}, nil
 	}
 }
