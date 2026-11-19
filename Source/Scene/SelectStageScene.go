@@ -25,6 +25,8 @@ type SelectStageCanvasAPI interface {
 	// IsSelectStageCanvas は識別用メソッドで、処理を持たない。
 	// メソッド集合が同じ他SceneのCanvasを誤って注入しないためのもの。
 	IsSelectStageCanvas()
+
+	SetMessageWindowText(string)
 }
 
 // SelectStageRule は行き先選択のルールである。WithRule で NewSelectStageScene の生成時に渡して決める。

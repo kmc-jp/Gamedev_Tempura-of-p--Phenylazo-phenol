@@ -19,10 +19,11 @@ import (
 // SelectStageCanvas は SelectStageScene のUI構成である。路線図と操作案内を持つ。
 // 選択中の駅と現在地はSceneが持つため、Sceneのポインタを持って観測する。
 type SelectStageCanvas struct {
-	scene    *scene.SelectStageScene
-	canvas   *canvas.Canvas
-	routeMap *ui.RouteMapUI[stageinfo.Location]
-	guide    *ui.Text
+	scene         *scene.SelectStageScene
+	canvas        *canvas.Canvas
+	routeMap      *ui.RouteMapUI[stageinfo.Location]
+	guide         *ui.Text
+	messageWindow *commonui.MessageWindow
 
 	// labels は駅の表示名。案内文の組み立てに使う。
 	labels map[stageinfo.Location]string
@@ -88,14 +89,19 @@ func NewSelectStageCanvas(s *scene.SelectStageScene, gdata *game.Gamedata) (*Sel
 	}
 	guide.SetPosition(utils.Position{Y: 25})
 
+	messageWindow, err := newMessageWindow(gdata)
+	if err != nil {
+		return nil, err
+	}
+
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{routeMap, worldTimeText, gameDataUI, guide} {
+	for _, item := range []canvas.CanvasItem{routeMap, worldTimeText, gameDataUI, guide, messageWindow} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("ステージ選択画面のCanvas構築に失敗しました。\n%w", err)
 		}
 	}
 
-	sc := &SelectStageCanvas{scene: s, canvas: c, routeMap: routeMap, guide: guide}
+	sc := &SelectStageCanvas{scene: s, canvas: c, routeMap: routeMap, guide: guide, messageWindow: messageWindow}
 	sc.syncWithScene()
 	return sc, nil
 }
@@ -116,7 +122,17 @@ func (c *SelectStageCanvas) Update(active bool) error {
 
 // Draw implements [scene.SelectStageCanvasAPI].
 func (c *SelectStageCanvas) Draw(screen *ebiten.Image) {
+	bounds := screen.Bounds()
+	messageSize := c.messageWindow.Size()
+	c.messageWindow.SetPosition(utils.Position{
+		X: float64((bounds.Dx() - messageSize.X) / 2),
+		Y: float64(bounds.Dy() - messageSize.Y - 5),
+	})
 	c.canvas.Draw(screen)
+}
+
+func (c *SelectStageCanvas) SetMessageWindowText(value string) {
+	c.messageWindow.SetText(value)
 }
 
 // IsSelectStageCanvas implements [scene.SelectStageCanvasAPI].

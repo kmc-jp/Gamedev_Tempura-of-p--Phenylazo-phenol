@@ -29,6 +29,7 @@ type ResultCanvas struct {
 	installedParts  *resultui.InstalledParts
 	partsList       *ui.PartsListUI
 	partUseConfirm  *commonui.Confirm
+	messageWindow   *commonui.MessageWindow
 
 	// shownRevision は一覧に反映済みの ResultScene.CandidatesRevision。
 	shownRevision int
@@ -112,8 +113,13 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 		return nil, fmt.Errorf("commonui.NewConfirm() でエラーが発生しました。\n%w", err)
 	}
 
+	messageWindow, err := newMessageWindow(gdata)
+	if err != nil {
+		return nil, err
+	}
+
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{guide, benchmarkPrompt, installedParts, partsList, partUseConfirm} {
+	for _, item := range []canvas.CanvasItem{guide, benchmarkPrompt, installedParts, partsList, partUseConfirm, messageWindow} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("結果画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -127,6 +133,7 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 		installedParts:  installedParts,
 		partsList:       partsList,
 		partUseConfirm:  partUseConfirm,
+		messageWindow:   messageWindow,
 	}, nil
 }
 
@@ -173,8 +180,13 @@ func (c *ResultCanvas) Update(active bool) error {
 
 // Draw implements [scene.ResultCanvasAPI].
 func (c *ResultCanvas) Draw(screen *ebiten.Image) {
+	bounds := screen.Bounds()
+	messageSize := c.messageWindow.Size()
+	c.messageWindow.SetPosition(utils.Position{
+		X: float64((bounds.Dx() - messageSize.X) / 2),
+		Y: float64(bounds.Dy() - messageSize.Y - 5),
+	})
 	if c.partUseConfirm.Visible() {
-		bounds := screen.Bounds()
 		confirmSize := c.partUseConfirm.Size()
 		c.partUseConfirm.SetPosition(utils.Position{
 			X: float64((bounds.Dx() - confirmSize.X) / 2),
@@ -228,6 +240,10 @@ func (c *ResultCanvas) PartUseConfirmationResult() (bool, bool) {
 
 func (c *ResultCanvas) HidePartUseConfirmation() {
 	c.partUseConfirm.Hide()
+}
+
+func (c *ResultCanvas) SetMessageWindowText(value string) {
+	c.messageWindow.SetText(value)
 }
 
 // SelectedPart implements [scene.ResultCanvasAPI].
