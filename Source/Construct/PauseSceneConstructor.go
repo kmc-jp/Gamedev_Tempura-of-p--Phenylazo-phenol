@@ -18,12 +18,11 @@ func PauseSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inpu
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		pauseCanvas, err := scenecanvas.NewPauseCanvas(gdata.Font)
-		if err != nil {
-			return nil, fmt.Errorf("scenecanvas.NewPauseCanvas() でエラーが発生しました。\n%w", err)
+		newCanvas := func(s *scene.PauseScene) (scene.PauseCanvasAPI, error) {
+			return scenecanvas.NewPauseCanvas(s, gdata)
 		}
 
-		pausescene, err := scene.NewPauseScene(DrawerFactory, pauseCanvas, inputHandler, gdata, initScenes)()
+		pausescene, err := scene.NewPauseScene(DrawerFactory, newCanvas, inputHandler, gdata, initScenes)()
 		if err != nil {
 			return nil, fmt.Errorf("NewPauseScene() でエラーが発生しました。\n%w", err)
 		}
