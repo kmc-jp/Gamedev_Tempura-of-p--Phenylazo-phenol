@@ -104,6 +104,7 @@ type PlayScene struct {
 	// テスト用
 	cameraCenter             Utils.Position
 	purchaseConfirmationPart *game.Part
+	exitStoreFromExplore     bool
 }
 
 // NewPlayScene は PlayScene を生成する。
@@ -232,6 +233,7 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 			if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) &&
 				s.canvas.CurrentPartsTab() == PartsListTabExit {
 				s.Gamedata.State = game.Play_ExitStore
+				s.exitStoreFromExplore = true
 				s.canvas.ShowExitStoreConfirmation()
 			}
 			return
@@ -320,6 +322,7 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) &&
 			s.canvas.CurrentPartsTab() == PartsListTabExit {
 			s.Gamedata.State = game.Play_ExitStore
+			s.exitStoreFromExplore = false
 			s.canvas.ShowExitStoreConfirmation()
 			return
 		}
@@ -352,7 +355,13 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 					}, transition.NewScene(), nil
 				} else {
 					s.canvas.HideExitStoreConfirmation()
-					s.Gamedata.State = game.Play_Select
+					if s.exitStoreFromExplore {
+						s.Gamedata.State = game.Play_Explore
+						s.Gamedata.DisableWorldTimeProgressing()
+					} else {
+						s.Gamedata.State = game.Play_Select
+					}
+					s.exitStoreFromExplore = false
 				}
 			}
 		}
