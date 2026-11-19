@@ -75,17 +75,21 @@ func NewSelectStageCanvas(s *scene.SelectStageScene, gdata *game.Gamedata) (*Sel
 
 	worldTimeText, err := commonui.NewClock(
 		utils.Position{},
-		color.White(),
+		color.Black(),
 		gdata,
-		ui.FontFace(gdata.Font, 15),
+		ui.FontFace(gdata.Font, 25),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("commonui.NewClock() でエラーが発生しました。\n%w", err)
 	}
+	gameDataUI, err := newGameDataUI(gdata)
+	if err != nil {
+		return nil, err
+	}
 	guide.SetPosition(utils.Position{Y: 25})
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{routeMap, worldTimeText, guide} {
+	for _, item := range []canvas.CanvasItem{routeMap, worldTimeText, gameDataUI, guide} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("ステージ選択画面のCanvas構築に失敗しました。\n%w", err)
 		}

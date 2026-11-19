@@ -50,12 +50,17 @@ func NewTrainCanvas(s *scene.TrainScene, gdata *game.Gamedata) (*TrainCanvas, er
 
 	worldTimeText, err := commonui.NewClock(
 		utils.Position{},
-		color.White(),
+		color.Black(),
 		gdata,
-		ui.FontFace(gdata.Font, 15),
+		ui.FontFace(gdata.Font, 25),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("commonui.NewClock() でエラーが発生しました。\n%w", err)
+	}
+
+	gameDataUI, err := newGameDataUI(gdata)
+	if err != nil {
+		return nil, err
 	}
 
 	partsList, err := newPartsList(gdata)
@@ -80,7 +85,7 @@ func NewTrainCanvas(s *scene.TrainScene, gdata *game.Gamedata) (*TrainCanvas, er
 	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{worldTimeText, guide, partsList, sellConfirm} {
+	for _, item := range []canvas.CanvasItem{worldTimeText, gameDataUI, guide, partsList, sellConfirm} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("電車画面のCanvas構築に失敗しました。\n%w", err)
 		}
