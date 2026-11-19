@@ -13,23 +13,26 @@ type ShelfTile struct {
 	render      *MultiRender
 	isSparkling bool
 	spTimer     tick.Timer
+	nomalGet    int
 }
 
 // レア棚の制御
 const (
 	prob         = 0.001
 	particletime = 200
+	nomalmax     = 5
 )
 
-func (s ShelfTile) Interact(player *Player) error {
-	var foundPart *game.Part
+func (s *ShelfTile) Interact(player *Player) error {
+	var foundPart *game.Part = nil
 
 	if s.isSparkling {
 		// キラキラ表示があれば停止
 		s.render.EnableSubUpdate(false)
 		foundPart = parts.RandomPartsFromAll(false)
-	} else {
+	} else if s.nomalGet < nomalmax {
 		foundPart = parts.RandomPartsFromAll(true)
+		s.nomalGet++
 	}
 
 	s.scene.Gamedata.AddPartToFoundList(foundPart)
