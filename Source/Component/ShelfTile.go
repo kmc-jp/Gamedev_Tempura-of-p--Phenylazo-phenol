@@ -30,6 +30,7 @@ func (s *ShelfTile) Interact(player *Player) error {
 		// キラキラ表示があれば停止
 		s.render.EnableSubUpdate(false)
 		foundPart = parts.RandomPartsFromAll(false)
+		s.isSparkling = false
 	} else if s.nomalGet < nomalmax {
 		foundPart = parts.RandomPartsFromAll(true)
 		s.nomalGet++
