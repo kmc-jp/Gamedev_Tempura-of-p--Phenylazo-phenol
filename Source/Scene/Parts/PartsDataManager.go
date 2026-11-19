@@ -54,13 +54,13 @@ func LoadRegistryImages(imageManager *imageassets.ImageManager) error {
 	return nil
 }
 
-func RandomPartsFromAll() *game.Part {
+func RandomPartsFromAll(WithProbability bool) *game.Part {
 	if len(Registry) == 0 {
 		return nil
 	}
 
 	//重みづけ抽選をしない場合はここで抽選
-	if !Utils.WithProbability(0.6) {
+	if WithProbability && !Utils.WithProbability(0.6) {
 		return nil
 	}
 
