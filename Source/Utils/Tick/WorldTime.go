@@ -1,6 +1,8 @@
 package tick
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type WorldTimer struct {
 	Timer
@@ -58,8 +60,24 @@ func formatWorldTime(totalMinutes uint64) string {
 	return fmt.Sprintf("%s %02d:%02d", period, hour12, minute)
 }
 
+func (wtimer *WorldTimer) TimeLeft() uint64 {
+	wtimer.syncTime()
+	if wtimer.passedTime >= PlayableTime {
+		return 0
+	}
+	return PlayableTime - wtimer.passedTime
+}
+
 // GetTimeText はゲーム内時刻を日本式の午前・午後付き 12時間表記で返す。
 func (wtimer *WorldTimer) GetTimeText() string {
 	totalMinutes := uint64(Departuretime*60) + wtimer.GetPassedTimeInMinite()
 	return formatWorldTime(totalMinutes)
+}
+
+func (wtimer *WorldTimer) EnoughTimeLeft(need uint64) bool {
+	if wtimer.TimeLeft() < need {
+		return false
+	} else {
+		return true
+	}
 }
