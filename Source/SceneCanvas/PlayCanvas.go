@@ -53,6 +53,8 @@ var (
 	foundPartLogTextColor        = color.Black()
 	messageWindowTextColor       = color.Black()
 	messageWindowBackgroundColor = color.SkyBlue().MakeTansparentColor(0.2)
+	confirmTextColor             = color.White()
+	confirmBackgroundColor       = color.LightGray()
 )
 
 // NewPlayCanvas は PlayCanvas を生成する。
@@ -182,8 +184,8 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	purchaseConfirm, err := commonui.NewConfirm(commonui.ConfirmConfig{
 		Size:                  image.Point{X: confirmWidth, Y: confirmHeight},
 		Font:                  ui.FontFace(gdata.Font, messageWindowTextSize),
-		TextColor:             messageWindowTextColor,
-		BackgroundColor:       messageWindowBackgroundColor,
+		TextColor:             confirmTextColor,
+		BackgroundColor:       confirmBackgroundColor,
 		ButtonBackgroundColor: color.DarkGray(),
 		Padding:               image.Point{X: confirmPadding, Y: confirmPadding},
 		ButtonSize:            image.Point{X: confirmButtonWidth, Y: confirmButtonHeight},
@@ -198,8 +200,8 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	exitStoreConfirm, err := commonui.NewConfirm(commonui.ConfirmConfig{
 		Size:                  image.Point{X: confirmWidth, Y: confirmHeight},
 		Font:                  ui.FontFace(gdata.Font, messageWindowTextSize),
-		TextColor:             messageWindowTextColor,
-		BackgroundColor:       messageWindowBackgroundColor,
+		TextColor:             confirmTextColor,
+		BackgroundColor:       confirmBackgroundColor,
 		ButtonBackgroundColor: color.DarkGray(),
 		Padding:               image.Point{X: confirmPadding, Y: confirmPadding},
 		ButtonSize:            image.Point{X: confirmButtonWidth, Y: confirmButtonHeight},
