@@ -14,7 +14,7 @@ type RegisterTile struct {
 func (s RegisterTile) Interact(player *Player) error {
 	fmt.Printf("Interact with Regester.\n")
 	if s.scene.Gamedata.State == game.Play_Explore {
-		s.scene.Gamedata.State = game.Play_Select
+		s.scene.Gamedata.State = game.Play_Register
 	} else {
 		return fmt.Errorf("Interactした時点のstateが不正な値です\n")
 	}
