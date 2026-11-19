@@ -194,12 +194,15 @@ func (s *TrainScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 }
 
 func (s *TrainScene) updateTrainDefault() (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
-	s.canvas.SetMessageWindowText("Enter で次へ進む")
-	if s.Gamedata.Visited() == 0 &&
-		s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
-		s.Gamedata.IncrementVisited()
-		return s.Gamedata.NextStage(), transition.NewScene(), nil
+	s.canvas.SetMessageWindowText("")
+	if s.Gamedata.Visited() == 0 {
+		s.canvas.SetMessageWindowText("Enter で次へ進む")
+		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+			s.Gamedata.IncrementVisited()
+			return s.Gamedata.NextStage(), transition.NewScene(), nil
+		}
 	}
+
 	return nil, transition.None(), nil
 }
 
@@ -208,8 +211,9 @@ func (s *TrainScene) updateTrainSelectSellPart() (nextScene Utils.Factory[game.S
 		return nil, transition.None(), nil
 	}
 
+	s.canvas.SetMessageWindowText("Space で売るパーツを選択  Enter で決定")
+
 	if s.canvas.IsSellPartConfirmationOpen() {
-		s.canvas.SetMessageWindowText("Space で売るパーツを選択  Enter で決定")
 		if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
 			s.canvas.MoveSellPartConfirmationLeft()
 		}

@@ -285,9 +285,7 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 	}
 
 	if s.Gamedata.State == game.Play_Select {
-		if s.MessageWindowDisplayTimer.Expired() {
-			s.canvas.SetMessageWindowText("Space で買うパーツを選択  Enter で決定")
-		}
+		s.canvas.SetMessageWindowText("Space で買うパーツを選択  Enter で決定")
 		if s.canvas.IsPurchaseConfirmationOpen() {
 			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
 				s.canvas.MovePurchaseConfirmationLeft()
