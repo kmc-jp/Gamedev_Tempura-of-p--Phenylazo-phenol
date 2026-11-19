@@ -54,6 +54,8 @@ type TrainScene struct {
 
 	bgDrawer BackGroundDrawer
 
+	timer *tick.Timer
+
 	// text       *ui.Text
 	Input                    *input.Handler
 	Gamedata                 *game.Gamedata
@@ -76,10 +78,12 @@ func NewTrainScene(worldDrawer Utils.Factory[WorldDrawer], bgDrawer Utils.Factor
 		if err != nil {
 			return &TrainScene{}, fmt.Errorf("BGDrawer() でエラーが発生しました。 \n%w", err)
 		}
+		timer := tick.NewTimer()
 		trs := TrainScene{
 			entities:    []Entity{},
 			worldDrawer: camera,
 			bgDrawer:    bgCamera,
+			timer:       timer,
 			// text:       text,
 			Input:      Input,
 			Gamedata:   gdata,
@@ -138,12 +142,12 @@ func (s *TrainScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 			return
 		}
 
-		s.Gamedata.Timer = tick.NewTimer()
-		s.Gamedata.Timer.Set(50)
+		s.timer = tick.NewTimer()
+		s.timer.Set(50)
 	}
 
 	// 到着演出のタイマー満了時に1回だけ、一覧を表示する時点に達したことをCanvasへ伝える
-	if s.Gamedata.Timer.Expired() && s.partsListRevision == 0 {
+	if s.timer.Expired() && s.partsListRevision == 0 {
 		s.partsListRevision++
 	}
 
