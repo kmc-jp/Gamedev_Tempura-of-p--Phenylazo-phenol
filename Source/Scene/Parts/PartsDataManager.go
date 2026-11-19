@@ -10,6 +10,13 @@ import (
 
 var Registry []func() *game.Part
 
+const (
+	randomRankAProbability = 5
+	randomRankBProbability = 20
+	randomRankCProbability = 60
+	randomRankDProbability = 15
+)
+
 func register(builder func() *game.Part) func() *game.Part {
 	Registry = append(Registry, builder)
 	return builder
@@ -59,6 +66,14 @@ func RandomPartsFromAll() *game.Part {
 
 	p := Registry[rand.Intn(len(Registry))]()
 	if p.Kind == game.Trash {
+		return nil
+	}
+	if err := p.SetRandomRank(
+		randomRankAProbability,
+		randomRankBProbability,
+		randomRankCProbability,
+		randomRankDProbability,
+	); err != nil {
 		return nil
 	}
 	return p
