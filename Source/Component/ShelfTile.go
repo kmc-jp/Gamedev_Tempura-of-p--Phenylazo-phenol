@@ -51,8 +51,10 @@ func (s *ShelfTile) Interact(player *Player) error {
 
 func (s *ShelfTile) Update(active bool) error {
 	if !active {
+		s.spTimer.Suspend()
 		return nil
 	}
+	s.spTimer.Resume()
 
 	if !s.isSparkling && Utils.WithProbability(prob_Shelf) {
 		s.render.EnableSubUpdate(true)
