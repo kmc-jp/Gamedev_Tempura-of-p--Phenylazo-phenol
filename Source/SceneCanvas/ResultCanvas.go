@@ -30,6 +30,7 @@ type ResultCanvas struct {
 	partsList       *ui.PartsListUI
 	partUseConfirm  *commonui.Confirm
 	messageWindow   *commonui.MessageWindow
+	actionLog       *commonui.LogWindow
 	scoreDisplay    *resultui.ScoreDisplay
 
 	// shownRevision は一覧に反映済みの ResultScene.CandidatesRevision。
@@ -118,6 +119,10 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 	if err != nil {
 		return nil, err
 	}
+	actionLog, err := newActionLog(gdata)
+	if err != nil {
+		return nil, err
+	}
 
 	scoreDisplay, err := resultui.NewScoreDisplay(resultui.ScoreDisplayConfig{
 		Font:            ui.FontFace(gdata.Font, 60),
@@ -132,7 +137,7 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{guide, benchmarkPrompt, installedParts, partsList, partUseConfirm, messageWindow, scoreDisplay} {
+	for _, item := range []canvas.CanvasItem{guide, benchmarkPrompt, installedParts, partsList, partUseConfirm, messageWindow, actionLog, scoreDisplay} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("結果画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -147,6 +152,7 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 		partsList:       partsList,
 		partUseConfirm:  partUseConfirm,
 		messageWindow:   messageWindow,
+		actionLog:       actionLog,
 		scoreDisplay:    scoreDisplay,
 	}, nil
 }
@@ -195,6 +201,7 @@ func (c *ResultCanvas) Update(active bool) error {
 // Draw implements [scene.ResultCanvasAPI].
 func (c *ResultCanvas) Draw(screen *ebiten.Image) {
 	bounds := screen.Bounds()
+	c.actionLog.SetCenter(float64(bounds.Dx()/2), float64(bounds.Dy()/2))
 	messageSize := c.messageWindow.Size()
 	c.messageWindow.SetPosition(utils.Position{
 		X: float64((bounds.Dx() - messageSize.X) / 2),
@@ -262,6 +269,10 @@ func (c *ResultCanvas) HidePartUseConfirmation() {
 
 func (c *ResultCanvas) SetMessageWindowText(value string) {
 	c.messageWindow.SetText(value)
+}
+
+func (c *ResultCanvas) SetActionLogText(value string) {
+	c.actionLog.SetText(value)
 }
 func (c *ResultCanvas) StartScoreDisplay(score int) {
 	c.scoreDisplay.Start(score)

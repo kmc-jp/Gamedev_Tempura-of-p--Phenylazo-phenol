@@ -27,6 +27,7 @@ type SelectStageCanvasAPI interface {
 	IsSelectStageCanvas()
 
 	SetMessageWindowText(string)
+	SetActionLogText(string)
 }
 
 // SelectStageRule は行き先選択のルールである。WithRule で NewSelectStageScene の生成時に渡して決める。
@@ -233,6 +234,7 @@ func (s *SelectStageScene) updateScene(active bool) (nextScene Utils.Factory[gam
 			return nil, transition.None(), fmt.Errorf("s.destination() でエラーが発生しました\n%w\n", err)
 		}
 		if !s.gamedata.WorldTimer.EnoughTimeLeft(min) {
+			s.canvas.SetActionLogText("時間が足りません")
 			return nil, transition.None(), nil
 		}
 		s.gamedata.WorldTimer.Skip(uint16(min))

@@ -23,6 +23,7 @@ type TrainCanvas struct {
 	partsList     *ui.PartsListUI
 	sellConfirm   *commonui.Confirm
 	messageWindow *commonui.MessageWindow
+	actionLog     *commonui.LogWindow
 
 	// shownListRevision は反映済みの TrainScene.PartsListRevision。
 	shownListRevision int
@@ -89,9 +90,13 @@ func NewTrainCanvas(s *scene.TrainScene, gdata *game.Gamedata) (*TrainCanvas, er
 	if err != nil {
 		return nil, err
 	}
+	actionLog, err := newActionLog(gdata)
+	if err != nil {
+		return nil, err
+	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{worldTimeText, gameDataUI, guide, partsList, sellConfirm, messageWindow} {
+	for _, item := range []canvas.CanvasItem{worldTimeText, gameDataUI, guide, partsList, sellConfirm, messageWindow, actionLog} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("電車画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -104,6 +109,7 @@ func NewTrainCanvas(s *scene.TrainScene, gdata *game.Gamedata) (*TrainCanvas, er
 		partsList:     partsList,
 		sellConfirm:   sellConfirm,
 		messageWindow: messageWindow,
+		actionLog:     actionLog,
 	}, nil
 }
 
@@ -127,6 +133,7 @@ func (c *TrainCanvas) Update(active bool) error {
 // Draw implements [scene.TrainCanvasAPI].
 func (c *TrainCanvas) Draw(screen *ebiten.Image) {
 	bounds := screen.Bounds()
+	c.actionLog.SetCenter(float64(bounds.Dx()/2), float64(bounds.Dy()/2))
 	messageSize := c.messageWindow.Size()
 	c.messageWindow.SetPosition(utils.Position{
 		X: float64((bounds.Dx() - messageSize.X) / 2),
@@ -207,6 +214,10 @@ func (c *TrainCanvas) SelectedPart() *game.Part {
 
 func (c *TrainCanvas) SetMessageWindowText(value string) {
 	c.messageWindow.SetText(value)
+}
+
+func (c *TrainCanvas) SetActionLogText(value string) {
+	c.actionLog.SetText(value)
 }
 
 var _ scene.TrainCanvasAPI = (*TrainCanvas)(nil)

@@ -140,3 +140,19 @@ func newMessageWindow(gdata *game.Gamedata) (*commonui.MessageWindow, error) {
 	messageWindow.ShowText()
 	return messageWindow, nil
 }
+
+// newActionLog は各シーン共通のアクション結果通知を生成する。
+func newActionLog(gdata *game.Gamedata) (*commonui.LogWindow, error) {
+	actionLog, err := commonui.NewLogWindow(
+		utils.Position{},
+		gdata.Font,
+		20,
+		color.Black(),
+		20,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("アクション用LogWindowの生成に失敗しました。\n%w", err)
+	}
+	actionLog.SetBackground(color.LightGray().MakeTansparentColor(0.2), image.Point{X: 12, Y: 8})
+	return actionLog, nil
+}

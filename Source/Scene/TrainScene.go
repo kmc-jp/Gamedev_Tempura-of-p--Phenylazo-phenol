@@ -40,6 +40,7 @@ type TrainCanvasAPI interface {
 	SellPartConfirmationResult() (bool, bool)
 	HideSellPartConfirmation()
 	SetMessageWindowText(string)
+	SetActionLogText(string)
 	// SelectedPart は一覧で選択中の所持パーツを返す。
 	SelectedPart() *game.Part
 }

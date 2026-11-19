@@ -45,8 +45,7 @@ func (s *ShelfTile) Interact(player *Player) error {
 
 	if foundPart != nil {
 		if foundPart.Kind != game.Trash {
-			s.scene.MessageWindowDisplayTimer.Set(20)
-			s.scene.Canvas().SetMessageWindowText(fmt.Sprintf("%s を見つけた", foundPart.Name))
+			s.scene.Canvas().SetActionLogText(fmt.Sprintf("%s を見つけた", foundPart.Name))
 
 		}
 	}
