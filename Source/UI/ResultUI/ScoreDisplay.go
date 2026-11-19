@@ -3,9 +3,11 @@ package resultui
 import (
 	canvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Canvas"
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
+	uiutils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI/UIUtils"
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	gamecolor "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
+	"image"
 	"math/rand"
 	"strconv"
 
@@ -15,25 +17,29 @@ import (
 
 // ScoreDisplayConfig はスコア表示の見た目とアニメーション速度を設定する。
 type ScoreDisplayConfig struct {
-	Font          *text.GoTextFace
-	TextColor     *gamecolor.Color
-	ShuffleFrames int
-	DigitFrames   int
+	Font            *text.GoTextFace
+	TextColor       *gamecolor.Color
+	BackgroundColor *gamecolor.Color
+	Padding         int
+	ShuffleFrames   int
+	DigitFrames     int
 }
 
 // ScoreDisplay はスコアを桁ごとにシャッフル表示から確定表示へ変更する。
 type ScoreDisplay struct {
-	text          *ui.Text
-	font          *text.GoTextFace
-	center        utils.Position
-	target        []byte
-	display       []byte
-	fixedCount    int
-	frame         int
-	shuffleFrames int
-	digitFrames   int
-	started       bool
-	finished      bool
+	text            *ui.Text
+	font            *text.GoTextFace
+	center          utils.Position
+	backgroundColor *gamecolor.Color
+	padding         int
+	target          []byte
+	display         []byte
+	fixedCount      int
+	frame           int
+	shuffleFrames   int
+	digitFrames     int
+	started         bool
+	finished        bool
 }
 
 func NewScoreDisplay(config ScoreDisplayConfig) (*ScoreDisplay, error) {
@@ -42,6 +48,9 @@ func NewScoreDisplay(config ScoreDisplayConfig) (*ScoreDisplay, error) {
 	}
 	if config.TextColor == nil {
 		return nil, fmt.Errorf("textColor が nil です")
+	}
+	if config.Padding < 0 {
+		config.Padding = 0
 	}
 	if config.ShuffleFrames <= 0 {
 		config.ShuffleFrames = 2
@@ -55,10 +64,12 @@ func NewScoreDisplay(config ScoreDisplayConfig) (*ScoreDisplay, error) {
 		return nil, fmt.Errorf("スコア表示テキストの生成に失敗しました: %w", err)
 	}
 	return &ScoreDisplay{
-		text:          textUI,
-		font:          config.Font,
-		shuffleFrames: config.ShuffleFrames,
-		digitFrames:   config.DigitFrames,
+		text:            textUI,
+		font:            config.Font,
+		backgroundColor: config.BackgroundColor,
+		padding:         config.Padding,
+		shuffleFrames:   config.ShuffleFrames,
+		digitFrames:     config.DigitFrames,
 	}, nil
 }
 
@@ -125,8 +136,24 @@ func (s *ScoreDisplay) Update(active bool) error {
 
 func (s *ScoreDisplay) Draw(screen *ebiten.Image) {
 	if s.started {
+		if s.backgroundColor != nil {
+			width, height := s.textSize()
+			bounds := image.Rect(
+				int(s.center.X-width/2)-s.padding,
+				int(s.center.Y-height/2)-s.padding,
+				int(s.center.X+width/2)+s.padding,
+				int(s.center.Y+height/2)+s.padding,
+			)
+			uiutils.FillRect(screen, bounds, s.backgroundColor.ToRGBA())
+		}
 		s.text.Draw(screen)
 	}
+}
+
+func (s *ScoreDisplay) textSize() (float64, float64) {
+	value := s.textText()
+	width, height := text.Measure(value, s.font, s.font.Size*1.5)
+	return width, height
 }
 
 func (s *ScoreDisplay) syncTextPosition() {

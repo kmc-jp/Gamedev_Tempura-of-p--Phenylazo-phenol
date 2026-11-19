@@ -114,10 +114,12 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 	}
 
 	scoreDisplay, err := resultui.NewScoreDisplay(resultui.ScoreDisplayConfig{
-		Font:          ui.FontFace(gdata.Font, 60),
-		TextColor:     color.Black(),
-		ShuffleFrames: 2,
-		DigitFrames:   6,
+		Font:            ui.FontFace(gdata.Font, 60),
+		TextColor:       color.Black(),
+		BackgroundColor: color.LightGray(),
+		Padding:         12,
+		ShuffleFrames:   2,
+		DigitFrames:     6,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("スコア表示UIの生成に失敗しました。\n%w", err)

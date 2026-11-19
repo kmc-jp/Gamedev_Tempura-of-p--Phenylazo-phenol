@@ -161,10 +161,11 @@ func (s *ResultScene) Draw(screen *ebiten.Image) {
 		}
 	}
 	s.worldDrawer.Draw(screen, s.entities)
-	s.canvas.Draw(screen)
 	if (s.gamedata.State == game.Result_Assembled || s.gamedata.State == game.Result_Benchmark || s.gamedata.State == game.Result_QuitGame) && s.pcImage != nil {
 		screen.DrawImage(s.pcImage, s.pcDrawOption)
 	}
+	s.canvas.Draw(screen)
+
 	// s.text.Draw(screen)
 }
 
