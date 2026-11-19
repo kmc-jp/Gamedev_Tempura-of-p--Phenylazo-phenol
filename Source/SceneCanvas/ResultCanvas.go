@@ -29,6 +29,7 @@ type ResultCanvas struct {
 	installedParts  *resultui.InstalledParts
 	partsList       *ui.PartsListUI
 	partUseConfirm  *commonui.Confirm
+	messageWindow   *commonui.MessageWindow
 	scoreDisplay    *resultui.ScoreDisplay
 
 	// shownRevision は一覧に反映済みの ResultScene.CandidatesRevision。
@@ -113,6 +114,11 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 		return nil, fmt.Errorf("commonui.NewConfirm() でエラーが発生しました。\n%w", err)
 	}
 
+	messageWindow, err := newMessageWindow(gdata)
+	if err != nil {
+		return nil, err
+	}
+
 	scoreDisplay, err := resultui.NewScoreDisplay(resultui.ScoreDisplayConfig{
 		Font:            ui.FontFace(gdata.Font, 60),
 		TextColor:       color.Black(),
@@ -126,7 +132,7 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{guide, benchmarkPrompt, installedParts, partsList, partUseConfirm, scoreDisplay} {
+	for _, item := range []canvas.CanvasItem{guide, benchmarkPrompt, installedParts, partsList, partUseConfirm, messageWindow, scoreDisplay} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("結果画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -140,6 +146,7 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 		installedParts:  installedParts,
 		partsList:       partsList,
 		partUseConfirm:  partUseConfirm,
+		messageWindow:   messageWindow,
 		scoreDisplay:    scoreDisplay,
 	}, nil
 }
@@ -188,6 +195,11 @@ func (c *ResultCanvas) Update(active bool) error {
 // Draw implements [scene.ResultCanvasAPI].
 func (c *ResultCanvas) Draw(screen *ebiten.Image) {
 	bounds := screen.Bounds()
+	messageSize := c.messageWindow.Size()
+	c.messageWindow.SetPosition(utils.Position{
+		X: float64((bounds.Dx() - messageSize.X) / 2),
+		Y: float64(bounds.Dy() - messageSize.Y - 5),
+	})
 	c.scoreDisplay.SetCenter(utils.Position{
 		X: float64(bounds.Dx() / 2),
 		Y: float64(bounds.Dy() / 2),
@@ -248,6 +260,9 @@ func (c *ResultCanvas) HidePartUseConfirmation() {
 	c.partUseConfirm.Hide()
 }
 
+func (c *ResultCanvas) SetMessageWindowText(value string) {
+	c.messageWindow.SetText(value)
+}
 func (c *ResultCanvas) StartScoreDisplay(score int) {
 	c.scoreDisplay.Start(score)
 }
