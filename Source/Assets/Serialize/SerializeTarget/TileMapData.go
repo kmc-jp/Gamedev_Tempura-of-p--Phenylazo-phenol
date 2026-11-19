@@ -383,6 +383,7 @@ func makeEffectTileData(name string, imageManager *imageassets.ImageManager, img
 		}
 		dio.GeoM.Translate(math.Floor((mw-fw)/2), math.Floor((mh-fh)/2)) // 中心合わせ
 
+		// このファクトリは construct package に投げるべきだが時間がないので許して
 		FxRender := Utils.CastFactory[*component.StdRender, gameobject.Render](component.NewLayerableRender(fxAsp, fxImg, layer, component.SR_WithDrawImageOptions(dio)))
 		MultiRender := component.MultiRenderDecorator(FxRender)
 
