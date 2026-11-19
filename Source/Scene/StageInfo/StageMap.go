@@ -19,11 +19,14 @@ type Station struct {
 // FromKey / ToKey は、その向きに進むために押すキーを明示する。nil なら駅の位置関係から自動で決める。
 //   - FromKey: From の駅で To へ進むキー
 //   - ToKey:   To の駅で From へ戻るキー
+//
+// Minutes は2駅間の所要時間（単位: 分。ゲーム内時刻と同じ）。0 でもよい。
 type Line struct {
 	From    Location
 	To      Location
 	FromKey *selection.Direction
 	ToKey   *selection.Direction
+	Minutes uint64
 }
 
 // StageMap は行き先選択画面の路線図の定義である。
@@ -65,6 +68,55 @@ func (m StageMap) Neighbors(loc Location) []Location {
 		}
 	}
 	return result
+}
+
+// ShortestMinutes は from から to までの最短所要時間（分）を返す（ダイクストラ法）。
+// from == to なら 0。駅が未定義、または到達できない場合はエラーを返す。
+func (m StageMap) ShortestMinutes(from, to Location) (uint64, error) {
+	for _, loc := range []Location{from, to} {
+		if _, ok := m.Stations[loc]; !ok {
+			return 0, fmt.Errorf("駅 %s が路線図にありません", name(loc))
+		}
+	}
+
+	dist := map[Location]uint64{from: 0}
+	done := map[Location]bool{}
+	for {
+		// 未確定の駅のうち、距離が最小のものを選ぶ（駅数が少ないので線形探索）
+		var cur Location
+		found := false
+		for loc, d := range dist {
+			if done[loc] {
+				continue
+			}
+			if !found || d < dist[cur] {
+				cur, found = loc, true
+			}
+		}
+		if !found {
+			return 0, fmt.Errorf("駅 %s から %s へは路線でたどり着けません", name(from), name(to))
+		}
+		if cur == to {
+			return dist[cur], nil
+		}
+		done[cur] = true
+		for _, line := range m.Lines {
+			var next Location
+			switch cur {
+			case line.From:
+				next = line.To
+			case line.To:
+				next = line.From
+			default:
+				continue
+			}
+			if nd := dist[cur] + line.Minutes; !done[next] {
+				if d, ok := dist[next]; !ok || nd < d {
+					dist[next] = nd
+				}
+			}
+		}
+	}
 }
 
 // Validate は路線図の整合性を確かめる。

@@ -226,13 +226,28 @@ func (s *SelectStageScene) updateScene(active bool) (nextScene Utils.Factory[gam
 	return
 }
 
+// destination はカーソルが指している駅（移動先）と、現在地からそこまでの最短所要時間（分）を返す。
+func (s *SelectStageScene) destination() (loc stageinfo.Location, minutes uint64, err error) {
+	loc = s.selector.Current()
+	minutes, err = s.stageMap.ShortestMinutes(s.gamedata.CurrentLocation(), loc)
+	if err != nil {
+		return loc, 0, fmt.Errorf("最短所要時間の計算に失敗しました。\n%w", err)
+	}
+	return loc, minutes, nil
+}
+
 // confirm はカーソルが指している駅を行き先として確定する。
 // 自宅なら帰宅（Result）へ、それ以外ならその駅のステージへ向かう（Train を経由する）。
 func (s *SelectStageScene) confirm() (Utils.Factory[game.Scene], transition.Type, error) {
-	loc := s.selector.Current()
+	loc, minutes, err := s.destination()
+	if err != nil {
+		return nil, transition.None(), err
+	}
 	if !s.CanConfirm(loc) {
 		return nil, transition.None(), nil
 	}
+	fmt.Printf("所要時間 : %d\n", minutes)
+	// TODO: 移動の所要時間（分）として使う
 
 	if loc == stageinfo.Departure {
 		return s.mkResultScene(), transition.NewScene(), nil
