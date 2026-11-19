@@ -38,14 +38,14 @@ Scene 固有の構成は `scenecanvas` package の各 Canvas が決める。
 
 `Source/SceneCanvas` の各 Canvas は、対応する Scene のファイルに定義された Canvas API（`scene.TitleCanvasAPI` など）を実装し、`construct` から Scene へ注入される。
 
-- `TitleCanvas`: 案内用の `Text` 1個だけを持つ。`NewTitleCanvas(font)` で生成し、`NewTitleScene` の引数で注入する
+- `TitleCanvas`: メニューの選択カーソル（`titleui.MenuCursor`）だけを持つ。`NewTitleCanvas(scene)`。`TitleScene.SelectionRevision` の変化で `SelectedMenuItem` をカーソルへ反映する。カーソルの位置・色・大きさ・揺れは `TitleCanvas.go` 先頭の `titleMenuAnchors`、`titleBackgroundScale`、`titleCursorStyle` で調整する
 - `PauseCanvas`: 見出し `Text`、`pauseui.PauseMenu`（縦並びのメニューボタン）、タイトルへ戻る確認（`commonui.Confirm`）。`NewPauseCanvas(scene, gdata)`。`PauseScene.SelectionRevision`の変化で選択中のボタンを反映し、描画時に画面中央へ配置する。画面のグレー化は`PauseScene.Draw`が行う。確認の操作は`commonui.Confirm`へ委譲する
 - `SelectStageCanvas`: 路線図（`RouteMapUI`）と案内 `Text`。`NewSelectStageCanvas(scene, gdata)`。`SelectStageScene.SelectionRevision`（カーソル移動のたびに増える）と `CurrentLocation`（現在地）を毎フレーム観測し、変化したときだけ `SelectedLocation` と合わせて反映する。`StageMap` から駅・路線を組み立てる。行き先選択のルール（隣接駅のみ等）は Scene の `SelectStageRule` を `WithRule` で生成時に渡して決める。ルールを入れないときは制限なし
 - `PlayCanvas`: 残り時間（`GameDataText`）、空き重量・所持金（`GameDataUI`）、`PartsListUI`。`NewPlayCanvas(scene, gdata)`。`PlayScene.SelectListRevision` の変化で一覧を開く。購入はSceneが`CurrentPartsTab`で発見タブの表示中かを確かめたうえで、`SelectedFoundPart`と`Gamedata.BuyFoundPart`で行い、購入後の一覧は`Gamedata.PartsRevision`の変化を観測して再構築する
 - `TrainCanvas`: 案内 `Text`、`PartsListUI`。`NewTrainCanvas(scene, gdata)`。`TrainScene.PartsListRevision`（または`Gamedata.PartsRevision`）の変化で所持パーツ一覧を構築・表示する
 - `ResultCanvas`: 案内 `Text`、ベンチマーク案内（`AnimatableUI`）、`InstalledParts`、`PartsListUI`。`NewResultCanvas(scene, gdata)`。全UIを毎フレーム`Canvas.Update`で更新する。組み立て済みパーツの表示は`Result_Assembled`、ベンチマーク案内のアニメーションは`Result_Benchmark`に変わったときに開始する
 
-Play / Train / Result / SelectStage の Canvas は Scene のポインタや Gamedata を観測して表示を切り替える。そのため、Canvas 本体ではなく Canvas の生成関数（`func(*XxxScene) (XxxCanvasAPI, error)`）を `NewXxxScene` に渡し、Scene のコンストラクタが自身の生成直後に呼んで注入する。生成関数がエラーや `nil` を返したときは Scene の生成エラーになる。
+Play / Train / Result / SelectStage / Title / Pause の Canvas は Scene のポインタや Gamedata を観測して表示を切り替える。そのため、Canvas 本体ではなく Canvas の生成関数（`func(*XxxScene) (XxxCanvasAPI, error)`）を `NewXxxScene` に渡し、Scene のコンストラクタが自身の生成直後に呼んで注入する。生成関数がエラーや `nil` を返したときは Scene の生成エラーになる。
 
 状態変化の観測にはリビジョン番号（変化するたびに増える整数）を使う。書き換える側（Scene・Gamedata）が変更時に番号を増やし、Canvas は反映済みの番号と比べて違っていれば作り直す。
 
@@ -204,6 +204,18 @@ UI から購入していた `BuySelectedPart` は、UI から Model を書き換
 
 `Gamedata`は読み取り専用で参照する。`NextState()`などのゲーム状態の変更やScene遷移は行わない。完了後の遷移は`ResultScene`が`IsFinished()`を確認して行う。
 
+## MenuCursor
+
+`MenuCursor`（`Source/UI/TitleUI`、package `titleui`）は、タイトル背景画像に描かれたメニュー文字の左に出す、選択中の項目を示す右向きの三角形カーソルである。選択中の項目は持たず、`SetSelected` で外から渡される。
+
+- `NewMenuCursor(anchors []utils.Position, scale float64, style CursorStyle) (*MenuCursor, error)`: `anchors` は各項目で三角形の先端（右端・縦中央）が指す位置（背景画像のピクセル座標）。`scale` は背景画像の描画倍率（`BackGroundCamera` の倍率）。`anchors` が空、`scale`・`SwayPeriod` が正でないときはエラー
+- `CursorStyle`: `Color`、`Width`・`Height`（三角形の大きさ。整数ピクセル）、`SwayAmplitude`・`SwayPeriod`（左右の揺れ幅と1周期のフレーム数）。`DefaultCursorStyle()` が既定値を返す。長さはすべて背景画像の1ピクセル単位で、背景と同じ解像度のドット絵になるよう、揺れも整数ピクセルに丸めて動かす
+- `SetSelected(i)`: 選択中の項目の番号。範囲外は何もしない
+- `Update(active)`: `active` のときだけ揺れのフレームを進める
+- `Draw(screen)`: 三角形を行ごとの矩形（`uiutils.FillRect`）で描く。画像1ピクセルを `scale`×`scale` の正方形として塗る
+
 ## 変更記録
+
+- TitleScene にメニュー選択（`selection.Graph`、上下で移動・端で止まる）とカーソル `MenuCursor` を追加した。`NewTitleScene` は Canvas 本体ではなく Canvas の生成関数を受け取る。
 
 今回の UI 拡張では既存の `Text`、シーンの描画 API、入力設定を破壊的に変更していない。既存シーンのテキスト表示は `Text` 要素を経由するよう変更済みである。

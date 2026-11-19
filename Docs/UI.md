@@ -156,7 +156,7 @@ SceneごとのCanvas APIの違いは次の表のとおりである。
 
 | Canvas API | 入力用 | 問い合わせ | Canvasが観測するもの |
 |---|---|---|---|
-| `TitleCanvasAPI` | なし | なし | なし |
+| `TitleCanvasAPI` | なし（カーソル移動・決定はSceneが`selection.Graph`で行う） | なし | `TitleScene.SelectedMenuItem`・`SelectionRevision` |
 | `PauseCanvasAPI` | `ShowTitleConfirmation`、`MoveTitleConfirmationLeft/Right`、`ConfirmTitle`、`HideTitleConfirmation` | `IsTitleConfirmationOpen`、`TitleConfirmationResult` | `PauseScene.SelectionRevision`・`SelectedMenuItem` |
 | `SelectStageCanvasAPI` | なし（カーソル移動・決定はSceneが`selection.Graph`で行う） | なし | `SelectStageScene.SelectedLocation`・`CurrentLocation`・`StageMap` |
 | `PlayCanvasAPI` | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab` | `IsPartsListOpen`、`CurrentPartsTab`、`SelectedFoundPart` | `PlayScene.SelectListRevision`、`Gamedata.PartsRevision` |
@@ -165,7 +165,7 @@ SceneごとのCanvas APIの違いは次の表のとおりである。
 
 注意点:
 
-- CanvasがSceneのポインタを持つScene（Play / Train / Result / SelectStage / Pause）は、Canvasの生成関数（`func(*XxxScene) (XxxCanvasAPI, error)`）を`NewXxxScene`の引数で受け取り、Scene自身の生成直後に呼んで注入する。注入忘れや`nil`はScene生成時のエラーになる。CanvasはSceneの具体型に依存する（別Sceneを誤って受け取らないため、interfaceにはしない）。
+- CanvasがSceneのポインタを持つScene（Play / Train / Result / SelectStage / Title / Pause）は、Canvasの生成関数（`func(*XxxScene) (XxxCanvasAPI, error)`）を`NewXxxScene`の引数で受け取り、Scene自身の生成直後に呼んで注入する。注入忘れや`nil`はScene生成時のエラーになる。CanvasはSceneの具体型に依存する（別Sceneを誤って受け取らないため、interfaceにはしない）。
 - Sceneの`Update`は本体の処理の後で`canvas.Update`を呼び、同じフレームの状態変化をCanvasが観測できるようにする。
 - Canvasは`Gamedata.Timer.Expired()`を呼ばない。通知を消費するため、Sceneが満了を検知できなくなる。タイマー判定はSceneが行い、結果を公開メソッドで渡す。
 - 購入はSceneが行う。Sceneは`CurrentPartsTab`で発見タブの表示中かを確かめ、それ以外なら何もしない。発見タブなら`SelectedFoundPart`で受け取ったパーツを`Gamedata.BuyFoundPart`へ渡し、購入後の一覧の再構築はCanvasが`Gamedata.PartsRevision`の変化を観測して行う。
@@ -237,7 +237,7 @@ UIは、表示を成立させるための一時的な状態を保持してよい
 - 一時的なUIの表示状態
 - 画面内での入力や操作の進行状況
 
-選択中の項目と「どの入力でどこへ移るか」の管理には、共通基盤の`selection.Graph`（`Source/Utils/Selection`）を使える。遷移先と遷移条件を登録しておけば、Sceneが`Fire`でトリガーを渡すだけで選択が移る。遷移条件は`SetGuard`（全遷移共通）と`SetCondition`（1本ずつ）であとから差し替えられる。`SelectStageScene`は路線図のカーソル移動に使い、ゲームルールは`SelectStageRule`（`WithRule`で生成時に決める）としてScene側に持つ。
+選択中の項目と「どの入力でどこへ移るか」の管理には、共通基盤の`selection.Graph`（`Source/Utils/Selection`）を使える。遷移先と遷移条件を登録しておけば、Sceneが`Fire`でトリガーを渡すだけで選択が移る。遷移条件は`SetGuard`（全遷移共通）と`SetCondition`（1本ずつ）であとから差し替えられる。`TitleScene`はメニューの上下移動（端で止まる）に、`SelectStageScene`は路線図のカーソル移動に使い、ゲームルールは`SelectStageRule`（`WithRule`で生成時に決める）としてScene側に持つ。
 
 UIはこれらを入力によって直接変更しない。Sceneが入力を判定し、Canvas APIの入力用APIを通じて変更を指示する。
 例えば`PartsListUI`は選択中の項目・タブ・表示状態を保持するが、変更は`PlayCanvas`などが`SelectNext`、`NextTab`、`Show`などで行う。
