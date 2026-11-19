@@ -271,6 +271,16 @@ func (g *Gamedata) ChooseSellPartByPointer(p *Part) bool {
 	return true
 }
 
+// CancelSellPartSelection は予約中の売却パーツを所持品へ戻し、売却予約を解除する。
+func (g *Gamedata) CancelSellPartSelection() {
+	if g.sell == nil {
+		return
+	}
+	g.parts = append(g.parts, g.sell)
+	g.sell = nil
+	g.partsRevision++
+}
+
 func (g *Gamedata) IsSellPartExists() bool {
 	if g.sell != nil {
 		return true
