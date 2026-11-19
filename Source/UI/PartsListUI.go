@@ -283,7 +283,7 @@ func (p *PartsListUI) rebuild(parts game.Parts, selected int) error {
 	if len(parts) == 0 {
 		emptyText := "所持パーツはありません"
 		if p.activeTab == PartsListExit {
-			emptyText = "Enterキーでパーツを買わずに店を出る\n"
+			emptyText = "Enterキーで店を出る\n"
 		}
 		if p.activeTab == PartsListNoSell {
 			emptyText = "Enterキーで売却パーツを選択せずに進む"
