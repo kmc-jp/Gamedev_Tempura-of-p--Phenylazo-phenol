@@ -54,7 +54,7 @@ const (
 	TextSize        = 20
 	CategorySize    = 14
 	NameIndent      = 20
-	UIsOffset       = 200 //ui移動開始前の位置差分; 正数値で左からスライドイン
+	UIsOffset       = 300 //ui移動開始前の位置差分; 正数値で左からスライドイン
 	SlideinInterval = 4   //unit: 0.1s
 )
 
