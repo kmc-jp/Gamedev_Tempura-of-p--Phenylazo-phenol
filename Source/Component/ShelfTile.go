@@ -10,7 +10,7 @@ type ShelfTile struct {
 	scene *scene.PlayScene
 }
 
-func (s ShelfTile) Interact() error {
+func (s ShelfTile) Interact(player *Player) error {
 	fmt.Printf("Interact with Shelf.\n")
 	return nil
 }

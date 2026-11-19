@@ -10,7 +10,7 @@ import (
 
 type InteractableTile interface {
 	gameobject.Component
-	Interact() error
+	Interact(*Player) error
 }
 
 // tilemap.InteractType を、対応するコンポーネントのファクトリに変換する

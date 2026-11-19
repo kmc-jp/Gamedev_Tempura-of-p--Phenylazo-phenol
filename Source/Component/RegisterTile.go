@@ -10,7 +10,7 @@ type RegisterTile struct {
 	scene *scene.PlayScene
 }
 
-func (s RegisterTile) Interact() error {
+func (s RegisterTile) Interact(player *Player) error {
 	fmt.Printf("Interact with Regester.\n")
 	return nil
 }
