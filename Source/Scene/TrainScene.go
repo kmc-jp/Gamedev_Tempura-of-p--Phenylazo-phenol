@@ -193,6 +193,7 @@ func (s *TrainScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 }
 
 func (s *TrainScene) updateTrainDefault() (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
+	s.canvas.SetMessageWindowText("Enter で次へ進む")
 	if s.Gamedata.Visited() == 0 &&
 		s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 		s.Gamedata.IncrementVisited()
