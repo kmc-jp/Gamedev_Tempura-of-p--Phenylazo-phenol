@@ -24,6 +24,8 @@ const (
 	PartsListTabFound
 	// PartsListTabOwned は「所持パーツ」タブを表す。
 	PartsListTabOwned
+	// PartsListTabExit は「店を出る」タブを表す。
+	PartsListTabExit
 )
 
 // PlayCanvasAPI は PlayScene が利用するCanvasの契約である。
@@ -68,6 +70,8 @@ type PlayCanvasAPI interface {
 	ExitStoreConfirmationResult() (bool, bool)
 	HideExitStoreConfirmation()
 
+	SetMessageWindowText(string)
+
 	// ---- 問い合わせ ----
 
 	// SelectedFoundPart は選択中の発見済みパーツを返す。
@@ -100,6 +104,7 @@ type PlayScene struct {
 	// テスト用
 	cameraCenter             Utils.Position
 	purchaseConfirmationPart *game.Part
+	exitStoreFromExplore     bool
 }
 
 // NewPlayScene は PlayScene を生成する。
@@ -170,7 +175,11 @@ func (s *PlayScene) Update(active bool) (nextScene Utils.Factory[game.Scene], tr
 
 func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene], transitionType transition.Type, err error) {
 	if s.Gamedata.State == game.Play_Explore {
-		s.Gamedata.EnableWorldTimeProgressing()
+		if s.canvas.IsPartsListOpen() {
+			s.Gamedata.DisableWorldTimeProgressing()
+		} else {
+			s.Gamedata.EnableWorldTimeProgressing()
+		}
 	} else {
 		s.Gamedata.DisableWorldTimeProgressing()
 	}
@@ -209,12 +218,23 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 			if err := s.canvas.TogglePartsList(); err != nil {
 				return nil, transition.None(), fmt.Errorf("パーツ一覧の開閉に失敗しました。\n%w", err)
 			}
+			if s.canvas.IsPartsListOpen() {
+				s.Gamedata.DisableWorldTimeProgressing()
+			} else {
+				s.Gamedata.EnableWorldTimeProgressing()
+			}
 		}
 
 		// 一覧の表示中は一覧の操作だけを受け付け、探索を止める
 		if s.canvas.IsPartsListOpen() {
 			if err := s.handlePartsListInput(); err != nil {
 				return nil, transition.None(), err
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) &&
+				s.canvas.CurrentPartsTab() == PartsListTabExit {
+				s.Gamedata.State = game.Play_ExitStore
+				s.exitStoreFromExplore = true
+				s.canvas.ShowExitStoreConfirmation()
 			}
 			return
 		}
@@ -227,24 +247,6 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 		}
 		s.removeExpiredEntities()
 
-		s.Gamedata.Timer.Set(10)
-
-		//制限時間内プレイ中の制御
-		if s.Gamedata.Timer.Expired() {
-			num, _ := strconv.Atoi(s.Gamedata.Text)
-			num--
-			s.Gamedata.Text = strconv.Itoa(num)
-
-			if num <= 0 {
-				s.Gamedata.Timer.Set(0)
-				s.Gamedata.State = game.Play_Timeup
-
-				s.Gamedata.Text = "0\nTimeUp 次の店に移動します"
-			}
-		}
-		// s.text.SetText("探索フェーズ 残り時間: " + s.gamedata.Text)
-
-		// if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
 			return func() (game.Scene, error) {
 				pauseScene, err := s.initScenes.InitPauseScene()
@@ -261,14 +263,10 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 	}
 
 	//TimeUp後の処理
-	if s.Gamedata.State == game.Play_Timeup {
-		s.Gamedata.Timer.Set(50)
-		if s.Gamedata.Timer.Expired() {
-			s.Gamedata.Timer.Set(0)
-			// パーツ一覧はCanvasが selectListRevision の変化を観測して表示する
-			s.Gamedata.State = game.Play_Select
-			s.selectListRevision++
-		}
+	if s.Gamedata.State == game.Play_Register {
+		// パーツ一覧はCanvasが selectListRevision の変化を観測して表示する
+		s.Gamedata.State = game.Play_Select
+		s.selectListRevision++
 
 		return
 	}
@@ -321,8 +319,10 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 
 		}
 
-		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) &&
+			s.canvas.CurrentPartsTab() == PartsListTabExit {
 			s.Gamedata.State = game.Play_ExitStore
+			s.exitStoreFromExplore = false
 			s.canvas.ShowExitStoreConfirmation()
 			return
 		}
@@ -355,11 +355,22 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 					}, transition.NewScene(), nil
 				} else {
 					s.canvas.HideExitStoreConfirmation()
-					s.Gamedata.State = game.Play_Select
+					if s.exitStoreFromExplore {
+						s.Gamedata.State = game.Play_Explore
+						s.Gamedata.DisableWorldTimeProgressing()
+					} else {
+						s.Gamedata.State = game.Play_Select
+					}
+					s.exitStoreFromExplore = false
 				}
 			}
 		}
 
+	}
+
+	if s.Gamedata.State == game.Play_Timeup {
+		// worldtime時間切れの処理
+		return
 	}
 
 	return

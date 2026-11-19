@@ -53,3 +53,65 @@ func newPartsList(gdata *game.Gamedata) (*ui.PartsListUI, error) {
 	}
 	return partsList, nil
 }
+
+// newGameDataUI は空き重量・所持金をアイコン付きで表示する共通UIを生成する。
+func newGameDataUI(gdata *game.Gamedata) (*ui.GameDataUI, error) {
+	if gdata.AssetsManager == nil {
+		return nil, fmt.Errorf("gdata.AssetsManager が nil です")
+	}
+
+	weightIconData, err := gdata.AssetsManager.Image.NewImageData(
+		"みんげー_リュックサック_アイコン",
+		"UI/みんげー_リュックサック_アイコン.png",
+		"UI/みんげー_リュックサック_アイコン.json",
+	)
+	if err != nil {
+		return nil, fmt.Errorf("リュックサックアイコンのImageData作成に失敗しました。\n%w", err)
+	}
+	_, weightIcon, err := gdata.AssetsManager.Image.Load(*weightIconData)
+	if err != nil {
+		return nil, fmt.Errorf("リュックサックアイコンの読み込みに失敗しました。\n%w", err)
+	}
+
+	moneyIconData, err := gdata.AssetsManager.Image.NewImageData(
+		"みんげー_がま口アイコン",
+		"UI/みんげー_がま口アイコン.png",
+		"UI/みんげー_がま口アイコン.json",
+	)
+	if err != nil {
+		return nil, fmt.Errorf("がま口アイコンのImageData作成に失敗しました。\n%w", err)
+	}
+	_, moneyIcon, err := gdata.AssetsManager.Image.Load(*moneyIconData)
+	if err != nil {
+		return nil, fmt.Errorf("がま口アイコンの読み込みに失敗しました。\n%w", err)
+	}
+
+	gameDataUI, err := ui.NewGameDataUI(
+		gdata,
+		[]ui.GameDataUIItem{
+			{
+				Image: weightIcon,
+				Text: func(g game.Gamedata) string {
+					return fmt.Sprintf("空き重量: %d", g.Weight)
+				},
+				Font:  ui.FontFace(gdata.Font, 15),
+				Color: color.Black(),
+			},
+			{
+				Image: moneyIcon,
+				Text: func(g game.Gamedata) string {
+					return fmt.Sprintf("所持金: %d", g.Money)
+				},
+				Font:  ui.FontFace(gdata.Font, 15),
+				Color: color.Black(),
+			},
+		},
+		10,
+		20,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("ui.NewGameDataUI() でエラーが発生しました。\n%w", err)
+	}
+	gameDataUI.SetBackgroundColor(color.White())
+	return gameDataUI, nil
+}

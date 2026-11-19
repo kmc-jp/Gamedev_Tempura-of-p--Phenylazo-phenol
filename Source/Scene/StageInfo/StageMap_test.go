@@ -182,3 +182,34 @@ func TestNewSelectorExplicitConflict(t *testing.T) {
 		t.Fatal("同じキーに別の行き先を明示したのに NewSelector が成功した")
 	}
 }
+
+func TestShortestMinutes(t *testing.T) {
+	m := testMap()
+	// Lines の順: D-R, D-G, D-P, R-B, G-O, B-P, O-P
+	for i, minutes := range []uint64{10, 20, 30, 0, 10, 5, 10} {
+		m.Lines[i].Minutes = minutes
+	}
+
+	cases := []struct {
+		from, to Location
+		want     uint64
+	}{
+		{Departure, Departure, 0},
+		{Departure, Red, 10},
+		{Departure, Blue, 10},   // 0分の路線を含む
+		{Departure, Purple, 15}, // 直通(30)より乗り継ぎ(10+0+5)が短い
+		{Purple, Departure, 15}, // 無向
+		{Departure, Orange, 25}, // 10+0+5+10。Green 経由(30)より短い
+	}
+	for _, c := range cases {
+		got, err := m.ShortestMinutes(c.from, c.to)
+		if err != nil || got != c.want {
+			t.Errorf("%s→%s: got %d (%v), want %d", name(c.from), name(c.to), got, err, c.want)
+		}
+	}
+
+	delete(m.Stations, Orange)
+	if _, err := m.ShortestMinutes(Departure, Orange); err == nil {
+		t.Error("未定義の駅でエラーにならなかった")
+	}
+}

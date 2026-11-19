@@ -38,7 +38,8 @@ Scene 固有の構成は `scenecanvas` package の各 Canvas が決める。
 
 `Source/SceneCanvas` の各 Canvas は、対応する Scene のファイルに定義された Canvas API（`scene.TitleCanvasAPI` など）を実装し、`construct` から Scene へ注入される。
 
-- `TitleCanvas` / `PauseCanvas`: 案内用の `Text` 1個だけを持つ。`NewXxxCanvas(font)` で生成し、`NewXxxScene` の引数で注入する
+- `TitleCanvas`: 案内用の `Text` 1個だけを持つ。`NewTitleCanvas(font)` で生成し、`NewTitleScene` の引数で注入する
+- `PauseCanvas`: 見出し `Text`、`pauseui.PauseMenu`（縦並びのメニューボタン）、タイトルへ戻る確認（`commonui.Confirm`）。`NewPauseCanvas(scene, gdata)`。`PauseScene.SelectionRevision`の変化で選択中のボタンを反映し、描画時に画面中央へ配置する。画面のグレー化は`PauseScene.Draw`が行う。確認の操作は`commonui.Confirm`へ委譲する
 - `SelectStageCanvas`: 路線図（`RouteMapUI`）と案内 `Text`。`NewSelectStageCanvas(scene, gdata)`。`SelectStageScene.SelectionRevision`（カーソル移動のたびに増える）と `CurrentLocation`（現在地）を毎フレーム観測し、変化したときだけ `SelectedLocation` と合わせて反映する。`StageMap` から駅・路線を組み立てる。行き先選択のルール（隣接駅のみ等）は Scene の `SelectStageRule` を `WithRule` で生成時に渡して決める。ルールを入れないときは制限なし
 - `PlayCanvas`: 残り時間（`GameDataText`）、空き重量・所持金（`GameDataUI`）、`PartsListUI`。`NewPlayCanvas(scene, gdata)`。`PlayScene.SelectListRevision` の変化で一覧を開く。購入はSceneが`CurrentPartsTab`で発見タブの表示中かを確かめたうえで、`SelectedFoundPart`と`Gamedata.BuyFoundPart`で行い、購入後の一覧は`Gamedata.PartsRevision`の変化を観測して再構築する
 - `TrainCanvas`: 案内 `Text`、`PartsListUI`。`NewTrainCanvas(scene, gdata)`。`TrainScene.PartsListRevision`（または`Gamedata.PartsRevision`）の変化で所持パーツ一覧を構築・表示する
@@ -93,6 +94,17 @@ Play / Train / Result / SelectStage の Canvas は Scene のポインタや Game
 - `Result() (bool, bool)`: `(結果, 確定済み)`を返す
 
 キー入力はScene・Componentの`input.Handler`で解釈し、左右キーを`MoveLeft` / `MoveRight`、Enterを`Confirm`へ接続する。
+
+## PauseMenu
+
+`pauseui.PauseMenu`（`Source/UI/PauseUI`）は、`ButtonUI`を縦に並べる PauseScene 固有の受動的なUIである。入力は扱わない。
+
+- `NewPauseMenu(PauseMenuConfig)`: 文言の列（上から順）、フォント、文字色、ボタン背景色、ボタンサイズ、ボタン間隔から生成する。空の文言列や不正なサイズはエラー
+- `SetSelected(i)`: i 番目のボタンだけを選択状態（オレンジ枠）にする。範囲外は何もしない
+- `Position()` / `SetPosition()`: メニュー全体の左上位置。画面中央への配置は Canvas が`Draw`時に行う
+- `Size()`: メニュー全体のサイズ
+
+どの入力でどの項目へ移るかと決定時の処理は Scene が持つ（`selection.Graph`で上下移動）。
 
 ## Clock
 

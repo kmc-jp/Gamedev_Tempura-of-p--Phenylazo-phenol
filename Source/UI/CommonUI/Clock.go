@@ -4,9 +4,13 @@ import (
 	canvas "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Canvas"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	ui "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI"
+	uiutils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/UI/UIUtils"
 	utils "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	gamecolor "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
+	"image"
+	stdcolor "image/color"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -54,7 +58,15 @@ func (c *Clock) Update(active bool) error {
 
 // Draw はGamedataのWorldTimerから取得した時刻を描画する。
 func (c *Clock) Draw(screen *ebiten.Image) {
-	ui.DrawText(c.position, c.color, c.gdata.WorldTimer.GetTimeText(), c.font, screen)
+	value := c.gdata.WorldTimer.GetTimeText()
+	textWidth, textHeight := text.Measure(value, c.font, c.font.Size*1.5)
+	padding := 5.0
+	left := int(math.Floor(c.position.X - padding))
+	top := int(math.Floor(c.position.Y - padding))
+	right := int(math.Ceil(c.position.X + textWidth + padding))
+	bottom := int(math.Ceil(c.position.Y + math.Max(textHeight, c.font.Size) + padding))
+	uiutils.FillRect(screen, image.Rect(left, top, right, bottom), stdcolor.White)
+	ui.DrawText(c.position, c.color, value, c.font, screen)
 }
 
 // Position は時計の左上位置を返す。

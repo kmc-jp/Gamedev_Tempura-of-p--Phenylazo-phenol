@@ -10,25 +10,22 @@ import (
 	color "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"fmt"
 	"image"
-	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 // PlayCanvas は PlayScene のUI構成である。
 // 残り時間、空き重量・所持金、パーツ一覧、発見パーツのログ、メッセージウィンドウを持つ。
 // 一覧を開く時点はSceneが決めるため、Sceneのポインタを持って観測する。
 type PlayCanvas struct {
-	scene             *scene.PlayScene
-	gdata             *game.Gamedata
-	canvas            *canvas.Canvas
-	partsList         *ui.PartsListUI
-	foundPartLog      *commonui.LogWindow
-	messageWindow     *commonui.MessageWindow
-	purchaseConfirm   *commonui.Confirm
-	exitStoreConfirm  *commonui.Confirm
-	messageWindowText string
+	scene            *scene.PlayScene
+	gdata            *game.Gamedata
+	canvas           *canvas.Canvas
+	partsList        *ui.PartsListUI
+	foundPartLog     *commonui.LogWindow
+	messageWindow    *commonui.MessageWindow
+	purchaseConfirm  *commonui.Confirm
+	exitStoreConfirm *commonui.Confirm
 
 	// shownSelectListRevision は反映済みの PlayScene.SelectListRevision。
 	shownSelectListRevision int
@@ -44,7 +41,7 @@ const (
 	messageWindowTextSize     = 20
 	messageWindowPaddingX     = 10
 	messageWindowPaddingY     = 5
-	messageWindowBottomMargin = 20
+	messageWindowBottomMargin = 5
 	confirmWidth              = 280
 	confirmHeight             = 110
 	confirmPadding            = 12
@@ -54,8 +51,10 @@ const (
 
 var (
 	foundPartLogTextColor        = color.Black()
-	messageWindowTextColor       = color.White()
-	messageWindowBackgroundColor = color.SemiTransparentBlack()
+	messageWindowTextColor       = color.Black()
+	messageWindowBackgroundColor = color.SkyBlue().MakeTansparentColor(0.2)
+	confirmTextColor             = color.White()
+	confirmBackgroundColor       = color.LightGray()
 )
 
 // NewPlayCanvas は PlayCanvas を生成する。
@@ -67,53 +66,21 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		return nil, fmt.Errorf("gdata が nil です")
 	}
 
-	timeText, err := ui.NewGameDataText(
-		utils.Position{X: 0, Y: 20},
-		color.Red(),
-		gdata,
-		func(g game.Gamedata) string {
-			return fmt.Sprintf("探索フェーズ 残り時間: %s", g.Text)
-		},
-		ui.FontFace(gdata.Font, 15),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("ui.NewGameDataText() でエラーが発生しました。\n%w", err)
-	}
-
 	worldTimeText, err := commonui.NewClock(
 		utils.Position{X: 0, Y: 0},
-		color.White(),
+		color.Black(),
 		gdata,
-		ui.FontFace(gdata.Font, 15),
+		ui.FontFace(gdata.Font, 25),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("commonui.NewClock() でエラーが発生しました。\n%w", err)
 	}
 
-	gameDataUI, err := ui.NewGameDataUI(
-		gdata,
-		[]ui.GameDataUIItem{
-			{
-				Text: func(g game.Gamedata) string {
-					return fmt.Sprintf("空き重量: %d", g.Weight)
-				},
-				Font:  ui.FontFace(gdata.Font, 15),
-				Color: color.White(),
-			},
-			{
-				Text: func(g game.Gamedata) string {
-					return fmt.Sprintf("所持金: %d", g.Money)
-				},
-				Font:  ui.FontFace(gdata.Font, 15),
-				Color: color.Black(),
-			},
-		},
-		10,
-		20,
-	)
+	gameDataUI, err := newGameDataUI(gdata)
 	if err != nil {
 		return nil, fmt.Errorf("ui.NewGameDataUI() でエラーが発生しました。\n%w", err)
 	}
+	gameDataUI.SetBackgroundColor(color.White())
 
 	partsList, err := newPartsList(gdata)
 	if err != nil {
@@ -132,11 +99,11 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	}
 
 	messageFont := ui.FontFace(gdata.Font, messageWindowTextSize)
-	messageWidth, messageHeight := text.Measure("探索終了", messageFont, messageFont.Size*1.5)
+	//_, messageHeight := text.Measure("探索終了", messageFont, messageFont.Size*1.5)
 	messageWindow, err := commonui.NewMessageWindow(commonui.MessageWindowConfig{
 		Size: image.Point{
-			X: int(math.Ceil(messageWidth)) + messageWindowPaddingX*2,
-			Y: int(math.Ceil(messageHeight)) + messageWindowPaddingY*2,
+			X: 600,
+			Y: 30 + messageWindowPaddingY*2,
 		},
 		Font:            messageFont,
 		TextColor:       messageWindowTextColor,
@@ -152,8 +119,8 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	purchaseConfirm, err := commonui.NewConfirm(commonui.ConfirmConfig{
 		Size:                  image.Point{X: confirmWidth, Y: confirmHeight},
 		Font:                  ui.FontFace(gdata.Font, messageWindowTextSize),
-		TextColor:             messageWindowTextColor,
-		BackgroundColor:       messageWindowBackgroundColor,
+		TextColor:             confirmTextColor,
+		BackgroundColor:       confirmBackgroundColor,
 		ButtonBackgroundColor: color.DarkGray(),
 		Padding:               image.Point{X: confirmPadding, Y: confirmPadding},
 		ButtonSize:            image.Point{X: confirmButtonWidth, Y: confirmButtonHeight},
@@ -168,8 +135,8 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	exitStoreConfirm, err := commonui.NewConfirm(commonui.ConfirmConfig{
 		Size:                  image.Point{X: confirmWidth, Y: confirmHeight},
 		Font:                  ui.FontFace(gdata.Font, messageWindowTextSize),
-		TextColor:             messageWindowTextColor,
-		BackgroundColor:       messageWindowBackgroundColor,
+		TextColor:             confirmTextColor,
+		BackgroundColor:       confirmBackgroundColor,
 		ButtonBackgroundColor: color.DarkGray(),
 		Padding:               image.Point{X: confirmPadding, Y: confirmPadding},
 		ButtonSize:            image.Point{X: confirmButtonWidth, Y: confirmButtonHeight},
@@ -182,7 +149,7 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{worldTimeText, timeText, partsList, gameDataUI, foundPartLog, messageWindow, purchaseConfirm, exitStoreConfirm} {
+	for _, item := range []canvas.CanvasItem{worldTimeText, partsList, gameDataUI, foundPartLog, messageWindow, purchaseConfirm, exitStoreConfirm} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("プレイ画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -197,7 +164,6 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		messageWindow:           messageWindow,
 		purchaseConfirm:         purchaseConfirm,
 		exitStoreConfirm:        exitStoreConfirm,
-		messageWindowText:       "探索中",
 		shownSelectListRevision: s.SelectListRevision(),
 		shownPartsRevision:      gdata.PartsRevision(),
 	}, nil
@@ -220,14 +186,7 @@ func (c *PlayCanvas) Update(active bool) error {
 		}
 		c.shownPartsRevision = c.gdata.PartsRevision()
 	}
-	messageText := "探索終了"
-	if c.gdata.State == game.Play_Explore {
-		messageText = "探索中"
-	}
-	if c.messageWindowText != messageText {
-		c.messageWindow.SetText(messageText)
-		c.messageWindowText = messageText
-	}
+
 	return c.canvas.Update(active)
 }
 
@@ -381,6 +340,8 @@ func (c *PlayCanvas) CurrentPartsTab() scene.PartsListTab {
 		return scene.PartsListTabFound
 	case ui.PartsListOwned:
 		return scene.PartsListTabOwned
+	case ui.PartsListExit:
+		return scene.PartsListTabExit
 	}
 	return scene.PartsListTabNone
 }
@@ -392,6 +353,10 @@ func (c *PlayCanvas) openPartsList() error {
 	c.partsList.Show()
 	c.shownPartsRevision = c.gdata.PartsRevision()
 	return nil
+}
+
+func (c *PlayCanvas) SetMessageWindowText(s string) {
+	c.messageWindow.SetText(s)
 }
 
 var _ scene.PlayCanvasAPI = (*PlayCanvas)(nil)
