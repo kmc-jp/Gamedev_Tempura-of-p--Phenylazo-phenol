@@ -85,6 +85,7 @@ type Part struct {
 	Val         int
 	Rank        rank
 	Performance int
+	IsSpare     bool
 
 	Detail string
 

@@ -65,7 +65,7 @@ func RandomPartsFromAll(WithProbability bool) *game.Part {
 	}
 
 	p := Registry[rand.Intn(len(Registry))]()
-	if p.Kind == game.Trash {
+	if p.Kind == game.Trash || p.IsSpare {
 		return nil
 	}
 	if err := p.SetRandomRank(

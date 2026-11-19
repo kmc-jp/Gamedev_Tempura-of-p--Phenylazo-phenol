@@ -398,12 +398,12 @@ func (s *ResultScene) computeCandidates() (game.Parts, error) {
 		}
 	}
 	if len(available) == 0 {
-		trash := partsdata.Trash()
-		if trash == nil {
-			return nil, fmt.Errorf("Trashパーツの生成に失敗しました")
+		spare := partsdata.Spare()
+		if spare == nil {
+			return nil, fmt.Errorf("あまりものパーツの生成に失敗しました")
 		}
-		trash.Kind = kind
-		available = append(available, trash)
+		spare.Kind = kind
+		available = append(available, spare)
 	}
 	return available, nil
 }
