@@ -159,9 +159,9 @@ SceneごとのCanvas APIの違いは次の表のとおりである。
 | `TitleCanvasAPI` | なし（カーソル移動・決定はSceneが`selection.Graph`で行う） | なし | `TitleScene.SelectedMenuItem`・`SelectionRevision` |
 | `PauseCanvasAPI` | `ShowTitleConfirmation`、`MoveTitleConfirmationLeft/Right`、`ConfirmTitle`、`HideTitleConfirmation` | `IsTitleConfirmationOpen`、`TitleConfirmationResult` | `PauseScene.SelectionRevision`・`SelectedMenuItem` |
 | `SelectStageCanvasAPI` | なし（カーソル移動・決定はSceneが`selection.Graph`で行う） | なし | `SelectStageScene.SelectedLocation`・`CurrentLocation`・`StageMap` |
-| `PlayCanvasAPI` | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab` | `IsPartsListOpen`、`CurrentPartsTab`、`SelectedFoundPart` | `PlayScene.SelectListRevision`、`Gamedata.PartsRevision` |
-| `TrainCanvasAPI` | `ScrollPartsListDown/Up` | なし | `TrainScene.PartsListRevision`、`Gamedata.PartsRevision` |
-| `ResultCanvasAPI` | `MovePartSelectionDown/Up` | `SelectedPart`、`IsInstalledPartsFinished` | `ResultScene.CandidatesRevision`・`CandidateParts`、`Gamedata.State` |
+| `PlayCanvasAPI` | `TogglePartsList`、`MovePartSelectionDown/Up`、`ShowNextPartsTab`、`ShowPreviousPartsTab`、`SetPartsListGuide`、`FlashPartsListGuide`、各確認の`Cancel...` | `IsPartsListOpen`、`CurrentPartsTab`、`SelectedFoundPart`、`IsExitStoreSelected` | `PlayScene.SelectListRevision`、`Gamedata.PartsRevision` |
+| `TrainCanvasAPI` | `ScrollPartsListDown/Up`、`CancelSellPartConfirmation` | `IsNoSellSelected` | `TrainScene.PartsListRevision`、`Gamedata.PartsRevision` |
+| `ResultCanvasAPI` | `MovePartSelectionDown/Up`、`CancelPartUseConfirmation` | `SelectedPart`、`IsFinishSelected`、`IsInstalledPartsFinished` | `ResultScene.CandidatesRevision`・`CandidateParts`、`Gamedata.State` |
 
 注意点:
 

@@ -169,15 +169,19 @@ ScrollUI は表示と子要素の更新だけを担当し、マウスホイー�
 利用するのは Scene 固有 Canvas（`PlayCanvas`、`TrainCanvas`、`ResultCanvas`）だけで、Scene は Canvas API の入力用API・問い合わせAPIを経由して操作する。
 
 - `NewPartsListUI(position, font, captionFont)`: 生成する。生成直後は非表示
-- `ShowFoundParts(found, owned game.Parts) error`: 「発見したパーツ」「所持パーツ」のタブ付き一覧を構築し、発見タブを選ぶ
-- `ShowParts(parts game.Parts) error`: タブなしの単一一覧を構築する
+- `ShowFoundParts(found, owned game.Parts) error`: 「発見したパーツ」「所持パーツ」のタブ付き一覧を構築し、発見タブを選ぶ。どちらのタブも末尾に「店を出る」のアクション項目を置く
+- `ShowParts(parts game.Parts, actionLabel string) error`: タブなしの単一一覧を構築する。`actionLabel` が空でなければ末尾にそのラベルのアクション項目（「パーツを売らない」「組み立てを終える」など）を置く
 - `Show()` / `Hide()` / `Visible() bool`: 表示状態。`ShowFoundParts` / `ShowParts` は表示状態を変えないため、表示するには続けて `Show` を呼ぶ
 - `SelectNext()` / `SelectPrevious()`: 選択を1つ移動する。範囲外へはクランプし、選択中のカードが見えるようスクロールを追従させる。非表示中は何もしない
 - `NextTab() error` / `PreviousTab() error`: タブを切り替える。単一一覧と非表示中は何もしない
-- `SelectedPart() *game.Part`: 選択中のパーツ。非表示中・未選択なら `nil`
+- `SelectedPart() *game.Part`: 選択中のパーツ。非表示中・未選択・アクション項目の選択中なら `nil`
+- `IsActionSelected() bool`: 末尾のアクション項目を選択中か。非表示中は `false`
+- `SetGuide(guide string)` / `FlashGuide()`: パネル下端の操作ガイドの文言を設定する／約90フレームだけ強調色にする
 - `IsShowingFoundParts() bool`: タブ付き一覧で発見タブを表示中か。単一一覧の表示中は `false`
 - `ActiveTab() PartsListTab`: 現在のタブ。表示状態やタブ表示の有無によらず、最後に選ばれたタブを返す
 - `RefreshFoundParts(found, owned game.Parts) error`: タブ付き一覧のデータを差し替え、現在のタブと選択位置を維持して再構築する
+
+末尾のアクション項目は `ActionCard` で、パーツカードと同じ選択枠で描く。選択位置は「パーツ…、アクション項目」の順の通し番号で持ち、一覧が空でもアクション項目だけは選べる。`RefreshFoundParts` はアクション項目を選んでいた場合、再構築後もアクション項目を選んだままにする。
 
 非表示中に操作を受け付けない判定は `PartsListUI` が持つため、Canvas 側で `Visible()` を確かめてから呼ぶ必要はない。一覧の構築系（`ShowFoundParts` / `ShowParts` / `RefreshFoundParts`）は、非表示のまま構築してから `Show` できるよう、表示状態によらず動く。
 

@@ -9,20 +9,29 @@ import (
 	"fmt"
 	"image"
 	stdcolor "image/color"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 const (
-	partsListWidth     = 600
-	partsListHeight    = 325
-	partCardHeight     = 100
+	partsListWidth = 600
+	// partsListGuideHeight は一覧パネル下端の操作ガイド欄の高さ。
+	partsListGuideHeight = 25
+	partsListHeight      = 325 + partsListGuideHeight
+	partCardHeight       = 100
+	// actionCardHeight は末尾のアクション項目（店を出る等）の高さ。
+	actionCardHeight   = 50
 	partCardGap        = 10
 	scrollBarWidth     = 8
 	partsListTabHeight = 32
+	// emptyMessageHeight は一覧が空のときに「〜はありません」の表示用に確保する高さ。
+	emptyMessageHeight = 40
 	// partsListBorderWidth は選択中のタブ・パーツカードの枠の太さ。
 	partsListBorderWidth = 3
+	// guideFlashFrames は FlashGuide で操作ガイドを強調する長さ（フレーム数）。
+	guideFlashFrames = 90
 )
 
 type PartsListTab uint8
@@ -30,9 +39,13 @@ type PartsListTab uint8
 const (
 	PartsListFound PartsListTab = iota
 	PartsListOwned
-	PartsListExit
-	PartsListNoSell
 )
+
+// listItem は一覧に並ぶ選択可能な項目（パーツカード・アクション項目）である。
+type listItem interface {
+	canvas.CanvasItem
+	SetSelected(selected bool)
+}
 
 type PartsListUI struct {
 	position      utils.Position
@@ -40,15 +53,20 @@ type PartsListUI struct {
 	captionFont   *text.GoTextFace
 	scroll        *ScrollUI
 	cards         []*PartCard
+	action        *ActionCard
+	actionLabel   string
 	contentHeight int
-	selected      int
-	lists         [4]game.Parts
-	activeTab     PartsListTab
-	showTabs      bool
-	tabLabels     []string
-	tabCount      int
-	visible       bool
-	empty         *Text
+	// selected は項目の位置。0..len(cards)-1 がパーツ、len(cards) がアクション項目（ある場合）。
+	selected   int
+	lists      [2]game.Parts
+	activeTab  PartsListTab
+	showTabs   bool
+	tabLabels  []string
+	tabCount   int
+	visible    bool
+	empty      *Text
+	guide      string
+	guideFlash int
 }
 
 // NewPartsListUI は PartsListUI を生成する。
@@ -57,10 +75,11 @@ func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont 
 		return nil, fmt.Errorf("font が nil です")
 	}
 
+	viewportHeight := partsListHeight - 60 - partsListGuideHeight
 	scroll, err := NewScrollUI(
 		image.Point{X: int(position.X) + 20, Y: int(position.Y) + 40},
-		image.Point{X: partsListWidth - 40, Y: partsListHeight - 60},
-		image.Point{X: partsListWidth - 40, Y: partsListHeight - 60},
+		image.Point{X: partsListWidth - 40, Y: viewportHeight},
+		image.Point{X: partsListWidth - 40, Y: viewportHeight},
 		ScrollVertical,
 	)
 	if err != nil {
@@ -72,48 +91,41 @@ func NewPartsListUI(position utils.Position, font *text.GoTextFace, captionFont 
 		font:          font,
 		captionFont:   captionFont,
 		scroll:        scroll,
-		contentHeight: partsListHeight - 60,
+		contentHeight: viewportHeight,
 		selected:      -1,
 	}, nil
 }
 
 // ---- Sceneに公開する意味ベースAPI ----
 //
-// 選択・タブ切り替え・選択中パーツの取得（SelectNext / SelectPrevious / NextTab / PreviousTab / SelectedPart）は、
-// 非表示中は受け付けない（何もしない、SelectedPart は nil を返す）。
+// 選択・タブ切り替え・選択中パーツの取得（SelectNext / SelectPrevious / NextTab / PreviousTab / SelectedPart / IsActionSelected）は、
+// 非表示中は受け付けない（何もしない、SelectedPart は nil、IsActionSelected は false を返す）。
 // 一覧の構築（ShowFoundParts / ShowParts / RefreshFoundParts）は、非表示のまま構築してから Show できるよう、表示状態によらず行う。
 
-// ShowFoundParts は発見したパーツ・所持パーツ・店を出るのタブ付き一覧を構築する。
+// ShowFoundParts は発見したパーツ・所持パーツのタブ付き一覧を構築する。
+// どちらのタブにも末尾に「店を出る」のアクション項目を置く。
 // 表示状態は変更しないため、表示するには Show を呼ぶ。
 func (p *PartsListUI) ShowFoundParts(found, owned game.Parts) error {
 	p.showTabs = true
-	p.tabLabels = []string{"発見したパーツ", "所持パーツ", "店を出る"}
+	p.tabLabels = []string{"発見したパーツ", "所持パーツ"}
 	p.tabCount = len(p.tabLabels)
+	p.actionLabel = "店を出る"
 	p.lists[PartsListFound] = found
 	p.lists[PartsListOwned] = owned
 	p.activeTab = PartsListFound
 	return p.rebuild(found, 0)
 }
 
-// ShowSellParts は所持パーツと「パーツを売らない」のタブ付き一覧を構築する。
-// 表示状態は変更しないため、表示するには Show を呼ぶ。
-func (p *PartsListUI) ShowSellParts(owned game.Parts) error {
-	p.showTabs = true
-	p.tabLabels = []string{"所持パーツ", "パーツを売らない"}
-	p.tabCount = len(p.tabLabels)
-	p.lists[PartsListOwned] = owned
-	p.lists[PartsListNoSell] = nil
-	p.activeTab = PartsListOwned
-	return p.rebuild(owned, 0)
-}
-
 // ShowParts はタブなしの単一パーツ一覧を構築する。
+// actionLabel が空でなければ、末尾にそのラベルのアクション項目を置く。
 // 表示状態は変更しないため、表示するには Show を呼ぶ。
-func (p *PartsListUI) ShowParts(parts game.Parts) error {
+func (p *PartsListUI) ShowParts(parts game.Parts, actionLabel string) error {
 	p.showTabs = false
 	p.tabLabels = nil
 	p.tabCount = 0
+	p.actionLabel = actionLabel
 	p.lists[PartsListFound] = parts
+	p.activeTab = PartsListFound
 	return p.rebuild(parts, 0)
 }
 
@@ -127,6 +139,16 @@ func (p *PartsListUI) Hide() {
 
 func (p *PartsListUI) Visible() bool {
 	return p.visible
+}
+
+// SetGuide は一覧パネル下端に表示する操作ガイドを設定する。強調中の状態は変えない。
+func (p *PartsListUI) SetGuide(guide string) {
+	p.guide = guide
+}
+
+// FlashGuide は操作ガイドを一定時間だけ強調色にして、押したキーの意味に気づかせる。
+func (p *PartsListUI) FlashGuide() {
+	p.guideFlash = guideFlashFrames
 }
 
 // SelectNext は選択を1つ下へ移す。非表示中は何もしない。
@@ -161,12 +183,17 @@ func (p *PartsListUI) PreviousTab() error {
 	return p.moveTab(-1)
 }
 
-// SelectedPart は選択中のパーツを返す。非表示中・未選択のときは nil を返す。
+// SelectedPart は選択中のパーツを返す。非表示中・未選択・アクション項目の選択中は nil を返す。
 func (p *PartsListUI) SelectedPart() *game.Part {
 	if !p.visible || p.selected < 0 || p.selected >= len(p.cards) {
 		return nil
 	}
 	return p.cards[p.selected].Part()
+}
+
+// IsActionSelected は末尾のアクション項目（店を出る等）を選択中かを返す。非表示中は false を返す。
+func (p *PartsListUI) IsActionSelected() bool {
+	return p.visible && p.actionSelected()
 }
 
 // IsShowingFoundParts はタブ付き一覧で「発見したパーツ」タブを表示中かを返す。
@@ -182,50 +209,28 @@ func (p *PartsListUI) ActiveTab() PartsListTab {
 
 // RefreshFoundParts はタブ付き一覧のデータを差し替え、現在のタブと選択位置を維持して再構築する。
 // 購入などで Found / Parts が変化したときに、Canvasが観測して呼ぶ。
+// アクション項目を選んでいた場合は、再構築後もアクション項目を選んだままにする。
 func (p *PartsListUI) RefreshFoundParts(found, owned game.Parts) error {
 	p.lists[PartsListFound] = found
 	p.lists[PartsListOwned] = owned
-	p.lists[PartsListExit] = nil
-	return p.rebuild(p.lists[p.activeTab], p.selected)
+	selected := p.selected
+	if p.actionSelected() {
+		selected = math.MaxInt32
+	}
+	return p.rebuild(p.lists[p.activeTab], selected)
 }
 
 // ---- 内部実装 ----
+
+func (p *PartsListUI) actionSelected() bool {
+	return p.action != nil && p.selected == len(p.cards)
+}
 
 func (p *PartsListUI) moveTab(delta int) error {
 	if !p.showTabs || delta == 0 {
 		return nil
 	}
-	if p.tabCount == 2 {
-		next := p.activeTab
-		if delta > 0 && p.activeTab == PartsListOwned {
-			next = PartsListNoSell
-		} else if delta < 0 && p.activeTab == PartsListNoSell {
-			next = PartsListOwned
-		}
-		if next == p.activeTab {
-			return nil
-		}
-		p.activeTab = next
-		if p.activeTab == PartsListNoSell {
-			return p.rebuild(nil, 0)
-		}
-		return p.rebuild(p.lists[PartsListOwned], 0)
-	}
-	next := int(p.activeTab) + delta
-	minTab := int(PartsListFound)
-	if p.tabCount == 2 {
-		minTab = int(PartsListOwned)
-	}
-	if next < minTab {
-		next = minTab
-	}
-	maxTab := int(PartsListExit)
-	if p.tabCount == 2 {
-		maxTab = int(PartsListNoSell)
-	}
-	if next > maxTab {
-		next = maxTab
-	}
+	next := max(0, min(int(p.activeTab)+delta, p.tabCount-1))
 	if next == int(p.activeTab) {
 		return nil
 	}
@@ -233,15 +238,67 @@ func (p *PartsListUI) moveTab(delta int) error {
 	return p.rebuild(p.lists[p.activeTab], 0)
 }
 
-// rebuild はパーツカードを作り直し、selected を範囲内にクランプして選択する。
+// listTop は先頭の項目の上端（スクロール内座標）。一覧が空のときは空表示のための余白を確保する。
+func (p *PartsListUI) listTop() int {
+	if len(p.cards) == 0 {
+		return emptyMessageHeight
+	}
+	return 0
+}
+
+// itemTop は項目 i の上端（スクロール内座標）。i == len(cards) はアクション項目。
+func (p *PartsListUI) itemTop(i int) int {
+	return p.listTop() + i*(partCardHeight+partCardGap)
+}
+
+func (p *PartsListUI) itemHeight(i int) int {
+	if i < len(p.cards) {
+		return partCardHeight
+	}
+	return actionCardHeight
+}
+
+func (p *PartsListUI) itemCount() int {
+	if p.action != nil {
+		return len(p.cards) + 1
+	}
+	return len(p.cards)
+}
+
+// rebuild はパーツカードとアクション項目を作り直し、selected を範囲内にクランプして選択する。
 func (p *PartsListUI) rebuild(parts game.Parts, selected int) error {
 	viewportHeight := p.viewportHeight()
-	contentHeight := viewportHeight
-	if len(parts) > 0 {
-		contentHeight = len(parts) * (partCardHeight + partCardGap)
+
+	// 先にカードを作り、高さを確定させてからスクロール領域を作る
+	p.cards = nil
+	p.action = nil
+	for _, part := range parts {
+		price := fmt.Sprintf("価値: %d", part.Value())
+		if p.showTabs && p.activeTab == PartsListFound {
+			price = fmt.Sprintf("価格: %d", part.Val)
+		}
+		p.cards = append(p.cards, NewPartCard(
+			image.Point{},
+			image.Point{X: partsListWidth - 40, Y: partCardHeight},
+			part,
+			price,
+			p.font,
+			p.captionFont,
+		))
 	}
-	if contentHeight < viewportHeight {
-		contentHeight = viewportHeight
+	if p.actionLabel != "" {
+		p.action = NewActionCard(
+			image.Point{X: 0, Y: p.itemTop(len(p.cards))},
+			image.Point{X: partsListWidth - 40, Y: actionCardHeight},
+			p.actionLabel,
+			p.font,
+		)
+	}
+
+	contentHeight := viewportHeight
+	if n := p.itemCount(); n > 0 {
+		last := n - 1
+		contentHeight = max(contentHeight, p.itemTop(last)+p.itemHeight(last))
 	}
 
 	scroll, err := NewScrollUI(
@@ -254,42 +311,31 @@ func (p *PartsListUI) rebuild(parts game.Parts, selected int) error {
 		return fmt.Errorf("NewScrollUI() でエラーが発生しました: %w", err)
 	}
 
-	p.cards = nil
 	p.contentHeight = contentHeight
-	for i, part := range parts {
-		price := fmt.Sprintf("価値: %d", part.Value())
-		if p.showTabs && p.activeTab == PartsListFound {
-			price = fmt.Sprintf("価格: %d", part.Val)
-		}
-		card := NewPartCard(
-			image.Point{X: 0, Y: i * (partCardHeight + partCardGap)},
-			image.Point{X: partsListWidth - 40, Y: partCardHeight},
-			part,
-			price,
-			p.font,
-			p.captionFont,
-		)
+	for i, card := range p.cards {
+		card.position = image.Point{X: 0, Y: p.itemTop(i)}
 		_ = scroll.AddChild(card)
-		p.cards = append(p.cards, card)
+	}
+	if p.action != nil {
+		_ = scroll.AddChild(p.action)
 	}
 	p.scroll = scroll
+
 	p.selected = -1
-	if len(p.cards) > 0 {
-		p.selected = max(0, min(selected, len(p.cards)-1))
-		p.cards[p.selected].SetSelected(true)
+	if n := p.itemCount(); n > 0 {
+		p.selected = max(0, min(selected, n-1))
+		p.item(p.selected).SetSelected(true)
 		p.ensureSelectedVisible()
 	}
+
 	p.empty = nil
 	if len(parts) == 0 {
 		emptyText := "所持パーツはありません"
-		if p.activeTab == PartsListExit {
-			emptyText = "Enterキーで店を出る\n"
-		}
-		if p.activeTab == PartsListNoSell {
-			emptyText = "Enterキーで売却パーツを選択せずに進む"
+		if p.showTabs && p.activeTab == PartsListFound {
+			emptyText = "発見したパーツはありません"
 		}
 		empty, err := NewText(
-			utils.Position{X: p.position.X + 20, Y: p.position.Y + 80 + float64(p.tabOffset())},
+			utils.Position{X: p.position.X + 20, Y: p.position.Y + 48 + float64(p.tabOffset())},
 			gamecolor.Black(),
 			emptyText,
 			p.font,
@@ -301,6 +347,14 @@ func (p *PartsListUI) rebuild(parts game.Parts, selected int) error {
 	return nil
 }
 
+// item は項目 i を返す。i は 0 以上 itemCount 未満であること。
+func (p *PartsListUI) item(i int) listItem {
+	if i < len(p.cards) {
+		return p.cards[i]
+	}
+	return p.action
+}
+
 func (p *PartsListUI) tabOffset() int {
 	if p.showTabs {
 		return partsListTabHeight
@@ -309,7 +363,7 @@ func (p *PartsListUI) tabOffset() int {
 }
 
 func (p *PartsListUI) viewportHeight() int {
-	return partsListHeight - 60 - p.tabOffset()
+	return partsListHeight - 60 - partsListGuideHeight - p.tabOffset()
 }
 
 // Scroll はSceneにスクロール量を操作させない方針のため無効化している。
@@ -320,32 +374,27 @@ func (p *PartsListUI) viewportHeight() int {
 // }
 
 func (p *PartsListUI) moveSelection(delta int) {
-	if len(p.cards) == 0 || delta == 0 {
+	count := p.itemCount()
+	if count == 0 || delta == 0 {
 		return
 	}
 
-	next := p.selected + delta
-	if next < 0 {
-		next = 0
-	}
-	if next >= len(p.cards) {
-		next = len(p.cards) - 1
-	}
+	next := max(0, min(p.selected+delta, count-1))
 	if next == p.selected {
 		return
 	}
 
 	if p.selected >= 0 {
-		p.cards[p.selected].SetSelected(false)
+		p.item(p.selected).SetSelected(false)
 	}
 	p.selected = next
-	p.cards[p.selected].SetSelected(true)
+	p.item(p.selected).SetSelected(true)
 	p.ensureSelectedVisible()
 }
 
 func (p *PartsListUI) ensureSelectedVisible() {
-	selectedTop := p.selected * (partCardHeight + partCardGap)
-	selectedBottom := selectedTop + partCardHeight
+	selectedTop := p.itemTop(p.selected)
+	selectedBottom := selectedTop + p.itemHeight(p.selected)
 	viewportHeight := p.viewportHeight()
 	offset := p.scroll.Offset()
 	if selectedTop < offset {
@@ -358,6 +407,9 @@ func (p *PartsListUI) ensureSelectedVisible() {
 func (p *PartsListUI) Update(active bool) error {
 	if !p.visible {
 		return nil
+	}
+	if p.guideFlash > 0 {
+		p.guideFlash--
 	}
 	return p.scroll.Update(active)
 }
@@ -387,12 +439,30 @@ func (p *PartsListUI) Draw(screen *ebiten.Image) {
 	if p.showTabs {
 		p.drawTabs(screen)
 	}
+	p.drawGuide(screen)
 	if p.empty != nil {
 		p.empty.Draw(screen)
-		return
 	}
 	p.scroll.Draw(screen)
 	p.drawScrollBar(screen)
+}
+
+// drawGuide はパネル下端に操作ガイドを描画する。FlashGuide 中は強調色にする。
+func (p *PartsListUI) drawGuide(screen *ebiten.Image) {
+	if p.guide == "" {
+		return
+	}
+	guideColor := gamecolor.Black()
+	if p.guideFlash > 0 {
+		guideColor = gamecolor.Orange()
+	}
+	DrawText(
+		utils.Position{X: p.position.X + 20, Y: p.position.Y + partsListHeight - partsListGuideHeight - 14},
+		guideColor,
+		p.guide,
+		p.font,
+		screen,
+	)
 }
 
 func (p *PartsListUI) drawScrollBar(screen *ebiten.Image) {
@@ -431,17 +501,51 @@ func (p *PartsListUI) drawTabs(screen *ebiten.Image) {
 		y := int(p.position.Y) + 35
 		tabRect := image.Rect(x, y, x+tabWidth, y+partsListTabHeight)
 		uiutils.FillRect(screen, tabRect, stdcolor.RGBA{R: 220, G: 220, B: 220, A: 255})
-		tab := PartsListTab(i)
-		if p.tabCount == 2 && i == 0 {
-			tab = PartsListOwned
-		} else if p.tabCount == 2 && i == 1 {
-			tab = PartsListNoSell
-		}
-		if tab == p.activeTab {
+		if PartsListTab(i) == p.activeTab {
 			uiutils.DrawBorder(screen, tabRect, partsListBorderWidth, uiutils.SelectionBorderColor)
 		}
 		DrawText(utils.Position{X: float64(x + 10), Y: float64(y + 2)}, gamecolor.Black(), label, p.font, screen)
 	}
+}
+
+// ActionCard は一覧の末尾に置く「店を出る」等のアクション項目である。
+type ActionCard struct {
+	position image.Point
+	size     image.Point
+	label    string
+	font     *text.GoTextFace
+	selected bool
+}
+
+func NewActionCard(position, size image.Point, label string, font *text.GoTextFace) *ActionCard {
+	return &ActionCard{position: position, size: size, label: label, font: font}
+}
+
+func (a *ActionCard) Update(active bool) error {
+	return nil
+}
+
+func (a *ActionCard) SetSelected(selected bool) {
+	a.selected = selected
+}
+
+func (a *ActionCard) Draw(screen *ebiten.Image) {
+	rect := image.Rectangle{Min: a.position, Max: a.position.Add(a.size)}
+	uiutils.FillRect(screen, rect, stdcolor.White)
+	if a.selected {
+		uiutils.DrawBorder(screen, rect, partsListBorderWidth, uiutils.SelectionBorderColor)
+	}
+	width, height := text.Measure(a.label, a.font, a.font.Size*1.5)
+	DrawText(
+		utils.Position{
+			X: float64(a.position.X) + (float64(a.size.X)-width)/2,
+			Y: float64(a.position.Y) + (float64(a.size.Y)-height)/2,
+		},
+		gamecolor.Black(),
+		a.label,
+		a.font,
+		screen,
+	)
 }
 
 type PartCard struct {

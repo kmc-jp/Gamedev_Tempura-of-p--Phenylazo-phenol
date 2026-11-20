@@ -241,6 +241,17 @@ func (c *Confirm) Confirm() {
 	c.result = c.choice == ConfirmYes
 }
 
+// Cancel は選択を「いいえ」にして確定する。Esc でのキャンセル用。非表示中または確定済みなら何もしない。
+func (c *Confirm) Cancel() {
+	if !c.visible || c.confirmed {
+		return
+	}
+	c.choice = ConfirmNo
+	c.syncSelection()
+	c.confirmed = true
+	c.result = false
+}
+
 // Result は確定結果と、確定済みかどうかを返す。
 func (c *Confirm) Result() (bool, bool) {
 	return c.result, c.confirmed

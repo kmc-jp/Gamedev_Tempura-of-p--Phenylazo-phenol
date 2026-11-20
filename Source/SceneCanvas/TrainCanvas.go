@@ -113,9 +113,10 @@ func (c *TrainCanvas) Update(active bool) error {
 	listRevision := c.scene.PartsListRevision()
 	partsRevision := c.gdata.PartsRevision()
 	if listRevision > 0 && (listRevision != c.shownListRevision || partsRevision != c.shownPartsRevision) {
-		if err := c.partsList.ShowSellParts(c.gdata.OwnedParts()); err != nil {
+		if err := c.partsList.ShowParts(c.gdata.OwnedParts(), "パーツを売らない"); err != nil {
 			return fmt.Errorf("パーツ一覧の構築に失敗しました。\n%w", err)
 		}
+		c.partsList.SetGuide("↑↓:選択  Space/Enter:決定")
 		c.partsList.Show()
 		c.shownListRevision = listRevision
 		c.shownPartsRevision = partsRevision
@@ -157,16 +158,10 @@ func (c *TrainCanvas) ScrollPartsListUp() {
 	c.partsList.SelectPrevious()
 }
 
-func (c *TrainCanvas) ShowNextPartsTab() error {
-	return c.partsList.NextTab()
-}
-
-func (c *TrainCanvas) ShowPreviousPartsTab() error {
-	return c.partsList.PreviousTab()
-}
-
-func (c *TrainCanvas) IsNoSellTabSelected() bool {
-	return c.partsList.Visible() && c.partsList.ActiveTab() == ui.PartsListNoSell
+// IsNoSellSelected implements [scene.TrainCanvasAPI].
+// 一覧の末尾の「パーツを売らない」を選択中かを返す。
+func (c *TrainCanvas) IsNoSellSelected() bool {
+	return c.partsList.IsActionSelected()
 }
 
 func (c *TrainCanvas) ShowSellPartConfirmation() bool {
@@ -199,6 +194,11 @@ func (c *TrainCanvas) SellPartConfirmationResult() (bool, bool) {
 
 func (c *TrainCanvas) HideSellPartConfirmation() {
 	c.sellConfirm.Hide()
+}
+
+// CancelSellPartConfirmation implements [scene.TrainCanvasAPI].
+func (c *TrainCanvas) CancelSellPartConfirmation() {
+	c.sellConfirm.Cancel()
 }
 
 func (c *TrainCanvas) SelectedPart() *game.Part {

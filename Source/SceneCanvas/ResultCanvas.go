@@ -140,7 +140,7 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 // SceneとGamedataの状態を観測して一覧・組み立て表示を切り替え、全UIを更新する。
 func (c *ResultCanvas) Update(active bool) error {
 	if c.gdata.State == game.Result_Benchmark {
-		c.benchmarkPrompt.SetText("Enterキーでベンチマーク開始")
+		c.benchmarkPrompt.SetText("Space/Enterキーでベンチマーク開始")
 	} else {
 		c.benchmarkPrompt.SetText("")
 	}
@@ -148,9 +148,15 @@ func (c *ResultCanvas) Update(active bool) error {
 	switch c.gdata.State {
 	case game.Result_SelectParts:
 		if revision := c.scene.CandidatesRevision(); revision != c.shownRevision {
-			if err := c.partsList.ShowParts(c.scene.CandidateParts()); err != nil {
+			// 任意パーツ選択のときだけ、末尾に組み立てを終える項目を置く
+			actionLabel := ""
+			if c.scene.IsSelectingArbitraryParts() {
+				actionLabel = "組み立てを終える"
+			}
+			if err := c.partsList.ShowParts(c.scene.CandidateParts(), actionLabel); err != nil {
 				return fmt.Errorf("結果画面のパーツ一覧の構築に失敗しました。\n%w", err)
 			}
+			c.partsList.SetGuide("↑↓:選択  Space/Enter:決定")
 			c.partsList.Show()
 			c.shownRevision = revision
 		}
@@ -237,6 +243,17 @@ func (c *ResultCanvas) PartUseConfirmationResult() (bool, bool) {
 
 func (c *ResultCanvas) HidePartUseConfirmation() {
 	c.partUseConfirm.Hide()
+}
+
+// CancelPartUseConfirmation implements [scene.ResultCanvasAPI].
+func (c *ResultCanvas) CancelPartUseConfirmation() {
+	c.partUseConfirm.Cancel()
+}
+
+// IsFinishSelected implements [scene.ResultCanvasAPI].
+// 一覧の末尾の「組み立てを終える」を選択中かを返す。
+func (c *ResultCanvas) IsFinishSelected() bool {
+	return c.partsList.IsActionSelected()
 }
 
 func (c *ResultCanvas) SetMessageWindowText(value string) {

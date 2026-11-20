@@ -273,6 +273,11 @@ func (c *PlayCanvas) HidePurchaseConfirmation() {
 	c.purchaseConfirm.Hide()
 }
 
+// CancelPurchaseConfirmation implements [scene.PlayCanvasAPI].
+func (c *PlayCanvas) CancelPurchaseConfirmation() {
+	c.purchaseConfirm.Cancel()
+}
+
 func (c *PlayCanvas) ShowExitStoreConfirmation() bool {
 	c.exitStoreConfirm.Show()
 	return true
@@ -302,6 +307,27 @@ func (c *PlayCanvas) HideExitStoreConfirmation() {
 	c.exitStoreConfirm.Hide()
 }
 
+// CancelExitStoreConfirmation implements [scene.PlayCanvasAPI].
+func (c *PlayCanvas) CancelExitStoreConfirmation() {
+	c.exitStoreConfirm.Cancel()
+}
+
+// IsExitStoreSelected implements [scene.PlayCanvasAPI].
+// 一覧の末尾の「店を出る」を選択中かを返す。
+func (c *PlayCanvas) IsExitStoreSelected() bool {
+	return c.partsList.IsActionSelected()
+}
+
+// SetPartsListGuide implements [scene.PlayCanvasAPI].
+func (c *PlayCanvas) SetPartsListGuide(guide string) {
+	c.partsList.SetGuide(guide)
+}
+
+// FlashPartsListGuide implements [scene.PlayCanvasAPI].
+func (c *PlayCanvas) FlashPartsListGuide() {
+	c.partsList.FlashGuide()
+}
+
 // SelectedFoundPart implements [scene.PlayCanvasAPI].
 // 一覧の非表示中、発見タブ以外の表示中、未選択のときは nil を返す。
 // 非表示中は PartsListUI.SelectedPart が nil を返す。
@@ -328,8 +354,6 @@ func (c *PlayCanvas) CurrentPartsTab() scene.PartsListTab {
 		return scene.PartsListTabFound
 	case ui.PartsListOwned:
 		return scene.PartsListTabOwned
-	case ui.PartsListExit:
-		return scene.PartsListTabExit
 	}
 	return scene.PartsListTabNone
 }
