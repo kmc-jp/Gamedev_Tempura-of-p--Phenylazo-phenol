@@ -14,6 +14,7 @@ var AssembleImages [numberOfAssemblePartsAssets]*ebiten.Image
 
 // 組み立て用画像一覧 (意図的に_を使用)
 // A: Assemble であることを識別するための識別子 ,B: Black, W: White, S: Side glass, SF: Side and Front glass,
+// 注意: 値はランキング(ranking.json)に保存される。既存の並びは変えず、追加は A_noAdditionalParts の手前の末尾に足す。
 const (
 	A_case_B_SF      = iota //みんげー_PCケース_黒_蓋開いてる
 	A_case_B_S              //みんげー_PCケース_黒_蓋閉じてる
@@ -58,6 +59,17 @@ type AssembledPC struct {
 	Body    *ebiten.Image // ケース本体〜グラボ（ゲーミングでない蓋を含む）
 	Gaming  *ebiten.Image // ゲーミング用の蓋＋ゲーミング追加パーツ。なければ nil
 	Sticker *ebiten.Image // ステッカー。なければ nil
+}
+
+// Flatten は全レイヤーを描画順に重ねた1枚の静止画を返す。
+func (pc *AssembledPC) Flatten() *ebiten.Image {
+	img := ebiten.NewImage(72, 64)
+	for _, layer := range []*ebiten.Image{pc.Body, pc.Gaming, pc.Sticker} {
+		if layer != nil {
+			img.DrawImage(layer, nil)
+		}
+	}
+	return img
 }
 
 func LoadAssemblePartsImages(imageManager *imageassets.ImageManager) error {
@@ -190,6 +202,37 @@ func AssembledImage(
 	}
 
 	return pc, nil
+}
+
+// AppearanceSize は Appearance の要素数。ranking.AppearanceSize と一致させる。
+const AppearanceSize = 7
+
+// Appearance は完成PCの見た目を決めるenumの組。ランキングに保存される。
+// 順序は caseBack, mb, cooler, gpu, caseLid, gaming, sticker。
+// 上の定数の値もそのまま保存されるため、並びを変える場合は既存の ranking.json が壊れる点に注意する。
+type Appearance [AppearanceSize]AssemblePartsImage
+
+// DetermineAppearance は組み立てパーツから見た目を決める。
+func DetermineAppearance(pts game.Parts) (Appearance, error) {
+	caseBack, mb, cooler, gpu, caseLid, gaming, sticker, err := DeterminePartsConfiguration(pts)
+	if err != nil {
+		return Appearance{}, err
+	}
+	return Appearance{caseBack, mb, cooler, gpu, caseLid, gaming, sticker}, nil
+}
+
+// AssembledLayersFromAppearance は見た目から完成PCをレイヤー別に作る。範囲外の値はエラーになる。
+func AssembledLayersFromAppearance(a Appearance) (*AssembledPC, error) {
+	return AssembledImage(a[0], a[1], a[2], a[3], a[4], a[5], a[6])
+}
+
+// AssembledImageFromAppearance は見た目から完成PCを1枚に合成した静止画を作る。範囲外の値はエラーになる。
+func AssembledImageFromAppearance(a Appearance) (*ebiten.Image, error) {
+	pc, err := AssembledLayersFromAppearance(a)
+	if err != nil {
+		return nil, err
+	}
+	return pc.Flatten(), nil
 }
 
 func findAssemblePart(pts game.Parts, kind uint) *game.Part {

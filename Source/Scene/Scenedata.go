@@ -14,4 +14,5 @@ type InitializedScenes struct {
 	InitHowToPlayScene   Utils.Factory[*HowToPlayScene]
 	InitTrainScene       Utils.Factory[*TrainScene]
 	InitResultScene      Utils.Factory[*ResultScene]
+	InitRankingScene     Utils.Factory[*RankingScene]
 }
