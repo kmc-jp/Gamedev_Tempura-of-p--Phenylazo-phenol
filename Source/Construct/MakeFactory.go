@@ -31,7 +31,7 @@ func MakeWorldDrawerFactory(assetsManager *assets.AssetsManager) (Utils.Factory[
 	return DrawerFactory, nil
 }
 
-func MakeBGDrawerFactory(assetsManager *assets.AssetsManager, pngPath string, jsonPath string) (Utils.Factory[scene.BackGroundDrawer], error) {
+func MakeBGDrawerFactory(assetsManager *assets.AssetsManager, pngPath string, jsonPath string, scale float64) (Utils.Factory[scene.BackGroundDrawer], error) {
 	imageData, err := assetsManager.Image.NewImageData("BackGround", pngPath, jsonPath)
 	if err != nil {
 		return nil, fmt.Errorf("assetsManager.Image.NewImageData でエラーが発生しました。\n%w", err)
@@ -42,6 +42,6 @@ func MakeBGDrawerFactory(assetsManager *assets.AssetsManager, pngPath string, js
 		return nil, fmt.Errorf("assetsManager.Image.Load でエラーが発生しました。\n%w", err)
 	}
 
-	DrawerFactory := Utils.CastFactory[*camera.BackGroundCamera, scene.BackGroundDrawer](camera.NewBackGroundCamera(asp, img, ""))
+	DrawerFactory := Utils.CastFactory[*camera.BackGroundCamera, scene.BackGroundDrawer](camera.NewBackGroundCamera(asp, img, "", scale))
 	return DrawerFactory, nil
 }

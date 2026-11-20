@@ -16,10 +16,14 @@ type BackGroundCamera struct {
 	wholeImg   *ebiten.Image
 	drawOption *ebiten.DrawImageOptions
 	player     *goaseprite.Player
+	scale      float64
 }
 
-func NewBackGroundCamera(asp *goaseprite.File, wholeImg *ebiten.Image, firstTag string) Utils.Factory[*BackGroundCamera] {
+func NewBackGroundCamera(asp *goaseprite.File, wholeImg *ebiten.Image, firstTag string, scale float64) Utils.Factory[*BackGroundCamera] {
 	return func() (*BackGroundCamera, error) {
+		if scale <= 0 {
+			return nil, fmt.Errorf("scale は正である必要があります: %v", scale)
+		}
 		player := asp.CreatePlayer()
 
 		// タグ設定
@@ -33,6 +37,7 @@ func NewBackGroundCamera(asp *goaseprite.File, wholeImg *ebiten.Image, firstTag 
 			wholeImg:   wholeImg,
 			drawOption: &ebiten.DrawImageOptions{},
 			player:     player,
+			scale:      scale,
 		}
 		return &bgc, nil
 	}
@@ -40,7 +45,7 @@ func NewBackGroundCamera(asp *goaseprite.File, wholeImg *ebiten.Image, firstTag 
 
 func (bgc BackGroundCamera) Draw(screen *ebiten.Image, gdata game.Gamedata) {
 	bgc.drawOption.GeoM.Reset()
-	bgc.drawOption.GeoM.Scale(5, 5)
+	bgc.drawOption.GeoM.Scale(bgc.scale, bgc.scale)
 
 	img := bgc.wholeImg.SubImage(image.Rect(bgc.player.CurrentFrameCoords())).(*ebiten.Image)
 

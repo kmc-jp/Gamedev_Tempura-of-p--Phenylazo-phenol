@@ -18,7 +18,7 @@ func TrainSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inpu
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		BGDrawerFactory, err := MakeBGDrawerFactory(assetsManager, "Backgrounds/みんげー_電車内スチル.png", "Backgrounds/みんげー_電車内スチル.json")
+		BGDrawerFactory, err := MakeBGDrawerFactory(assetsManager, "Backgrounds/みんげー_電車内スチル.png", "Backgrounds/みんげー_電車内スチル.json", 5)
 		if err != nil {
 			return nil, fmt.Errorf("MakeBGDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
