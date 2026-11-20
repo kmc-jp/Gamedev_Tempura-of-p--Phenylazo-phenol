@@ -52,6 +52,14 @@ const numberOfAssemblePartsAssets = A_noAdditionalParts
 
 type AssemblePartsImage uint
 
+// AssembledPC は完成PCを描画順のレイヤーに分けたもの。
+// 描画順は Body → Gaming → Sticker。
+type AssembledPC struct {
+	Body    *ebiten.Image // ケース本体〜グラボ（ゲーミングでない蓋を含む）
+	Gaming  *ebiten.Image // ゲーミング用の蓋＋ゲーミング追加パーツ。なければ nil
+	Sticker *ebiten.Image // ステッカー。なければ nil
+}
+
 func LoadAssemblePartsImages(imageManager *imageassets.ImageManager) error {
 	AssembleImages = [numberOfAssemblePartsAssets]*ebiten.Image{}
 
@@ -136,21 +144,34 @@ func AssembledImage(
 	caseLid AssemblePartsImage,
 	gaming AssemblePartsImage,
 	sticker AssemblePartsImage,
-) (*ebiten.Image, error) {
-	pc := ebiten.NewImage(72, 64)
+) (*AssembledPC, error) {
+	pc := &AssembledPC{Body: ebiten.NewImage(72, 64)}
+	hasGaming := gaming != A_noAdditionalParts
+	if hasGaming {
+		pc.Gaming = ebiten.NewImage(72, 64)
+	}
+	if sticker == A_sticker {
+		pc.Sticker = ebiten.NewImage(72, 64)
+	}
+
+	lidTarget := pc.Body
+	if hasGaming {
+		lidTarget = pc.Gaming
+	}
 
 	required := []struct {
-		name string
-		part AssemblePartsImage
-		draw bool
+		name   string
+		part   AssemblePartsImage
+		draw   bool
+		target *ebiten.Image
 	}{
-		{"ケース本体", caseBack, true},
-		{"マザボ", mb, true},
-		{"CPUクーラー", cooler, true},
-		{"グラフィックボード", gpu, gpu != AssemblePartsImage(A_noAdditionalParts)},
-		{"ケースの蓋", caseLid, caseLid != A_noAdditionalParts},
-		{"ゲーミング追加パーツ", gaming, gaming != A_noAdditionalParts},
-		{"ステッカー", sticker, sticker == A_sticker},
+		{"ケース本体", caseBack, true, pc.Body},
+		{"マザボ", mb, true, pc.Body},
+		{"CPUクーラー", cooler, true, pc.Body},
+		{"グラフィックボード", gpu, gpu != AssemblePartsImage(A_noAdditionalParts), pc.Body},
+		{"ケースの蓋", caseLid, caseLid != A_noAdditionalParts, lidTarget},
+		{"ゲーミング追加パーツ", gaming, hasGaming, pc.Gaming},
+		{"ステッカー", sticker, sticker == A_sticker, pc.Sticker},
 	}
 	for _, image := range required {
 		if !image.draw {
@@ -165,12 +186,9 @@ func AssembledImage(
 		if image.part == A_case_cardboard_lid {
 			continue
 		}
-		pc.DrawImage(AssembleImages[image.part], nil)
+		image.target.DrawImage(AssembleImages[image.part], nil)
 	}
 
-	if gaming == A_noAdditionalParts {
-		return pc, nil
-	}
 	return pc, nil
 }
 

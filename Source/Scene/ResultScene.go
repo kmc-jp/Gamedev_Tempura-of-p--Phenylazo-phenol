@@ -8,9 +8,11 @@ import (
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/hajimehoshi/ebiten/v2/colorm"
 	input "github.com/quasilyte/ebitengine-input"
 )
 
@@ -71,8 +73,9 @@ type ResultScene struct {
 	partUseConfirmationPart *game.Part
 	benchmarkScoreStarted   bool
 
-	pcImage          *ebiten.Image
+	pc               *parts.AssembledPC
 	pcDrawOption     *ebiten.DrawImageOptions
+	gamingFrame      uint64 // ゲーミングカラーの色相アニメーション用フレームカウンタ
 	gamingBackground *ebiten.Image
 	normalBackground *ebiten.Image
 	isGamingColor    bool
@@ -144,7 +147,7 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*R
 			Input:            Input,
 			gamedata:         gdata,
 			initScenes:       initScenes,
-			pcImage:          nil,
+			pc:               nil,
 			pcDrawOption:     pcImageConfig,
 			gamingBackground: gamingBackground,
 			normalBackground: normalBackground,
@@ -180,12 +183,30 @@ func (s *ResultScene) Draw(screen *ebiten.Image) {
 		}
 	}
 	s.worldDrawer.Draw(screen, s.entities)
-	if (s.gamedata.State == game.Result_Assembled || s.gamedata.State == game.Result_Benchmark || s.gamedata.State == game.Result_QuitGame) && s.pcImage != nil {
-		screen.DrawImage(s.pcImage, s.pcDrawOption)
+	if (s.gamedata.State == game.Result_Assembled || s.gamedata.State == game.Result_Benchmark || s.gamedata.State == game.Result_QuitGame) && s.pc != nil {
+		s.drawPC(screen)
 	}
 	s.canvas.Draw(screen)
 
 	// s.text.Draw(screen)
+}
+
+// gamingHueCycleFrames はゲーミングカラーの色相が一周するフレーム数。
+const gamingHueCycleFrames = 180
+
+// drawPC は完成PCをレイヤー順に描画する。ゲーミングカラー部分だけ色相を回転させる。
+func (s *ResultScene) drawPC(screen *ebiten.Image) {
+	screen.DrawImage(s.pc.Body, s.pcDrawOption)
+	if s.pc.Gaming != nil {
+		var cm colorm.ColorM
+		cm.RotateHue(2 * math.Pi * float64(s.gamingFrame%gamingHueCycleFrames) / gamingHueCycleFrames)
+		op := &colorm.DrawImageOptions{}
+		op.GeoM = s.pcDrawOption.GeoM
+		colorm.DrawImage(screen, s.pc.Gaming, cm, op)
+	}
+	if s.pc.Sticker != nil {
+		screen.DrawImage(s.pc.Sticker, s.pcDrawOption)
+	}
 }
 
 // Update はSceneの処理の後でCanvasを更新し、同じフレームの状態変化をCanvasが観測できるようにする。
@@ -194,6 +215,7 @@ func (s *ResultScene) Update(active bool) (nextScene Utils.Factory[game.Scene], 
 		return
 	}
 
+	s.gamingFrame++
 	nextScene, transitionType, err = s.updateScene(active)
 	if err != nil {
 		return nil, transition.None(), err
@@ -209,7 +231,8 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 		//シーン起動時処理
 		s.gamedata.InitialProcess = false
 		s.gamedata.Assemble = game.Parts{}
-		s.pcImage = nil
+		s.pc = nil
+		s.gamingFrame = 0
 		s.isGamingColor = false
 		s.partKindIndex = 0
 		s.benchmarkScoreStarted = false
@@ -302,13 +325,13 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 			return nil, transition.None(), fmt.Errorf("parts.CheckAssemblePartsInfo()でエラーが発生しました\n%w\n", err)
 		}
 
-		if s.pcImage == nil {
+		if s.pc == nil {
 			caseBack, mb, cooler, gpu, caseLid, gaming, sticker, err := parts.DeterminePartsConfiguration(s.gamedata.Assemble)
 			if err != nil {
 				return nil, transition.None(), fmt.Errorf("組み立てPC画像の構成に失敗しました\n%w", err)
 			}
 			s.isGamingColor = gaming != parts.A_noAdditionalParts
-			s.pcImage, err = parts.AssembledImage(caseBack, mb, cooler, gpu, caseLid, gaming, sticker)
+			s.pc, err = parts.AssembledImage(caseBack, mb, cooler, gpu, caseLid, gaming, sticker)
 			if err != nil {
 				return nil, transition.None(), fmt.Errorf("組み立てPC画像の構築に失敗しました\n%w", err)
 			}
