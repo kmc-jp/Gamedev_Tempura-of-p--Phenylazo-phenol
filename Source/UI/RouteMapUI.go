@@ -20,7 +20,7 @@ const (
 	routeLineWidth    = 3.0
 	routeLabelSize    = 10.0
 	routeRingWidth    = 2.0
-	routeRingMargin   = 3.0
+	routeRingMargin   = 8.0
 )
 
 // RouteMapNode は路線図上のノード（駅）である。
@@ -134,12 +134,14 @@ func (u *RouteMapUI[N]) Draw(screen *ebiten.Image) {
 		screen.DrawImage(u.background, op)
 	}
 
-	lineColor := color.LightGray().ToRGBA()
-	for _, edge := range u.edges {
-		x0, y0 := toScreen(u.nodes[u.index[edge[0]]].Pos)
-		x1, y1 := toScreen(u.nodes[u.index[edge[1]]].Pos)
-		vector.StrokeLine(screen, x0, y0, x1, y1, float32(routeLineWidth*scale), lineColor, true)
-	}
+	/*
+		lineColor := color.LightGray().ToRGBA()
+		for _, edge := range u.edges {
+			x0, y0 := toScreen(u.nodes[u.index[edge[0]]].Pos)
+			x1, y1 := toScreen(u.nodes[u.index[edge[1]]].Pos)
+			vector.StrokeLine(screen, x0, y0, x1, y1, float32(routeLineWidth*scale), lineColor, true)
+		}
+	*/
 
 	nodeColor := color.White().ToRGBA()
 	markerColor := color.RoyalBlue().ToRGBA()
@@ -165,7 +167,7 @@ func (u *RouteMapUI[N]) Draw(screen *ebiten.Image) {
 			vector.StrokeCircle(screen, cx, cy, float32(r), float32(routeRingWidth*scale), uiutils.SelectionBorderColor, true)
 		}
 
-		u.drawLabel(screen, node.Label, cx, cy, scale)
+		// u.drawLabel(screen, node.Label, cx, cy, scale)
 	}
 }
 
@@ -180,7 +182,7 @@ func (u *RouteMapUI[N]) drawLabel(screen *ebiten.Image, label string, cx, cy flo
 		X: float64(cx) - w/2,
 		Y: float64(cy) + (routeNodeRadius+routeRingMargin+2)*scale,
 	}
-	DrawText(pos, color.White(), label, face, screen)
+	DrawText(pos, color.Orange(), label, face, screen)
 }
 
 var _ canvas.CanvasItem = (*RouteMapUI[int])(nil)
