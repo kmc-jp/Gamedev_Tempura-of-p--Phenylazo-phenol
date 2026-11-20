@@ -232,6 +232,10 @@ func (s *SelectStageScene) updateScene(active bool) (nextScene Utils.Factory[gam
 	// 決定
 	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 		dst, min, err := s.destination()
+		if !s.CanConfirm(dst) {
+			s.canvas.SetActionLogText("今いる場所には移動できません")
+			return nil, transition.None(), nil
+		}
 		if dst == stageinfo.Departure {
 			return s.confirm()
 		}
