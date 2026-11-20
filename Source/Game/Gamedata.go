@@ -143,6 +143,8 @@ func (g *Gamedata) ResetGame() {
 	g.Weight = InitialWeight
 	g.Money = InitialMoney
 	g.visited = 0
+	g.sell = nil
+	g.nextStage = nil
 	g.currentLocation = stageinfo.Departure
 	g.WorldTimer.Reset()
 	g.DisableWorldTimeProgressing()

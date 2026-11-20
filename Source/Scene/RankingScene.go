@@ -160,17 +160,7 @@ func (s *RankingScene) updateScene(active bool) (nextScene Utils.Factory[game.Sc
 		if s.resultBGM != nil {
 			s.resultBGM.Pause()
 		}
-		return func() (game.Scene, error) {
-			nextScene, err := s.initScenes.InitTitleScene()
-			if err != nil {
-				return nil, err
-			}
-			nextScene.gamedata = s.gamedata
-			nextScene.gamedata.ForNewScene(game.Title_Default)
-			nextScene.gamedata.ResetGame()
-			nextScene.initScenes = s.initScenes
-			return nextScene, nil
-		}, transition.NewScene(), nil
+		return backToTitleFactory(s.gamedata, s.initScenes), transition.NewScene(), nil
 	}
 
 	return

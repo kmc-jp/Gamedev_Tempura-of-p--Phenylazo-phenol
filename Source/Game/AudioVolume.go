@@ -52,6 +52,20 @@ func (g *Gamedata) SetBGMVolume(v int) {
 	g.volume.bgmPlayers = alive
 }
 
+// StopAllBGM は読み込み済みの全BGMを停止する。
+func (g *Gamedata) StopAllBGM() {
+	alive := g.volume.bgmPlayers[:0]
+	for _, wp := range g.volume.bgmPlayers {
+		p := wp.Value()
+		if p == nil {
+			continue
+		}
+		p.Pause()
+		alive = append(alive, wp)
+	}
+	g.volume.bgmPlayers = alive
+}
+
 // SetSEVolume はSE音量を設定する。次に読み込むSEから反映される。
 func (g *Gamedata) SetSEVolume(v int) {
 	g.volume.se = clampVolume(v)

@@ -258,17 +258,7 @@ func (s *PauseScene) resume() (Utils.Factory[game.Scene], transition.Type, error
 
 // backToTitle はゲームの進行をリセットしてタイトルへ戻る。
 func (s *PauseScene) backToTitle() Utils.Factory[game.Scene] {
-	return func() (game.Scene, error) {
-		nextScene, err := s.initScenes.InitTitleScene()
-		if err != nil {
-			return nil, fmt.Errorf("s.initScenes.InitTitleScene() でエラーが発生しました。\n%w", err)
-		}
-		nextScene.gamedata = s.gamedata
-		nextScene.gamedata.ForNewScene(game.Title_Default)
-		nextScene.gamedata.ResetGame()
-		nextScene.initScenes = s.initScenes
-		return nextScene, nil
-	}
+	return backToTitleFactory(s.gamedata, s.initScenes)
 }
 
 func (s *PauseScene) AddEntity(e Entity) {

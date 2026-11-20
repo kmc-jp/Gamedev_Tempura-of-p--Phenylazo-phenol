@@ -226,6 +226,23 @@ func (s *TitleScene) startGame() Utils.Factory[game.Scene] {
 	}
 }
 
+// backToTitleFactory は全BGMを止め、ゲームデータを初期化してタイトルへ戻る。
+// 初期化の後でTitleSceneを生成するので、タイトルBGMは止められない。
+func backToTitleFactory(gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[game.Scene] {
+	return func() (game.Scene, error) {
+		gdata.StopAllBGM()
+		gdata.ResetGame()
+		gdata.ForNewScene(game.Title_Default)
+		nextScene, err := initScenes.InitTitleScene()
+		if err != nil {
+			return nil, fmt.Errorf("initScenes.InitTitleScene() でエラーが発生しました。\n%w", err)
+		}
+		nextScene.gamedata = gdata
+		nextScene.initScenes = initScenes
+		return nextScene, nil
+	}
+}
+
 func (s *TitleScene) AddEntity(e Entity) {
 	s.entities = append(s.entities, e)
 }
