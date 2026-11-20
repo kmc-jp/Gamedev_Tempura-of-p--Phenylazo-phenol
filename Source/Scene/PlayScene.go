@@ -9,6 +9,7 @@ import (
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	tick "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Tick"
 	"fmt"
+	"math/rand"
 	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -127,13 +128,13 @@ func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], newCanvas func(*PlaySc
 		if err != nil {
 			return &PlayScene{}, fmt.Errorf("NewMockCamera() でエラーが発生しました。 \n%w", err)
 		}
-		const bgmcount = 2
+		const bgmcount = 3
 		bgmpaths := [bgmcount]string{
-			// "bgm/shop1.wav", // フォーマットが違うらしい
+			"bgm/shop1.wav",
 			"bgm/shop2.mp3",
 			"bgm/shop3.mp3",
 		}
-		path := bgmpaths[0]
+		path := bgmpaths[rand.Intn(bgmcount)]
 		ad, err := gdata.AssetsManager.Audio.NewAudioData(path, audioassets.BGM)
 		if err != nil {
 			return &PlayScene{}, fmt.Errorf("gdata.AssetsManager.Audio.NewAudioData() でエラーが発生しました。 \n%w", err)
