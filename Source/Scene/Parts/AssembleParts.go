@@ -133,6 +133,7 @@ func AssembledImage(
 	gpu AssemblePartsImage,
 	caseLid AssemblePartsImage,
 	gaming AssemblePartsImage,
+	sticker AssemblePartsImage,
 ) (*ebiten.Image, error) {
 	pc := ebiten.NewImage(72, 64)
 
@@ -147,6 +148,7 @@ func AssembledImage(
 		{"グラフィックボード", gpu, gpu != AssemblePartsImage(A_noAdditionalParts)},
 		{"ケースの蓋", caseLid, caseLid != A_noAdditionalParts},
 		{"ゲーミング追加パーツ", gaming, gaming != A_noAdditionalParts},
+		{"ステッカー", sticker, sticker != A_sticker},
 	}
 	for _, image := range required {
 		if !image.draw {
@@ -179,7 +181,7 @@ func findAssemblePart(pts game.Parts, kind uint) *game.Part {
 	return nil
 }
 
-func DeterminePartsConfiguration(pts game.Parts) (AssemblePartsImage, AssemblePartsImage, AssemblePartsImage, AssemblePartsImage, AssemblePartsImage, AssemblePartsImage, error) {
+func DeterminePartsConfiguration(pts game.Parts) (AssemblePartsImage, AssemblePartsImage, AssemblePartsImage, AssemblePartsImage, AssemblePartsImage, AssemblePartsImage, AssemblePartsImage, error) {
 	var (
 		caseback AssemblePartsImage
 		mb       AssemblePartsImage
@@ -187,11 +189,12 @@ func DeterminePartsConfiguration(pts game.Parts) (AssemblePartsImage, AssemblePa
 		gpu      AssemblePartsImage
 		caselid  AssemblePartsImage
 		gaming   = AssemblePartsImage(A_noAdditionalParts)
+		sticker  AssemblePartsImage
 	)
 
 	gpuPart := findAssemblePart(pts, uint(game.GPU))
 	if gpuPart == nil {
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("組み立てパーツにGPUがありません")
+		return 0, 0, 0, 0, 0, 0, 0, fmt.Errorf("組み立てパーツにGPUがありません")
 	}
 	if gpuPart.IsSpare {
 		gpu = AssemblePartsImage(A_noAdditionalParts)
@@ -200,12 +203,12 @@ func DeterminePartsConfiguration(pts game.Parts) (AssemblePartsImage, AssemblePa
 	} else if gpuPart.Subcategory == game.GPU_White {
 		gpu = A_gpu_W
 	} else {
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("GPUに対して無効なSubcategoryです")
+		return 0, 0, 0, 0, 0, 0, 0, fmt.Errorf("GPUに対して無効なSubcategoryです")
 	}
 
 	mbPart := findAssemblePart(pts, uint(game.MB))
 	if mbPart == nil {
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("組み立てパーツにマザボがありません")
+		return 0, 0, 0, 0, 0, 0, 0, fmt.Errorf("組み立てパーツにマザボがありません")
 	}
 	if mbPart.IsSpare {
 		mb = A_mb_G
@@ -225,19 +228,27 @@ func DeterminePartsConfiguration(pts game.Parts) (AssemblePartsImage, AssemblePa
 			mb = A_mb_G
 			cooler = A_cooler_B
 		default:
-			return 0, 0, 0, 0, 0, 0, fmt.Errorf("マザボに対して無効なSubcategoryです")
+			return 0, 0, 0, 0, 0, 0, 0, fmt.Errorf("マザボに対して無効なSubcategoryです")
 		}
 	}
 
 	casePart := findAssemblePart(pts, uint(game.Case))
 	if casePart == nil {
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("組み立てパーツにケースがありません")
+		return 0, 0, 0, 0, 0, 0, 0, fmt.Errorf("組み立てパーツにケースがありません")
 	}
+
+	_, hasSticker := pts.Contain(game.Sticker)
+	if hasSticker {
+		sticker = A_sticker
+	} else {
+		sticker = A_noAdditionalParts
+	}
+
 	if casePart.IsSpare {
 		caseback = A_case_cardboard
 		caselid = A_case_cardboard_lid
 		gaming = AssemblePartsImage(A_noAdditionalParts)
-		return caseback, mb, cooler, gpu, caselid, gaming, nil
+		return caseback, mb, cooler, gpu, caselid, gaming, sticker, nil
 	}
 	_, hasLED := pts.Contain(game.LED)
 	switch casePart.Subcategory {
@@ -270,9 +281,9 @@ func DeterminePartsConfiguration(pts game.Parts) (AssemblePartsImage, AssemblePa
 			gaming = A_gaming_W_S
 		}
 	default:
-		return 0, 0, 0, 0, 0, 0, fmt.Errorf("ケースに対して無効なSubcategoryです")
+		return 0, 0, 0, 0, 0, 0, 0, fmt.Errorf("ケースに対して無効なSubcategoryです")
 	}
-	return caseback, mb, cooler, gpu, caselid, gaming, nil
+	return caseback, mb, cooler, gpu, caselid, gaming, sticker, nil
 }
 
 func CheckAssemblePartsInfo(pts game.Parts) error {
