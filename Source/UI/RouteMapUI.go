@@ -134,12 +134,14 @@ func (u *RouteMapUI[N]) Draw(screen *ebiten.Image) {
 		screen.DrawImage(u.background, op)
 	}
 
-	lineColor := color.LightGray().ToRGBA()
-	for _, edge := range u.edges {
-		x0, y0 := toScreen(u.nodes[u.index[edge[0]]].Pos)
-		x1, y1 := toScreen(u.nodes[u.index[edge[1]]].Pos)
-		vector.StrokeLine(screen, x0, y0, x1, y1, float32(routeLineWidth*scale), lineColor, true)
-	}
+	/*
+		lineColor := color.LightGray().ToRGBA()
+		for _, edge := range u.edges {
+			x0, y0 := toScreen(u.nodes[u.index[edge[0]]].Pos)
+			x1, y1 := toScreen(u.nodes[u.index[edge[1]]].Pos)
+			vector.StrokeLine(screen, x0, y0, x1, y1, float32(routeLineWidth*scale), lineColor, true)
+		}
+	*/
 
 	nodeColor := color.White().ToRGBA()
 	markerColor := color.RoyalBlue().ToRGBA()
