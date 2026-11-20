@@ -44,6 +44,8 @@ const (
 	A_gpu_B //みんげー_グラボ_リザルト用_黒
 	A_gpu_W //みんげー_グラボ_リザルト用_白
 
+	A_sticker //みんげー_キャラステッカー_リザルト用
+
 	A_noAdditionalParts //任意パーツの有無を選択するためのもの
 )
 const numberOfAssemblePartsAssets = A_noAdditionalParts
