@@ -45,9 +45,10 @@ func (w *TileWalker) Update(active bool) (err error) {
 
 func (w *TileWalker) TryMove(Direction Utils.Vec2Int) bool {
 	moveto := w.Position.Position.Add(Direction)
-	if enterable, ok := w.tm.Enterable[moveto]; (enterable || !ok) && !w.isMoving {
+	if enterable, ok := w.tm.Enterable[moveto]; (enterable || !ok) && !w.tm.Occupied[moveto] && !w.isMoving {
 		w.isMoving = true
 		w.direction = Direction
+		w.tm.Occupied[moveto] = true // 移動先を予約
 		w.anim.SetTag(w.dirTag[Direction])
 		w.anim.SetPlaying(true)
 		return true
@@ -63,6 +64,7 @@ func (w *TileWalker) moveStop() {
 	w.isMoving = false
 	w.elapsed = 0
 	w.Position.Offset = Utils.NewZeroVec2()
+	delete(w.tm.Occupied, w.Position.Position) // 移動元を解放
 	w.Position.Position = w.Position.Position.Add(w.direction)
 	w.anim.SetPlaying(false)
 }
@@ -73,6 +75,9 @@ func (w TileWalker) IsMoving() bool {
 
 func NewTileWalker(tiledata tilemap.TileData, pos tilemap.TilePosition, tf gameobject.Transform, Map *TileMap, anim *AnimRender, walktime int, dirTag map[Utils.Vec2Int]string) Utils.Factory[*TileWalker] {
 	return func() (*TileWalker, error) {
+		Map.Occupied[pos.Position] = true // 初期位置を占有
+		// Update が呼ばれない状態(売却中など)でも正しい位置に表示されるよう、生成時に位置を合わせる
+		tf.SetPosition(Map.TilePositionToWorldPosition(pos, tiledata))
 		t := TileWalker{
 			Data:     tiledata,
 			Position: pos,

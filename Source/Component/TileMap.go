@@ -13,6 +13,7 @@ type TileMap struct {
 	TileSize  Utils.Vec2Int
 	Enterable map[Utils.Vec2Int]bool // 何も入ってなければ進入可能
 	Interact  map[Utils.Vec2Int]InteractableTile
+	Occupied  map[Utils.Vec2Int]bool // キャラクターがいる(または移動先として予約済みの)マス
 }
 
 // test
@@ -42,6 +43,7 @@ func NewTileMap(mapdata tilemap.TileMapData) Utils.Factory[*TileMap] {
 			TileSize:  mapdata.TileSize,
 			Enterable: mapdata.Enterable,
 			Interact:  map[Utils.Vec2Int]InteractableTile{},
+			Occupied:  map[Utils.Vec2Int]bool{},
 		}
 		return &t, nil
 	}

@@ -12,6 +12,7 @@ import (
 	tilemap "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/TileMap"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
+	"math/rand"
 	"reflect"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -60,6 +61,15 @@ func PlaySceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input
 			return nil, fmt.Errorf("MakePlayer(assetsManager, playscene) でエラーが発生しました。\n%w", err)
 		}
 		playscene.AddEntity(plobj)
+
+		// おじさんを設置 (Player の位置を避けるため Player の後に作る)
+		ojisans, err := MakeOjisans(assetsManager, playscene, TM)
+		if err != nil {
+			return nil, fmt.Errorf("MakeOjisans(assetsManager, playscene, TM) でエラーが発生しました。\n%w", err)
+		}
+		for _, o := range ojisans {
+			playscene.AddEntity(o)
+		}
 
 		return playscene, nil
 	}
@@ -165,4 +175,107 @@ func MakePlayer(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene, T
 	}
 
 	return plobj, nil
+}
+
+// おじさん設定
+// 絵が届くまでは仮に暗くした主人公の絵を使う
+func MakeOjisans(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene, TileMap *component.TileMap) ([]*gameobject.GameObject, error) {
+	SerializeData, err := assetsManager.Serialize.NewSerializeData("Ojisan", reflect.TypeFor[serializetarget.OjisanConfig](), "Ojisan.toml")
+	if err != nil {
+		return nil, fmt.Errorf("assetsManager.Serialize.NewSerializeData(\"Ojisan\", reflect.TypeFor[serializetarget.OjisanConfig](), \"Ojisan.toml\") でエラーが発生しました。\n%w", err)
+	}
+
+	ConfigAny, err := assetsManager.Serialize.Load(*SerializeData)
+	if err != nil {
+		return nil, fmt.Errorf("assetsManager.Serialize.Load(*SerializeData) でエラーが発生しました。\n%w", err)
+	}
+
+	OjisanConfig := ConfigAny.(serializetarget.OjisanConfig)
+
+	err = OjisanConfig.Init(assetsManager.Image)
+	if err != nil {
+		return nil, fmt.Errorf("OjisanConfig.Init(assetsManager.Image) でエラーが発生しました。\n%w", err)
+	}
+
+	constructDataAny, err := OjisanConfig.Construct()
+	if err != nil {
+		return nil, fmt.Errorf("OjisanConfig.Construct() でエラーが発生しました。\n%w", err)
+	}
+	constructData := constructDataAny.(serializetarget.OjisanConstructData)
+
+	// 出現位置を決める
+	spawns := ojisanSpawnPositions(TileMap, constructData)
+
+	NewTransform := func(position Utils.Position) Utils.Factory[gameobject.Transform] {
+		return Utils.CastFactory[*component.StdTransform, gameobject.Transform](component.NewStdTransform(position))
+	}
+	NewRenderer := func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[*component.AnimRender] {
+		// 仮の見た目 : 主人公と区別できるよう暗い茶色にする (専用の絵が届いたら外す)
+		dio := &ebiten.DrawImageOptions{}
+		dio.ColorScale.Scale(0.75, 0.55, 0.4, 1)
+		return component.NewAnimRender(asp, img, layer, "", component.AR_WithDrawImageOptions(dio))
+	}
+
+	ojisans := make([]*gameobject.GameObject, 0, len(spawns))
+	for i, pos := range spawns {
+		tpos := constructData.Position
+		tpos.Position = pos
+		obj, err := NewOjisan(
+			fmt.Sprintf("Ojisan%d", i+1), tpos, *constructData.TileData, TileMap, PlScene,
+			NewTransform, NewRenderer, assetsManager,
+			constructData.Walktime, constructData.DirTag,
+			constructData.MoveIntervalMin, constructData.MoveIntervalMax,
+		)()
+		if err != nil {
+			return nil, fmt.Errorf("NewOjisan() でエラーが発生しました。\n%w", err)
+		}
+		ojisans = append(ojisans, obj)
+	}
+
+	return ojisans, nil
+}
+
+// 進入可能で誰もいないマスか
+func isFreeTile(tm *component.TileMap, pos Utils.Vec2Int) bool {
+	if enterable, ok := tm.Enterable[pos]; ok && !enterable {
+		return false
+	}
+	return !tm.Occupied[pos]
+}
+
+// おじさんの出現位置を決める
+// Spawns 指定があればそれを (進入不可・占有済みはスキップ)、なければ床からランダムに Count 箇所選ぶ
+func ojisanSpawnPositions(tm *component.TileMap, data serializetarget.OjisanConstructData) []Utils.Vec2Int {
+	result := []Utils.Vec2Int{}
+
+	if len(data.Spawns) > 0 {
+		used := map[Utils.Vec2Int]bool{}
+		for _, pos := range data.Spawns {
+			if !isFreeTile(tm, pos) || used[pos] {
+				fmt.Printf("おじさんの出現位置 %v は進入不可、または他と重なっているためスキップしました。\n", pos)
+				continue
+			}
+			used[pos] = true
+			result = append(result, pos)
+		}
+		return result
+	}
+
+	// ランダム : 床タイルの座標を重複なく集める
+	seen := map[Utils.Vec2Int]bool{}
+	candidates := []Utils.Vec2Int{}
+	for tpos := range tm.Tiles {
+		pos := tpos.Position
+		if seen[pos] {
+			continue
+		}
+		seen[pos] = true
+		if isFreeTile(tm, pos) {
+			candidates = append(candidates, pos)
+		}
+	}
+	rand.Shuffle(len(candidates), func(i, j int) { candidates[i], candidates[j] = candidates[j], candidates[i] })
+
+	n := min(data.Count, len(candidates))
+	return append(result, candidates[:n]...)
 }
