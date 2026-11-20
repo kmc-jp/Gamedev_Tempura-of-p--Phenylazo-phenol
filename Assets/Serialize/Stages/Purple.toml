@@ -6,6 +6,7 @@ WallLayer = "Floor"
 
 [TileData]
 shelf = {Name = "shelf", JsonPath = "StageAssets/Purple/みんげー_棚_紫.json", PngPath = "StageAssets/Purple/みんげー_棚_紫.png", Effect = "Sparkle", Type = "shelf", Size = {X = 3, Y = 1}, Offset = {X = 10, Y = 9}}
+basket = {Name = "basket", JsonPath = "StageAssets/Red/みんげー_かご_赤.json", PngPath = "StageAssets/Red/みんげー_かご_赤.png", Effect = "Sparkle", Type = "shelf", Size = {X = 1, Y = 1}, Offset = {X = 6, Y = 5}}
 floor = {Name = "floor", JsonPath = "StageAssets/Purple/みんげー_床_紫.json", PngPath = "StageAssets/Purple/みんげー_床_紫.png"}
 register = {Name = "register", JsonPath =  "StageAssets/Purple/みんげー_机_紫.json", PngPath = "StageAssets/Purple/みんげー_机_紫.png", Type = "register", Size = {X = 1, Y = 2}}
 WallTop = {Name = "wallTop", JsonPath = "StageAssets/Purple/みんげー_壁横_紫.json", PngPath = "StageAssets/Purple/みんげー_壁横_紫.png", Offset = {X = 0, Y = -15}}
@@ -18,7 +19,20 @@ Sparkle = {Name = "Sparkle", JsonPath = "TileEffects/みんげー_キラキラ�
 
 [ObjectMap]
 "-1, 0" = {Tile =  "register", Layer = "Object"}
-"1,1" = {Tile =  "shelf", Layer = "Object"}
-"4,1" = {Tile =  "shelf", Layer = "Object"}
-"7,1" = {Tile =  "shelf", Layer = "Object"}
-"10,1" = {Tile =  "shelf", Layer = "Object"}
+
+"-3, -3" = {Tile =  "basket", Layer = "Object"}
+"-1, -3" = {Tile =  "basket", Layer = "Object"}
+"-1, 3" = {Tile =  "basket", Layer = "Object"}
+"-3, 5" = {Tile =  "basket", Layer = "Object"}
+"-1, 7" = {Tile =  "basket", Layer = "Object"}
+"-3, 8" = {Tile =  "basket", Layer = "Object"}
+
+"2, -2" = {Tile =  "shelf", Layer = "Object"}
+"7, -2" = {Tile =  "shelf", Layer = "Object"}
+"12, -2" = {Tile =  "shelf", Layer = "Object"}
+"2, 3" = {Tile =  "shelf", Layer = "Object"}
+"7, 3" = {Tile =  "shelf", Layer = "Object"}
+"12, 3" = {Tile =  "shelf", Layer = "Object"}
+"2, 7" = {Tile =  "shelf", Layer = "Object"}
+"7, 7" = {Tile =  "shelf", Layer = "Object"}
+"12, 7" = {Tile =  "shelf", Layer = "Object"}
