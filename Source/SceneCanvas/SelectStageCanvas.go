@@ -69,6 +69,22 @@ func NewSelectStageCanvas(s *scene.SelectStageScene, gdata *game.Gamedata) (*Sel
 	if err != nil {
 		return nil, fmt.Errorf("ui.NewRouteMapUI() でエラーが発生しました。\n%w", err)
 	}
+	if gdata.AssetsManager == nil {
+		return nil, fmt.Errorf("gdata.AssetsManager が nil です")
+	}
+	backgroundData, err := gdata.AssetsManager.Image.NewImageData(
+		"みんげー_路線図",
+		"Backgrounds/みんげー_路線図.png",
+		"Backgrounds/みんげー_路線図.json",
+	)
+	if err != nil {
+		return nil, fmt.Errorf("路線図背景のImageData作成に失敗しました。\n%w", err)
+	}
+	_, background, err := gdata.AssetsManager.Image.Load(*backgroundData)
+	if err != nil {
+		return nil, fmt.Errorf("路線図背景の読み込みに失敗しました。\n%w", err)
+	}
+	routeMap.SetBackground(background)
 
 	guide, err := ui.NewText(utils.Position{}, color.Orange(), "", ui.FontFace(gdata.Font, 12))
 	if err != nil {
