@@ -87,6 +87,8 @@ func LoadAssemblePartsImages(imageManager *imageassets.ImageManager) error {
 
 		{A_gpu_B, "みんげー_グラボ_リザルト用_黒"},
 		{A_gpu_W, "みんげー_グラボ_リザルト用_白"},
+
+		{A_sticker, "みんげー_キャラステッカー_リザルト用"},
 	}
 
 	for _, load := range loads {
@@ -148,7 +150,7 @@ func AssembledImage(
 		{"グラフィックボード", gpu, gpu != AssemblePartsImage(A_noAdditionalParts)},
 		{"ケースの蓋", caseLid, caseLid != A_noAdditionalParts},
 		{"ゲーミング追加パーツ", gaming, gaming != A_noAdditionalParts},
-		{"ステッカー", sticker, sticker != A_sticker},
+		{"ステッカー", sticker, sticker == A_sticker},
 	}
 	for _, image := range required {
 		if !image.draw {
