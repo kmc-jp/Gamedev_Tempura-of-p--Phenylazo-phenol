@@ -20,7 +20,7 @@ const (
 	routeLineWidth    = 3.0
 	routeLabelSize    = 10.0
 	routeRingWidth    = 2.0
-	routeRingMargin   = 3.0
+	routeRingMargin   = 8.0
 )
 
 // RouteMapNode は路線図上のノード（駅）である。
@@ -167,7 +167,7 @@ func (u *RouteMapUI[N]) Draw(screen *ebiten.Image) {
 			vector.StrokeCircle(screen, cx, cy, float32(r), float32(routeRingWidth*scale), uiutils.SelectionBorderColor, true)
 		}
 
-		u.drawLabel(screen, node.Label, cx, cy, scale)
+		// u.drawLabel(screen, node.Label, cx, cy, scale)
 	}
 }
 

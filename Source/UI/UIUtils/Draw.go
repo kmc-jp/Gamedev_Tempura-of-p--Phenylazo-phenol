@@ -5,6 +5,7 @@
 package uiutils
 
 import (
+	gamecolor "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils/Color"
 	"image"
 	"image/color"
 
@@ -12,7 +13,7 @@ import (
 )
 
 // SelectionBorderColor は選択中のUI（ボタン、タブ、パーツカード）を示す枠の色である。
-var SelectionBorderColor = color.RGBA{R: 255, G: 165, B: 0, A: 255}
+var SelectionBorderColor = gamecolor.Olive().ToRGBA()
 
 // pixel は矩形描画に使い回す 1×1 の白画像。初回の描画時に作る。
 var pixel *ebiten.Image
