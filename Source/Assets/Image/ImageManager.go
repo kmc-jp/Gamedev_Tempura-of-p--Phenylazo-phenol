@@ -11,6 +11,7 @@ import (
 type ImageManager struct {
 	asepriteLoader *AsepriteLoader
 	imageFS        fs.FS
+	pngCache       map[string]*ebiten.Image
 }
 
 func NewImageManager(imageFS fs.FS) (*ImageManager, error) {
@@ -18,7 +19,7 @@ func NewImageManager(imageFS fs.FS) (*ImageManager, error) {
 	if err != nil {
 		return &ImageManager{}, fmt.Errorf("NewAsepriteLoader() でエラーが発生しました。\n%w", err)
 	}
-	return &ImageManager{asepriteLoader: al, imageFS: imageFS}, nil
+	return &ImageManager{asepriteLoader: al, imageFS: imageFS, pngCache: map[string]*ebiten.Image{}}, nil
 }
 
 func (im ImageManager) Load(data ImageData) (*goaseprite.File, *ebiten.Image, error) {
