@@ -1,7 +1,6 @@
 package scene
 
 import (
-	audioassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Audio"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
@@ -55,7 +54,6 @@ type TitleScene struct {
 	gamedata   *game.Gamedata
 	initScenes *InitializedScenes
 
-	bgmData   *audioassets.AudioData
 	bgmPlayer *audio.Player
 }
 
@@ -85,11 +83,10 @@ func NewTitleScene(worldDrawer Utils.Factory[WorldDrawer], bgDrawer Utils.Factor
 		}
 
 		const bgmPath = "bgm/title.mp3"
-		ad, err := gdata.AssetsManager.Audio.NewAudioData(bgmPath, audioassets.BGM)
+		bgmpl, err := gdata.LoadBGM(bgmPath)
 		if err != nil {
-			return &TitleScene{}, fmt.Errorf("gdata.AssetsManager.Audio.NewAudioData() でエラーが発生しました。\npath : %s\n%w", bgmPath, err)
+			return &TitleScene{}, fmt.Errorf("gdata.LoadBGM() でエラーが発生しました。\npath : %s\n%w", bgmPath, err)
 		}
-		bgmpl, err := gdata.AssetsManager.Audio.Load(ad)
 		bgmpl.Play()
 
 		ts := TitleScene{
@@ -101,7 +98,6 @@ func NewTitleScene(worldDrawer Utils.Factory[WorldDrawer], bgDrawer Utils.Factor
 			Input:      Input,
 			gamedata:   gdata,
 			initScenes: initScenes,
-			bgmData:    &ad,
 			bgmPlayer:  bgmpl,
 		}
 		canvas, err := newCanvas(&ts)
@@ -181,12 +177,24 @@ func (s *TitleScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 			// TODO: あそびかた画面ができたら遷移する
 			fmt.Println("あそびかた が押されました")
 		case TitleMenuSettings:
-			// TODO: せってい画面ができたら遷移する
-			fmt.Println("せってい が押されました")
+			return s.openSettings(), transition.Push(), nil
 		}
 	}
 
 	return
+}
+
+// openSettings は設定画面を重ねて開く。タイトルBGMは鳴らしたままにする。
+func (s *TitleScene) openSettings() Utils.Factory[game.Scene] {
+	return func() (game.Scene, error) {
+		settingsScene, err := s.initScenes.InitSettingsScene()
+		if err != nil {
+			return nil, fmt.Errorf("s.initScenes.InitSettingsScene() でエラーが発生しました。\n%w", err)
+		}
+		settingsScene.gamedata = s.gamedata
+		settingsScene.initScenes = s.initScenes
+		return settingsScene, nil
+	}
 }
 
 // startGame はステージ選択画面へ向かう。

@@ -1,7 +1,6 @@
 package scene
 
 import (
-	audioassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Audio"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	parts "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Parts"
@@ -130,21 +129,13 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*R
 			partsaudiopath  = "bgm/partsselect.mp3"
 			resultaudiopath = "bgm/result.wav"
 		)
-		partsad, err := gdata.AssetsManager.Audio.NewAudioData(partsaudiopath, audioassets.BGM)
+		partspl, err := gdata.LoadBGM(partsaudiopath)
 		if err != nil {
-			return &ResultScene{}, fmt.Errorf("gdata.AssetsManager.Audio.NewAudioData() でエラーが発生しました。\npath : %s\n%w", partsaudiopath, err)
+			return &ResultScene{}, fmt.Errorf("gdata.LoadBGM() でエラーが発生しました。\npath : %s\n%w", partsaudiopath, err)
 		}
-		partspl, err := gdata.AssetsManager.Audio.Load(partsad)
+		resultpl, err := gdata.LoadBGM(resultaudiopath)
 		if err != nil {
-			return &ResultScene{}, fmt.Errorf("gdata.AssetsManager.Audio.Load(partsad) でエラーが発生しました。\npath : %s\n%w", partsaudiopath, err)
-		}
-		resultad, err := gdata.AssetsManager.Audio.NewAudioData(resultaudiopath, audioassets.BGM)
-		if err != nil {
-			return &ResultScene{}, fmt.Errorf("gdata.AssetsManager.Audio.NewAudioData() でエラーが発生しました。\npath : %s\n%w", resultaudiopath, err)
-		}
-		resultpl, err := gdata.AssetsManager.Audio.Load(resultad)
-		if err != nil {
-			return &ResultScene{}, fmt.Errorf("gdata.AssetsManager.Audio.Load(partsad) でエラーが発生しました。\npath : %s\n%w", resultaudiopath, err)
+			return &ResultScene{}, fmt.Errorf("gdata.LoadBGM() でエラーが発生しました。\npath : %s\n%w", resultaudiopath, err)
 		}
 
 		ts := ResultScene{
@@ -346,11 +337,7 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 			s.benchmarkScoreStarted = true
 
 			// 仮で音を鳴らす
-			explosionSound, err := s.gamedata.AssetsManager.Audio.NewAudioData("爆発1.mp3", audioassets.SE)
-			if err != nil {
-				return nil, transition.None(), fmt.Errorf("AudioDataの生成に失敗しました。\n%w", err)
-			}
-			pl, err := s.gamedata.AssetsManager.Audio.Load(explosionSound)
+			pl, err := s.gamedata.LoadSE("爆発1.mp3")
 			if err != nil {
 				return nil, transition.None(), fmt.Errorf("AudioPlayerの生成に失敗しました。\n%w", err)
 			}

@@ -10,6 +10,7 @@ type InitializedScenes struct {
 	InitSelectStageScene Utils.Factory[*SelectStageScene]
 	InitPlayScene        map[stageinfo.Location]Utils.Factory[*PlayScene]
 	InitPauseScene       Utils.Factory[*PauseScene]
+	InitSettingsScene    Utils.Factory[*SettingsScene]
 	InitTrainScene       Utils.Factory[*TrainScene]
 	InitResultScene      Utils.Factory[*ResultScene]
 }
