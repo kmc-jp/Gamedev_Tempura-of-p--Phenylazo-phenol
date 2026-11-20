@@ -20,7 +20,7 @@ const (
 	playableTime_hour = Endtime - Departuretime
 	PlayableTime      = 60 * playableTime_hour //分単位のプレイ可能時間
 
-	CountSpeed      = 1 //WorldTime 1 min あたりの経過時間 0.1sec
+	CountSpeed      = 4 //WorldTime 1 min あたりの経過時間 0.1sec
 	countSpeed_tick = CountSpeed * 6
 )
 
