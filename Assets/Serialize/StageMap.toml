@@ -15,66 +15,66 @@ Label = "自宅"
 X = 84
 Y = 205
 
-[Stations.Red]
-Label = "Red"
-X = 80
-Y = 150
-
-[Stations.Green]
-Label = "Green"
-X = 240
-Y = 150
-
 [Stations.Blue]
 Label = "Blue"
-X = 80
-Y = 95
+X = 108
+Y = 120
+
+[Stations.Red]
+Label = "Red"
+X = 226
+Y = 147
 
 [Stations.Orange]
 Label = "Orange"
-X = 240
-Y = 95
+X = 51
+Y = 57
 
 [Stations.Purple]
 Label = "Purple"
-X = 160
-Y = 70
+X = 274
+Y = 99
+
+[Stations.Green]
+Label = "Green"
+X = 166
+Y = 66
 
 [[Lines]]
 From = "Departure"
-To = "Red"
+To = "Blue"
 FromKey = "Up"
 ToKey = "Down"
 Minutes = 10
 
 [[Lines]]
 From = "Departure"
-To = "Green"
+To = "Red"
 FromKey = "Right"
 ToKey = "Down"
 Minutes = 20
 
 [[Lines]]
-From = "Red"
-To = "Green"
+From = "Blue"
+To = "Red"
 Minutes = 15
 
 [[Lines]]
-From = "Red"
-To = "Blue"
-Minutes = 10
-
-[[Lines]]
-From = "Green"
+From = "Blue"
 To = "Orange"
 Minutes = 10
 
 [[Lines]]
-From = "Blue"
+From = "Red"
 To = "Purple"
-Minutes = 15
+Minutes = 10
 
 [[Lines]]
 From = "Orange"
-To = "Purple"
+To = "Green"
+Minutes = 15
+
+[[Lines]]
+From = "Purple"
+To = "Green"
 Minutes = 15

@@ -182,7 +182,7 @@ func (u *RouteMapUI[N]) drawLabel(screen *ebiten.Image, label string, cx, cy flo
 		X: float64(cx) - w/2,
 		Y: float64(cy) + (routeNodeRadius+routeRingMargin+2)*scale,
 	}
-	DrawText(pos, color.White(), label, face, screen)
+	DrawText(pos, color.Orange(), label, face, screen)
 }
 
 var _ canvas.CanvasItem = (*RouteMapUI[int])(nil)
