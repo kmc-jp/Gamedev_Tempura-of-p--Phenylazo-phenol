@@ -12,8 +12,8 @@ Height = 240
 
 [Stations.Departure]
 Label = "自宅"
-X = 40
-Y = 190
+X = 84
+Y = 205
 
 [Stations.Red]
 Label = "Red"
