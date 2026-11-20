@@ -88,7 +88,7 @@ func (tm *TileMap) SetGameObject(
 		scene.AddEntity(obj)
 
 		// 干渉可能タイル設定
-		Interact, err := InteractiveTiles(data.Interact, scene, obj.Render())
+		Interact, err := InteractiveTiles(data.Interact, scene, obj.Render(), obj.Position())
 		if err != nil {
 			return fmt.Errorf("InteractiveTiles(data.Interact) でエラーが発生しました。\ndata.Interact = %d\n%w", data.Interact, err)
 		}

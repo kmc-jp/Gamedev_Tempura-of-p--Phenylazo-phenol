@@ -15,7 +15,7 @@ type InteractableTile interface {
 
 // tilemap.InteractType を、対応するコンポーネントのファクトリに変換する
 // nil かもしれないので対応できるようにせよ
-func InteractiveTiles(Type tilemap.InteractType, scene *scene.PlayScene, render gameobject.Render) (Utils.Factory[InteractableTile], error) {
+func InteractiveTiles(Type tilemap.InteractType, scene *scene.PlayScene, render gameobject.Render, position Utils.Position) (Utils.Factory[InteractableTile], error) {
 	switch Type {
 	case tilemap.None:
 		return nil, nil
@@ -26,7 +26,7 @@ func InteractiveTiles(Type tilemap.InteractType, scene *scene.PlayScene, render 
 		}
 		return Utils.CastFactory[*ShelfTile, InteractableTile](NewShelfTile(scene, mr)), nil
 	case tilemap.Register:
-		return Utils.CastFactory[*RegisterTile, InteractableTile](NewRegisterTile(scene)), nil
+		return Utils.CastFactory[*RegisterTile, InteractableTile](NewRegisterTile(scene, render, position)), nil
 	default:
 		return nil, fmt.Errorf("未定義の Type が渡されました。\nInteractiveTiles() または tilemap.InteractType の定義を確認してください。")
 	}

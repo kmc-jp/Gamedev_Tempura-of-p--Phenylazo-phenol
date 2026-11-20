@@ -1,6 +1,7 @@
 package component
 
 import (
+	gameobject "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/GameObject"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
@@ -26,8 +27,16 @@ func (s RegisterTile) Update(active bool) error {
 	return nil
 }
 
-func NewRegisterTile(scene *scene.PlayScene) Utils.Factory[*RegisterTile] {
+func NewRegisterTile(scene *scene.PlayScene, render gameobject.Render, position Utils.Position) Utils.Factory[*RegisterTile] {
 	return func() (*RegisterTile, error) {
+		// レジ台の上に「お会計」吹き出しを浮かべる
+		img, _, _ := render.Draw()
+		if img != nil {
+			top := Utils.Position{X: position.X, Y: position.Y - float64(img.Bounds().Dy())/2}
+			if err := scene.AddRegisterBalloon(top); err != nil {
+				return nil, fmt.Errorf("AddRegisterBalloon() でエラーが発生しました。\n%w", err)
+			}
+		}
 		return &RegisterTile{
 			scene: scene,
 		}, nil
