@@ -45,8 +45,6 @@ type PlayCanvasAPI interface {
 
 	// TogglePartsList は、閉じていれば発見・所持パーツで一覧を構築して開き、開いていれば閉じる。
 	TogglePartsList() error
-	// ShowFoundPartLog は発見したパーツ名をプレイヤー頭上に表示する。
-	ShowFoundPartLog(text string)
 	// MovePartSelectionDown は購入対象の選択を1つ下へ移す。
 	MovePartSelectionDown()
 	// MovePartSelectionUp は購入対象の選択を1つ上へ移す。
@@ -496,13 +494,6 @@ func (s *PlayScene) AddRegisterBalloon(top Utils.Position) error {
 	}
 	s.AddEntity(balloon)
 	return nil
-}
-
-func (s *PlayScene) ShowFoundPartLog(part *game.Part) {
-	if part == nil {
-		return
-	}
-	s.canvas.ShowFoundPartLog(fmt.Sprintf("%s を見つけた", part.Name))
 }
 
 func (s *PlayScene) removeExpiredEntities() {

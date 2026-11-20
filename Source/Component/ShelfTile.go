@@ -50,7 +50,6 @@ func (s *ShelfTile) Interact(player *Player) error {
 		}
 	}
 	s.scene.Gamedata.AddPartToFoundList(foundPart)
-	s.scene.ShowFoundPartLog(foundPart)
 	s.scene.ShowPartPopup(foundPart, player.tw.tf.Position())
 
 	return nil

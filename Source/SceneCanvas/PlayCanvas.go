@@ -22,7 +22,6 @@ type PlayCanvas struct {
 	gdata            *game.Gamedata
 	canvas           *canvas.Canvas
 	partsList        *ui.PartsListUI
-	foundPartLog     *commonui.LogWindow
 	actionLog        *commonui.LogWindow
 	messageWindow    *commonui.MessageWindow
 	purchaseConfirm  *commonui.Confirm
@@ -35,10 +34,6 @@ type PlayCanvas struct {
 }
 
 const (
-	foundPartLogDuration      = 10 // unit: 0.1s
-	foundPartLogOffsetX       = 150
-	foundPartLogOffsetY       = 50
-	foundPartLogTextSize      = 10
 	messageWindowTextSize     = 20
 	messageWindowPaddingX     = 10
 	messageWindowPaddingY     = 5
@@ -51,7 +46,6 @@ const (
 )
 
 var (
-	foundPartLogTextColor        = color.Black()
 	messageWindowTextColor       = color.Black()
 	messageWindowBackgroundColor = color.SkyBlue().MakeTansparentColor(0.2)
 	confirmTextColor             = color.White()
@@ -86,17 +80,6 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	partsList, err := newPartsList(gdata)
 	if err != nil {
 		return nil, err
-	}
-
-	foundPartLog, err := commonui.NewLogWindow(
-		utils.Position{},
-		gdata.Font,
-		foundPartLogTextSize,
-		foundPartLogTextColor,
-		foundPartLogDuration,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("commonui.NewLogWindow() でエラーが発生しました。\n%w", err)
 	}
 
 	actionLog, err := commonui.NewLogWindow(
@@ -162,7 +145,7 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{worldTimeText, partsList, gameDataUI, foundPartLog, actionLog, messageWindow, purchaseConfirm, exitStoreConfirm} {
+	for _, item := range []canvas.CanvasItem{worldTimeText, partsList, gameDataUI, actionLog, messageWindow, purchaseConfirm, exitStoreConfirm} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("プレイ画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -173,7 +156,6 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 		gdata:                   gdata,
 		canvas:                  c,
 		partsList:               partsList,
-		foundPartLog:            foundPartLog,
 		actionLog:               actionLog,
 		messageWindow:           messageWindow,
 		purchaseConfirm:         purchaseConfirm,
@@ -204,18 +186,9 @@ func (c *PlayCanvas) Update(active bool) error {
 	return c.canvas.Update(active)
 }
 
-// ShowFoundPartLog は発見したパーツ名をプレイヤー頭上に表示する。
-func (c *PlayCanvas) ShowFoundPartLog(text string) {
-	c.foundPartLog.SetText(text)
-}
-
 // Draw implements [scene.PlayCanvasAPI].
 func (c *PlayCanvas) Draw(screen *ebiten.Image) {
 	bounds := screen.Bounds()
-	c.foundPartLog.SetPosition(utils.Position{
-		X: float64(bounds.Dx()/2 - foundPartLogOffsetX),
-		Y: float64(bounds.Dy()/2 - foundPartLogOffsetY),
-	})
 	c.actionLog.SetCenter(float64(bounds.Dx()/2), float64(bounds.Dy()/2)+100)
 	messageSize := c.messageWindow.Size()
 	c.messageWindow.SetPosition(utils.Position{

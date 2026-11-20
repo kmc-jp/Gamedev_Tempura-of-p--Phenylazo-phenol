@@ -35,7 +35,12 @@ func SelectStageSceneConstruct(assetsManager *assets.AssetsManager, inputHandler
 			return selectStageCanvas, nil
 		}
 
-		selectStagescene, err := scene.NewSelectStageScene(DrawerFactory, stageMap, newCanvas, inputHandler, gdata, initScenes)()
+		selectStagescene, err := scene.NewSelectStageScene(DrawerFactory, stageMap, newCanvas, inputHandler, gdata, initScenes,
+			// 今いる場所は行き先に選べない（別の場所への移動を必須にする）
+			scene.WithRule(scene.SelectStageRule{
+				CanConfirm: func(loc stageinfo.Location) bool { return loc != gdata.CurrentLocation() },
+			}),
+		)()
 		if err != nil {
 			return nil, fmt.Errorf("NewSelectStageScene() でエラーが発生しました。\n%w", err)
 		}
