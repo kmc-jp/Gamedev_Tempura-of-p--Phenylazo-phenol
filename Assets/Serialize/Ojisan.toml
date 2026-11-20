@@ -1,7 +1,7 @@
 Name = "Ojisan"
 
 # 出現人数 (Spawns を指定しない場合に、床からランダムに選ぶ)
-Count = 3
+Count = 80
 
 # 歩き出すまでの待ちフレーム数の範囲 (60 = 約1秒)
 MoveIntervalMin = 30

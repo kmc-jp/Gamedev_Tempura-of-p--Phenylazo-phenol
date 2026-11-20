@@ -26,7 +26,7 @@ type Player struct {
 }
 
 const (
-	interactInterval = 1 //unit: 0.1 sec
+	interactInterval = 10 //unit: 0.1 sec
 )
 
 func (p *Player) Update(active bool) (err error) {
