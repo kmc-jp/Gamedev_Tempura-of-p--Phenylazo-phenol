@@ -26,6 +26,11 @@ var ojisanDirections = []Utils.Vec2Int{
 	Utils.NewVecIntRight(),
 }
 
+var horizontalDirections = []Utils.Vec2Int{
+	Utils.NewVecIntLeft(),
+	Utils.NewVecIntRight(),
+}
+
 // test
 var _ gameobject.Component = &Ojisan{}
 
@@ -73,6 +78,9 @@ func NewOjisan(obj *gameobject.GameObject, min int, max int) Utils.Factory[*Ojis
 			max: max,
 		}
 		o.wait = o.nextWait() // 全員が同時に歩き出さないようにする
+
+		// 最初は左右どちらかを向く (上下の絵が無くても、全体再生にならないようタグを決めておく)
+		o.tw.faceTo(horizontalDirections[rand.Intn(len(horizontalDirections))])
 
 		return o, nil
 	}

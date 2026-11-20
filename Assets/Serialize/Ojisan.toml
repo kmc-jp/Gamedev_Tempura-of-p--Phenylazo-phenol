@@ -12,9 +12,9 @@ MoveIntervalMax = 120
 
 WalkTime = 16
 
-# アニメーションタグ
-U = "backward"
-D = "forward"
+# アニメーションタグ (上下の絵は無いので空 = 直前の左右の向きを保つ)
+U = ""
+D = ""
 L = "left"
 R = "right"
 
@@ -24,9 +24,8 @@ X = 0
 Y = 0
 Layer = "Human"
 
-# 絵が届くまで仮に主人公の絵を使う。届いたら JsonPath / PngPath を差し替える
 [TileData]
 Name = "Ojisan"
-JsonPath = "みんげー主人公走るアニメーション前後左右.json"
-PngPath = "みんげー主人公走るアニメーション前後左右-Sheet.png"
-Offset = {X = 0, Y = -7}
+JsonPath = "おじさん.json"
+PngPath = "おじさん.png"
+Offset = {X = 0, Y = -3}

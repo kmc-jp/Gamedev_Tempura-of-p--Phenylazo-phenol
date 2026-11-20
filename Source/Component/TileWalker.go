@@ -49,14 +49,22 @@ func (w *TileWalker) TryMove(Direction Utils.Vec2Int) bool {
 		w.isMoving = true
 		w.direction = Direction
 		w.tm.Occupied[moveto] = true // 移動先を予約
-		w.anim.SetTag(w.dirTag[Direction])
+		w.faceTo(Direction)
 		w.anim.SetPlaying(true)
 		return true
 	} else {
 		// 向きを変えるだけ
 		w.direction = Direction
-		w.anim.SetTag(w.dirTag[Direction])
+		w.faceTo(Direction)
 		return false
+	}
+}
+
+// 向きに対応するアニメーションタグに切り替える
+// タグが空文字の方向(絵が無い方向)では絵を変えず、直前の向きを保つ
+func (w *TileWalker) faceTo(Direction Utils.Vec2Int) {
+	if tag := w.dirTag[Direction]; tag != "" {
+		w.anim.SetTag(tag)
 	}
 }
 

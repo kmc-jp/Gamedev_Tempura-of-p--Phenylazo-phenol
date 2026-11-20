@@ -178,7 +178,6 @@ func MakePlayer(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene, T
 }
 
 // おじさん設定
-// 絵が届くまでは仮に暗くした主人公の絵を使う
 func MakeOjisans(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene, TileMap *component.TileMap) ([]*gameobject.GameObject, error) {
 	SerializeData, err := assetsManager.Serialize.NewSerializeData("Ojisan", reflect.TypeFor[serializetarget.OjisanConfig](), "Ojisan.toml")
 	if err != nil {
@@ -210,10 +209,7 @@ func MakeOjisans(assetsManager *assets.AssetsManager, PlScene *scene.PlayScene, 
 		return Utils.CastFactory[*component.StdTransform, gameobject.Transform](component.NewStdTransform(position))
 	}
 	NewRenderer := func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[*component.AnimRender] {
-		// 仮の見た目 : 主人公と区別できるよう暗い茶色にする (専用の絵が届いたら外す)
-		dio := &ebiten.DrawImageOptions{}
-		dio.ColorScale.Scale(0.75, 0.55, 0.4, 1)
-		return component.NewAnimRender(asp, img, layer, "", component.AR_WithDrawImageOptions(dio))
+		return component.NewAnimRender(asp, img, layer, "")
 	}
 
 	ojisans := make([]*gameobject.GameObject, 0, len(spawns))
