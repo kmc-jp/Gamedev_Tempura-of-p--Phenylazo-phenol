@@ -176,3 +176,37 @@ func NewPlayer(
 		return plobj, nil
 	}
 }
+
+func NewOjisan(
+	name string,
+	position tilemap.TilePosition,
+	TileData tilemap.TileData,
+	TileMap *component.TileMap,
+	PlScene *scene.PlayScene,
+	NewTransform func(Utils.Position) Utils.Factory[gameobject.Transform],
+	NewAnimRender func(asp *goaseprite.File, img *ebiten.Image, layer string) Utils.Factory[*component.AnimRender],
+	assetsManager *assets.AssetsManager,
+	walktime int,
+	dirTag map[Utils.Vec2Int]string,
+	moveIntervalMin int,
+	moveIntervalMax int,
+) Utils.Factory[*gameobject.GameObject] {
+	return func() (*gameobject.GameObject, error) {
+		obj, err := NewCharactor(name, position, TileData, TileMap, PlScene, NewTransform, NewAnimRender, assetsManager, walktime, dirTag)()
+		if err != nil {
+			return nil, fmt.Errorf("NewCharactor() でエラーが発生しました。\n%w", err)
+		}
+
+		// ランダムウォーク (Component)
+		oj, err := component.NewOjisan(obj, moveIntervalMin, moveIntervalMax)()
+		if err != nil {
+			return nil, fmt.Errorf("component.NewOjisan() でエラーが発生しました。\n%w", err)
+		}
+		err = obj.AddComponent(oj)
+		if err != nil {
+			return nil, fmt.Errorf("obj.AddComponent(oj) でエラーが発生しました。\n%w", err)
+		}
+
+		return obj, nil
+	}
+}

@@ -1,0 +1,31 @@
+Name = "Ojisan"
+
+# 出現人数 (Spawns を指定しない場合に、床からランダムに選ぶ)
+Count = 3
+
+# 歩き出すまでの待ちフレーム数の範囲 (60 = 約1秒)
+MoveIntervalMin = 30
+MoveIntervalMax = 120
+
+# 出現位置を固定したい場合はコメントを外す (指定すると Count は無視される)
+# Spawns = [{X = 3, Y = 0}, {X = 6, Y = 4}]
+
+WalkTime = 16
+
+# アニメーションタグ (上下の絵は無いので空 = 直前の左右の向きを保つ)
+U = ""
+D = ""
+L = "left"
+R = "right"
+
+# X, Y は使わない (出現位置は Spawns / ランダム)。Layer のみ有効
+[Position]
+X = 0
+Y = 0
+Layer = "Human"
+
+[TileData]
+Name = "Ojisan"
+JsonPath = "おじさん.json"
+PngPath = "おじさん.png"
+Offset = {X = 0, Y = -3}
