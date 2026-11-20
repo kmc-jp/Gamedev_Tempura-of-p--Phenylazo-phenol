@@ -2,7 +2,6 @@ package audioassets
 
 import (
 	"fmt"
-	"io"
 	"io/fs"
 
 	"github.com/hajimehoshi/ebiten/v2/audio"
@@ -10,19 +9,18 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/audio/wav"
 )
 
-// BGMは長いのでキャッシュが重くなりすぎたら方式を変える
-// 現在はバイナリ音源を全キャッシュ (SEと同じ)
+// ループ再生するためのstreamのラッパーを保存
 type BGMLoader struct {
 	fs       fs.FS
 	audiocxt *audio.Context
-	cache    map[string][]byte // キーはパス
+	cache    map[string]*audio.InfiniteLoop // キーはパス
 }
 
 func NewBGMLoader(fs fs.FS, audiocxt *audio.Context) *BGMLoader {
 	return &BGMLoader{
 		fs:       fs,
 		audiocxt: audiocxt,
-		cache:    map[string][]byte{},
+		cache:    map[string]*audio.InfiniteLoop{},
 	}
 }
 
@@ -37,19 +35,22 @@ func (al *BGMLoader) Load(data AudioData) (*audio.Player, error) {
 	}
 
 	ad, _ := al.cache[data.Path]
-	pl := al.mkPlayer(ad)
+	pl, err := al.mkPlayer(ad)
+	if err != nil {
+		return nil, fmt.Errorf("al.mkPlayer(ad) でエラーが発生しました。\n%w", err)
+	}
 	return pl, nil
 }
 
 // デコードして []byte にする
-func (al BGMLoader) fetch(data AudioData) ([]byte, error) {
+func (al BGMLoader) fetch(data AudioData) (*audio.InfiniteLoop, error) {
 	rawfile, err := al.fs.Open(data.Path)
 	if err != nil {
 		return nil, err
 	}
 	defer rawfile.Close()
 
-	var target []byte
+	var target *audio.InfiniteLoop
 
 	switch data.ext {
 	case ".wav":
@@ -57,19 +58,13 @@ func (al BGMLoader) fetch(data AudioData) ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("wavファイルの解析に失敗しました。\nPath : %s\n%w", data.Path, err)
 		}
-		target, err = io.ReadAll(stream)
-		if err != nil {
-			return nil, fmt.Errorf("wavファイルの解析結果が読み込めません。\nPath : %s\n%w", data.Path, err)
-		}
+		target = audio.NewInfiniteLoop(stream, stream.Length())
 	case ".mp3":
 		stream, err := mp3.DecodeWithSampleRate(al.audiocxt.SampleRate(), rawfile)
 		if err != nil {
 			return nil, fmt.Errorf("mp3ファイルの解析に失敗しました。\nPath : %s\n%w", data.Path, err)
 		}
-		target, err = io.ReadAll(stream)
-		if err != nil {
-			return nil, fmt.Errorf("mp3ファイルの解析結果が読み込めません。\nPath : %s\n%w", data.Path, err)
-		}
+		target = audio.NewInfiniteLoop(stream, stream.Length())
 	default:
 		return nil, fmt.Errorf("対応していないファイル形式です\nPath : %s", data.Path)
 	}
@@ -78,7 +73,10 @@ func (al BGMLoader) fetch(data AudioData) ([]byte, error) {
 }
 
 // デコードしたデータを *audio.Player にする
-// 不正なデータでも問答無用で変換してくれる
-func (al BGMLoader) mkPlayer(AudioData []byte) *audio.Player {
-	return al.audiocxt.NewPlayerFromBytes(AudioData)
+func (al BGMLoader) mkPlayer(AudioData *audio.InfiniteLoop) (*audio.Player, error) {
+	pl, err := al.audiocxt.NewPlayer(AudioData)
+	if err != nil {
+		return nil, fmt.Errorf("al.audiocxt.NewPlayer(AudioData) でエラーが発生しました。\n%w", err)
+	}
+	return pl, nil
 }
