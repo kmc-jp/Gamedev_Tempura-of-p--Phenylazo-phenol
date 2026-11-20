@@ -14,6 +14,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+// TrainBackgroundScale は電車内背景画像(128x80)の描画倍率。画面(768x480想定)を埋める値にする。
+const TrainBackgroundScale = 6
+
 // TrainCanvas は TrainScene のUI構成である。案内テキストと所持パーツ一覧を持つ。
 // 一覧を表示する時点はSceneが決めるため、Sceneのポインタを持って観測する。
 type TrainCanvas struct {
