@@ -271,12 +271,12 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 		}
 
 		if s.pcImage == nil {
-			caseBack, mb, cooler, gpu, caseLid, gaming, err := parts.DeterminePartsConfiguration(s.gamedata.Assemble)
+			caseBack, mb, cooler, gpu, caseLid, gaming, sticker, err := parts.DeterminePartsConfiguration(s.gamedata.Assemble)
 			if err != nil {
 				return nil, transition.None(), fmt.Errorf("組み立てPC画像の構成に失敗しました\n%w", err)
 			}
 			s.isGamingColor = gaming != parts.A_noAdditionalParts
-			s.pcImage, err = parts.AssembledImage(caseBack, mb, cooler, gpu, caseLid, gaming)
+			s.pcImage, err = parts.AssembledImage(caseBack, mb, cooler, gpu, caseLid, gaming, sticker)
 			if err != nil {
 				return nil, transition.None(), fmt.Errorf("組み立てPC画像の構築に失敗しました\n%w", err)
 			}
