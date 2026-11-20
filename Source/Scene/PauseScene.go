@@ -215,8 +215,7 @@ func (s *PauseScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 		case PauseMenuTitle:
 			s.canvas.ShowTitleConfirmation()
 		case PauseMenuSettings:
-			// TODO: せってい画面ができたら遷移する
-			fmt.Println("せってい が押されました")
+			return s.openSettings(), transition.Push(), nil
 		case PauseMenuHowToPlay:
 			// TODO: あそびかた画面ができたら遷移する
 			fmt.Println("あそびかた が押されました")
@@ -224,6 +223,19 @@ func (s *PauseScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 	}
 
 	return
+}
+
+// openSettings は設定画面を重ねて開く。
+func (s *PauseScene) openSettings() Utils.Factory[game.Scene] {
+	return func() (game.Scene, error) {
+		settingsScene, err := s.initScenes.InitSettingsScene()
+		if err != nil {
+			return nil, fmt.Errorf("s.initScenes.InitSettingsScene() でエラーが発生しました。\n%w", err)
+		}
+		settingsScene.gamedata = s.gamedata
+		settingsScene.initScenes = s.initScenes
+		return settingsScene, nil
+	}
 }
 
 // resume はポーズを解除してゲームへ戻る。

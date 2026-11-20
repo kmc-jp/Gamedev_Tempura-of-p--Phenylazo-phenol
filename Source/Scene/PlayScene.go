@@ -1,7 +1,6 @@
 package scene
 
 import (
-	audioassets "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Audio"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
@@ -135,13 +134,9 @@ func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], newCanvas func(*PlaySc
 			"bgm/shop3.mp3",
 		}
 		path := bgmpaths[rand.Intn(bgmcount)]
-		ad, err := gdata.AssetsManager.Audio.NewAudioData(path, audioassets.BGM)
+		pl, err := gdata.LoadBGM(path)
 		if err != nil {
-			return &PlayScene{}, fmt.Errorf("gdata.AssetsManager.Audio.NewAudioData() でエラーが発生しました。 \n%w", err)
-		}
-		pl, err := gdata.AssetsManager.Audio.Load(ad)
-		if err != nil {
-			return &PlayScene{}, fmt.Errorf("gdata.AssetsManager.Audio.Load() でエラーが発生しました。 \n%w", err)
+			return &PlayScene{}, fmt.Errorf("gdata.LoadBGM() でエラーが発生しました。 \n%w", err)
 		}
 		pl.Play()
 		ps := PlayScene{

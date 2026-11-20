@@ -66,6 +66,9 @@ type Gamedata struct {
 
 	// PlayScene突入時に売却するパーツ
 	sell *Part
+
+	// 音量設定。ResetGame では初期化しない
+	volume audioVolume
 }
 
 // Gamedata初期値
@@ -111,6 +114,7 @@ func NewGamedata() *Gamedata {
 		Weight:          InitialWeight,
 		Money:           InitialMoney,
 		currentLocation: stageinfo.Departure,
+		volume:          audioVolume{bgm: DefaultVolume, se: DefaultVolume},
 	}
 	g.DisableWorldTimeProgressing()
 	return g
