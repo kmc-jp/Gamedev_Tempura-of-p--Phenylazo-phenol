@@ -102,9 +102,11 @@ const (
 	Result_Assembled
 	Result_Benchmark
 	Result_QuitGame
+
+	Ranking_View
 )
 
-const states = 16 //stateの数
+const states = 17 //stateの数
 
 type state uint
 

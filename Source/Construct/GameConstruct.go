@@ -5,6 +5,7 @@ import (
 	serializetarget "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Assets/Serialize/SerializeTarget"
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
+	ranking "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Ranking"
 	scene "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene"
 	parts "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Parts"
 	stageinfo "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/StageInfo"
@@ -69,7 +70,12 @@ func GameConstruct(assetsManager *assets.AssetsManager) Utils.Factory[*game.Game
 		initializedScenes.InitSettingsScene = SettingsSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
 		initializedScenes.InitHowToPlayScene = HowToPlaySceneConstruct(assetsManager, Handler, gdata, initializedScenes)
 		initializedScenes.InitTrainScene =TrainSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
-		initializedScenes.InitResultScene = ResultSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
+		rankingStore, err := ranking.NewDefaultStore()
+		if err != nil {
+			return nil, fmt.Errorf("ranking.NewDefaultStore() でエラーが発生しました。\n%w", err)
+		}
+		initializedScenes.InitResultScene = ResultSceneConstruct(assetsManager, Handler, gdata, initializedScenes, rankingStore)
+		initializedScenes.InitRankingScene = RankingSceneConstruct(assetsManager, Handler, gdata, initializedScenes, rankingStore)
 		initializedScenes.InitSelectStageScene = SelectStageSceneConstruct(assetsManager, Handler, gdata, initializedScenes)
 		//(ここまで)各シーンの Constructor
 

@@ -11,7 +11,7 @@ import (
 	input "github.com/quasilyte/ebitengine-input"
 )
 
-func ResultSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata, initScenes *scene.InitializedScenes) Utils.Factory[*scene.ResultScene] {
+func ResultSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *input.Handler, gdata *game.Gamedata, initScenes *scene.InitializedScenes, store scene.RankingStore) Utils.Factory[*scene.ResultScene] {
 	return func() (*scene.ResultScene, error) {
 		DrawerFactory, err := MakeWorldDrawerFactory(assetsManager)
 		if err != nil {
@@ -27,7 +27,7 @@ func ResultSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inp
 			return resultCanvas, nil
 		}
 
-		resultscene, err := scene.NewResultScene(DrawerFactory, newCanvas, inputHandler, gdata, initScenes)()
+		resultscene, err := scene.NewResultScene(DrawerFactory, newCanvas, inputHandler, gdata, initScenes, store)()
 		if err != nil {
 			return nil, fmt.Errorf("NewResultScene() でエラーが発生しました。\n%w", err)
 		}

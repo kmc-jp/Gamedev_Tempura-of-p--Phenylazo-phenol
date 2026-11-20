@@ -101,7 +101,7 @@ func (ips *InstalledParts) buildRecords() error {
 			Y: targetPosition.Y,
 		}
 
-		categoryName := partCategoryName(uint(v.Kind))
+		categoryName := PartCategoryName(uint(v.Kind))
 		var categoryUI *ui.AnimatableUI
 		if categoryName != "" {
 			categoryText, err := ui.NewText(
@@ -209,7 +209,8 @@ func (i *InstalledParts) allAnimationsFinished() bool {
 	return true
 }
 
-func partCategoryName(kind uint) string {
+// PartCategoryName はパーツ種別の表示名を返す。必須パーツ以外は空文字。
+func PartCategoryName(kind uint) string {
 	switch kind {
 	case uint(game.CPU):
 		return "CPU"

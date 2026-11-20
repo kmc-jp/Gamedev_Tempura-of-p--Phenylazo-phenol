@@ -3,11 +3,14 @@ package scene
 import (
 	game "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Game"
 	inputconfig "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/InputConfig"
+	ranking "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Ranking"
 	parts "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Parts"
 	partsdata "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/Parts"
 	transition "Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Scene/SceneTransitionType"
 	"Gamedev_Tempura-of-p--Phenylazo-phenol/Source/Utils"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
@@ -54,6 +57,14 @@ type ResultCanvasAPI interface {
 	IsInstalledPartsFinished() bool
 }
 
+// RankingStore はランキングの保存先の契約である。実装は ranking package に置き、constructから注入する。
+type RankingStore interface {
+	// Record は記録を保存し、入った順位(0始まり、圏外は -1)を返す。
+	Record(entry ranking.Entry) (int, error)
+	// Entries は保存済みの記録を順位順に返す。
+	Entries() ([]ranking.Entry, error)
+}
+
 type ResultScene struct {
 	entities    []Entity
 	worldDrawer WorldDrawer
@@ -71,7 +82,12 @@ type ResultScene struct {
 	partUseConfirmationPart *game.Part
 	benchmarkScoreStarted   bool
 
-	pcImage          *ebiten.Image
+	rankingStore RankingStore
+	appearance   parts.Appearance
+	// rankedIndex は今回のスコアが入った順位(0始まり)。圏外・未記録は -1。
+	rankedIndex int
+
+	pcImage         *ebiten.Image
 	pcDrawOption     *ebiten.DrawImageOptions
 	gamingBackground *ebiten.Image
 	normalBackground *ebiten.Image
@@ -83,8 +99,11 @@ type ResultScene struct {
 
 // NewResultScene は ResultScene を生成する。
 // CanvasはSceneを参照するため、生成関数 newCanvas を受け取り、Sceneの生成直後に呼んで注入する。
-func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*ResultScene) (ResultCanvasAPI, error), Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes) Utils.Factory[*ResultScene] {
+func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*ResultScene) (ResultCanvasAPI, error), Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes, rankingStore RankingStore) Utils.Factory[*ResultScene] {
 	return func() (*ResultScene, error) {
+		if rankingStore == nil {
+			return &ResultScene{}, fmt.Errorf("ResultSceneのrankingStoreが nil です")
+		}
 		if newCanvas == nil {
 			return &ResultScene{}, fmt.Errorf("ResultSceneのcanvas生成関数が nil です")
 		}
@@ -144,6 +163,8 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*R
 			Input:            Input,
 			gamedata:         gdata,
 			initScenes:       initScenes,
+			rankingStore:     rankingStore,
+			rankedIndex:      -1,
 			pcImage:          nil,
 			pcDrawOption:     pcImageConfig,
 			gamingBackground: gamingBackground,
@@ -213,6 +234,7 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 		s.isGamingColor = false
 		s.partKindIndex = 0
 		s.benchmarkScoreStarted = false
+		s.rankedIndex = -1
 		if err := s.refreshCandidates(); err != nil {
 			return nil, transition.None(), err
 		}
@@ -303,12 +325,13 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 		}
 
 		if s.pcImage == nil {
-			caseBack, mb, cooler, gpu, caseLid, gaming, sticker, err := parts.DeterminePartsConfiguration(s.gamedata.Assemble)
+			appearance, err := parts.DetermineAppearance(s.gamedata.Assemble)
 			if err != nil {
 				return nil, transition.None(), fmt.Errorf("組み立てPC画像の構成に失敗しました\n%w", err)
 			}
-			s.isGamingColor = gaming != parts.A_noAdditionalParts
-			s.pcImage, err = parts.AssembledImage(caseBack, mb, cooler, gpu, caseLid, gaming, sticker)
+			s.appearance = appearance
+			s.isGamingColor = appearance[5] != parts.A_noAdditionalParts
+			s.pcImage, err = parts.AssembledImageFromAppearance(appearance)
 			if err != nil {
 				return nil, transition.None(), fmt.Errorf("組み立てPC画像の構築に失敗しました\n%w", err)
 			}
@@ -342,6 +365,7 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 			finalScore := int(score)
 			s.canvas.StartScoreDisplay(finalScore)
 			s.benchmarkScoreStarted = true
+			s.recordRanking(finalScore)
 
 			// 仮で音を鳴らす
 			pl, err := s.gamedata.LoadSE("爆発1.mp3")
@@ -355,28 +379,48 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 	}
 
 	if s.gamedata.State == game.Result_QuitGame {
-		s.canvas.SetMessageWindowText("Enter でタイトルに戻る")
+		s.canvas.SetMessageWindowText("Enter でランキングへ")
 
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
-			// bgm設定
-			s.selectpartsBGM.Pause()
-			s.resultBGM.Pause()
-
+			// BGMはランキング画面でも流し続けるため止めない
+			rankedIndex := s.rankedIndex
 			return func() (game.Scene, error) {
-				nextScene, err := s.initScenes.InitTitleScene()
+				nextScene, err := s.initScenes.InitRankingScene()
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("s.initScenes.InitRankingScene() でエラーが発生しました。\n%w", err)
 				}
 				nextScene.gamedata = s.gamedata
-				nextScene.gamedata.ForNewScene(game.Title_Default)
-				nextScene.gamedata.ResetGame()
+				nextScene.gamedata.ForNewScene(game.Ranking_View)
 				nextScene.initScenes = s.initScenes
+				nextScene.highlightIndex = rankedIndex
+				nextScene.resultBGM = s.resultBGM
 				return nextScene, nil
 			}, transition.NewScene(), nil
 		}
 	}
 
 	return
+}
+
+// recordRanking は今回のスコアと組み立て内容をランキングへ保存する。
+// 失敗してもゲームは止めず、ログに残すだけにする。
+func (s *ResultScene) recordRanking(score int) {
+	records := make([]ranking.PartRecord, 0, len(s.gamedata.Assemble))
+	for _, p := range s.gamedata.Assemble {
+		if p == nil {
+			continue
+		}
+		records = append(records, ranking.PartRecord{Kind: uint(p.Kind), Name: p.Name, Rank: uint(p.Rank)})
+	}
+	entry := ranking.Entry{Score: score, PlayedAt: time.Now(), Parts: records}
+	for i, v := range s.appearance {
+		entry.Appearance[i] = uint(v)
+	}
+	rank, err := s.rankingStore.Record(entry)
+	if err != nil {
+		log.Printf("ランキングの記録に失敗しました: %v", err)
+	}
+	s.rankedIndex = rank
 }
 
 func (s *ResultScene) AddEntity(e Entity) {
