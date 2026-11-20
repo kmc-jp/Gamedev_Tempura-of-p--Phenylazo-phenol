@@ -31,6 +31,16 @@ func NewWorldTimer() *WorldTimer {
 	return timer
 }
 
+// Reset は経過時間を0に戻し、制限時間を最初から数え直す。一時停止の状態は変えない。
+func (wtimer *WorldTimer) Reset() {
+	wtimer.tick = 0
+	wtimer.startTick = 0
+	wtimer.expired = false
+	wtimer.setTime = 0 // 計測中だと Set が無視されるため、先に解除する
+	wtimer.passedTime = 0
+	wtimer.Set(PlayableTime * CountSpeed)
+}
+
 func (wtimer *WorldTimer) syncTime() {
 	wtimer.passedTime = wtimer.GetCurrentTick() / countSpeed_tick
 }
