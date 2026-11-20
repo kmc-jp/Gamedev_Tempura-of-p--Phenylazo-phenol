@@ -101,7 +101,7 @@ const (
 	Result_QuitGame
 )
 
-const states = 13 //stateの数
+const states = 16 //stateの数
 
 type state uint
 
