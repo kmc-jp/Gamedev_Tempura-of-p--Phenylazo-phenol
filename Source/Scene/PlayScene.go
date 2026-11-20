@@ -351,10 +351,18 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 		// 購入できるのは発見タブの表示中だけ
 		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) && s.canvas.CurrentPartsTab() == PartsListTabFound {
 			part := s.canvas.SelectedFoundPart()
-			if s.Gamedata.Buyable(part) == game.Buyable && part != nil && s.canvas.ShowPurchaseConfirmation() {
-				s.purchaseConfirmationPart = part
+			switch s.Gamedata.Buyable(part) {
+			case game.Buyable:
+				if s.canvas.ShowPurchaseConfirmation() {
+					s.purchaseConfirmationPart = part
+				}
+			case game.Lack_money:
+				s.canvas.SetActionLogText("所持金が不足しています")
+			case game.Lack_weight:
+				s.canvas.SetActionLogText("重量オーバーです")
+			case game.NoItem:
+				s.canvas.SetActionLogText("購入可能な商品がありません")
 			}
-
 		}
 
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) &&
