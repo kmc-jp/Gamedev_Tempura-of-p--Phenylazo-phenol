@@ -43,7 +43,7 @@ Scene 固有の構成は `scenecanvas` package の各 Canvas が決める。
 - `SelectStageCanvas`: 路線図（`RouteMapUI`）と案内 `Text`。`NewSelectStageCanvas(scene, gdata)`。`SelectStageScene.SelectionRevision`（カーソル移動のたびに増える）と `CurrentLocation`（現在地）を毎フレーム観測し、変化したときだけ `SelectedLocation` と合わせて反映する。`StageMap` から駅・路線を組み立てる。行き先選択のルール（隣接駅のみ等）は Scene の `SelectStageRule` を `WithRule` で生成時に渡して決める。ルールを入れないときは制限なし
 - `PlayCanvas`: 残り時間（`GameDataText`）、空き重量・所持金（`GameDataUI`）、`PartsListUI`。`NewPlayCanvas(scene, gdata)`。`PlayScene.SelectListRevision` の変化で一覧を開く。購入はSceneが`CurrentPartsTab`で発見タブの表示中かを確かめたうえで、`SelectedFoundPart`と`Gamedata.BuyFoundPart`で行い、購入後の一覧は`Gamedata.PartsRevision`の変化を観測して再構築する
 - `TrainCanvas`: 案内 `Text`、`PartsListUI`。`NewTrainCanvas(scene, gdata)`。`TrainScene.PartsListRevision`（または`Gamedata.PartsRevision`）の変化で所持パーツ一覧を構築・表示する
-- `ResultCanvas`: 案内 `Text`、ベンチマーク案内（`AnimatableUI`）、`InstalledParts`、`PartsListUI`。`NewResultCanvas(scene, gdata)`。全UIを毎フレーム`Canvas.Update`で更新する。組み立て済みパーツの表示は`Result_Assembled`、ベンチマーク案内のアニメーションは`Result_Benchmark`に変わったときに開始する
+- `ResultCanvas`: ベンチマーク案内 `Text`（`Result_Benchmark` の間だけ左上に表示）、`InstalledParts`、`PartsListUI`。`NewResultCanvas(scene, gdata)`。全UIを毎フレーム`Canvas.Update`で更新する。組み立て済みパーツの表示は`Result_Assembled`に変わったときに開始する
 
 Play / Train / Result / SelectStage / Title / Pause の Canvas は Scene のポインタや Gamedata を観測して表示を切り替える。そのため、Canvas 本体ではなく Canvas の生成関数（`func(*XxxScene) (XxxCanvasAPI, error)`）を `NewXxxScene` に渡し、Scene のコンストラクタが自身の生成直後に呼んで注入する。生成関数がエラーや `nil` を返したときは Scene の生成エラーになる。
 
@@ -113,6 +113,7 @@ Play / Train / Result / SelectStage / Title / Pause の Canvas は Scene のポ�
 - `NewClock(position, color, gdata, font)`: 時計UIを生成する
 - `Position()` / `SetPosition()`: 表示位置を取得・設定する
 - 時刻の計算と文字列化は`tick.WorldTimer`が担当し、Clockは描画時に現在値を参照する
+- 残り時間が120分以下でオレンジ、60分以下で赤、30分以下で赤背景＋白文字の点滅に変わり、閉店が近いことを知らせる
 
 ## ScrollUI
 

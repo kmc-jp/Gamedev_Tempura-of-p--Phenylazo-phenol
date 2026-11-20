@@ -16,7 +16,7 @@ import (
 )
 
 // ResultCanvas は ResultScene のUI構成である。
-// 案内テキスト、ベンチマーク案内、組み立て済みパーツ、パーツ一覧を持つ。
+// ベンチマーク案内、組み立て済みパーツ、パーツ一覧を持つ。
 // 選択候補はSceneのゲームルールで決まるため、Sceneのポインタを持って観測する。
 type ResultCanvas struct {
 	scene *scene.ResultScene
@@ -25,7 +25,7 @@ type ResultCanvas struct {
 	// canvas は全UIを毎フレーム更新・描画する。
 	// 各UIは開始前・非表示中の Update では何もしないため、状態ごとの更新の振り分けは不要。
 	canvas          *canvas.Canvas
-	benchmarkPrompt *ui.AnimatableUI
+	benchmarkPrompt *ui.Text
 	installedParts  *resultui.InstalledParts
 	partsList       *ui.PartsListUI
 	partUseConfirm  *commonui.Confirm
@@ -37,17 +37,10 @@ type ResultCanvas struct {
 	shownRevision int
 	// installedStarted は組み立て済みパーツの表示を開始したか。
 	installedStarted bool
-	// benchmarkStarted はベンチマーク案内のアニメーションを開始したか。
-	benchmarkStarted bool
 }
 
-// ベンチマーク案内のアニメーション設定
-var (
-	benchmarkPromptMotion   = utils.Move_Decelerate
-	benchmarkPromptTo       = utils.Vec2{X: 150, Y: 150}
-	benchmarkPromptSpeed    = 360.0
-	benchmarkPromptDuration = uint(10)
-)
+// benchmarkPromptPosition はベンチマーク案内の表示位置（画面左上）。
+var benchmarkPromptPosition = utils.Position{}
 
 // NewResultCanvas は ResultCanvas を生成する。
 func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas, error) {
@@ -58,35 +51,16 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 		return nil, fmt.Errorf("gdata が nil です")
 	}
 
-	guide, err := ui.NewText(
-		utils.Position{},
+	// ベンチマーク案内は移動させず、Result_Benchmark の間だけ固定位置に表示する
+	benchmarkPrompt, err := ui.NewText(
+		benchmarkPromptPosition,
 		color.Orange(),
-		"Result\nEnter キーでタイトルに戻る",
-		ui.FontFace(gdata.Font, 15),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
-	}
-
-	promptText, err := ui.NewText(
-		utils.Position{},
-		color.Orange(),
-		"Enterキーでベンチマーク開始",
+		"",
 		ui.FontFace(gdata.Font, 20),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
 	}
-	benchmarkPrompt, err := ui.NewAnimatableUI(
-		utils.Position{},
-		image.Point{100, 30},
-		nil,
-		promptText,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("ui.NewAnimatableUI() でエラーが発生しました。\n%w", err)
-	}
-	// アニメーションは Result_Benchmark に変わったときに Update で開始する
 
 	installedParts := resultui.NewInstalledParts(
 		utils.Position{X: 30, Y: 30},
@@ -126,9 +100,14 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 
 	scoreDisplay, err := resultui.NewScoreDisplay(resultui.ScoreDisplayConfig{
 		Font:            ui.FontFace(gdata.Font, 60),
-		TextColor:       color.Black(),
-		BackgroundColor: color.LightGray(),
-		Padding:         12,
+		TextColor:       color.White(),
+		BackgroundColor: color.Black().MakeTansparentColor(0.85),
+		BorderColor:     color.Gold(),
+		Label:           "BENCHMARK SCORE",
+		LabelFont:       ui.FontFace(gdata.Font, 20),
+		LabelColor:      color.Gold(),
+		Unit:            " pts",
+		Padding:         16,
 		ShuffleFrames:   10,
 		DigitFrames:     6,
 	})
@@ -137,7 +116,7 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{guide, benchmarkPrompt, installedParts, partsList, partUseConfirm, messageWindow, actionLog, scoreDisplay} {
+	for _, item := range []canvas.CanvasItem{benchmarkPrompt, installedParts, partsList, partUseConfirm, messageWindow, actionLog, scoreDisplay} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("結果画面のCanvas構築に失敗しました。\n%w", err)
 		}
@@ -158,8 +137,14 @@ func NewResultCanvas(s *scene.ResultScene, gdata *game.Gamedata) (*ResultCanvas,
 }
 
 // Update implements [scene.ResultCanvasAPI].
-// SceneとGamedataの状態を観測して一覧・組み立て表示・ベンチマーク案内を切り替え、全UIを更新する。
+// SceneとGamedataの状態を観測して一覧・組み立て表示を切り替え、全UIを更新する。
 func (c *ResultCanvas) Update(active bool) error {
+	if c.gdata.State == game.Result_Benchmark {
+		c.benchmarkPrompt.SetText("Enterキーでベンチマーク開始")
+	} else {
+		c.benchmarkPrompt.SetText("")
+	}
+
 	switch c.gdata.State {
 	case game.Result_SelectParts:
 		if revision := c.scene.CandidatesRevision(); revision != c.shownRevision {
@@ -179,21 +164,8 @@ func (c *ResultCanvas) Update(active bool) error {
 			c.installedStarted = true
 		}
 
-	case game.Result_Benchmark:
-		if !c.benchmarkStarted {
-			if err := c.benchmarkPrompt.SetPathAnimation(
-				benchmarkPromptMotion,
-				benchmarkPromptTo,
-				benchmarkPromptSpeed,
-				benchmarkPromptDuration,
-			); err != nil {
-				return fmt.Errorf("ベンチマーク案内のアニメーション設定に失敗しました。\n%w", err)
-			}
-			c.benchmarkStarted = true
-		}
 	}
-
-	// installedParts は Start 前、benchmarkPrompt はアニメーション開始前、
+	// installedParts は Start 前、
 	// partsList は非表示中の Update で何もしないため、毎フレーム全UIを更新してよい。
 	return c.canvas.Update(active)
 }

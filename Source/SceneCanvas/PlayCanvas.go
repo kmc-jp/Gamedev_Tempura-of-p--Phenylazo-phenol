@@ -126,7 +126,7 @@ func NewPlayCanvas(s *scene.PlayScene, gdata *game.Gamedata) (*PlayCanvas, error
 	if err != nil {
 		return nil, fmt.Errorf("commonui.NewMessageWindow() でエラーが発生しました。\n%w", err)
 	}
-	messageWindow.SetText("探索中")
+	messageWindow.ClearText()
 	messageWindow.ShowText()
 
 	purchaseConfirm, err := commonui.NewConfirm(commonui.ConfirmConfig{
