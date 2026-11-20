@@ -18,6 +18,8 @@ const (
 	ActionInteract
 	ActionEnter
 	ActionPartsList
+	// ActionDecide は Space・Enter のどちらでも押せる「決定」。
+	ActionDecide
 )
 
 func ActionConst(name string) (input.Action, error) {
@@ -42,6 +44,8 @@ func ActionConst(name string) (input.Action, error) {
 		return ActionInteract, nil
 	case "ActionPartsList":
 		return ActionPartsList, nil
+	case "ActionDecide":
+		return ActionDecide, nil
 	default:
 		return ActionUnknown, fmt.Errorf("%s というアクションは見つかりませんでした。", name)
 	}

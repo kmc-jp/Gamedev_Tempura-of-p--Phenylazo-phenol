@@ -177,7 +177,7 @@ func (s *PauseScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 		if s.Input.ActionIsJustPressed(inputconfig.ActionMoveRight) {
 			s.canvas.MoveTitleConfirmationRight()
 		}
-		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+		if s.Input.ActionIsJustPressed(inputconfig.ActionDecide) {
 			s.canvas.ConfirmTitle()
 		}
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {

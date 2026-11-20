@@ -227,10 +227,10 @@ func (s *SelectStageScene) updateScene(active bool) (nextScene Utils.Factory[gam
 	}
 
 	dst, time, _ := s.destination()
-	s.canvas.SetMessageWindowText(fmt.Sprintf("%s: 移動時間 %d 分  Enterで出発", stageinfo.Location2String[dst], time))
+	s.canvas.SetMessageWindowText(fmt.Sprintf("%s: 移動時間 %d 分  Space/Enterで出発", stageinfo.Location2String[dst], time))
 
 	// 決定
-	if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+	if s.Input.ActionIsJustPressed(inputconfig.ActionDecide) {
 		dst, min, err := s.destination()
 		if !s.CanConfirm(dst) {
 			s.canvas.SetActionLogText("今いる場所には移動できません")

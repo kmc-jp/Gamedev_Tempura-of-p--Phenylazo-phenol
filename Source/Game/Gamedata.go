@@ -222,6 +222,15 @@ func (g *Gamedata) RemoveFoundParts(p *Part) bool {
 	return g.removePart(&g.found, p)
 }
 
+// ClearFoundParts は発見した品をすべて取り除く。入店時に前の店の発見品を持ち越さないために使う。
+func (g *Gamedata) ClearFoundParts() {
+	if len(g.found) == 0 {
+		return
+	}
+	g.found = Parts{}
+	g.partsRevision++
+}
+
 // AddParts は p を所持品に追加する。p が nil の場合は何もしない。
 func (g *Gamedata) AddParts(p *Part) {
 	if p == nil {

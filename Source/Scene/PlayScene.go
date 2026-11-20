@@ -27,8 +27,6 @@ const (
 	PartsListTabFound
 	// PartsListTabOwned は「所持パーツ」タブを表す。
 	PartsListTabOwned
-	// PartsListTabExit は「店を出る」タブを表す。
-	PartsListTabExit
 )
 
 // PlayCanvasAPI は PlayScene が利用するCanvasの契約である。
@@ -61,6 +59,8 @@ type PlayCanvasAPI interface {
 	IsPurchaseConfirmationOpen() bool
 	PurchaseConfirmationResult() (bool, bool)
 	HidePurchaseConfirmation()
+	// CancelPurchaseConfirmation は購入確認を「いいえ」で確定する（Esc用）。
+	CancelPurchaseConfirmation()
 
 	// ShowExitStoreConfirmation は退店確認を表示する。
 	ShowExitStoreConfirmation() bool
@@ -70,6 +70,13 @@ type PlayCanvasAPI interface {
 	IsExitStoreConfirmationOpen() bool
 	ExitStoreConfirmationResult() (bool, bool)
 	HideExitStoreConfirmation()
+	// CancelExitStoreConfirmation は退店確認を「いいえ」で確定する（Esc用）。
+	CancelExitStoreConfirmation()
+
+	// SetPartsListGuide は一覧パネル下端の操作ガイドを設定する。
+	SetPartsListGuide(string)
+	// FlashPartsListGuide は操作ガイドを一定時間だけ強調する。
+	FlashPartsListGuide()
 
 	SetMessageWindowText(string)
 	SetActionLogText(string)
@@ -86,6 +93,9 @@ type PlayCanvasAPI interface {
 
 	// CurrentPartsTab は表示中のタブを返す。一覧の非表示中は PartsListTabNone を返す。
 	CurrentPartsTab() PartsListTab
+
+	// IsExitStoreSelected は一覧の末尾の「店を出る」を選択中かを返す。
+	IsExitStoreSelected() bool
 }
 
 // メインの遊べるシーン
@@ -218,6 +228,9 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 	if s.Gamedata.State == game.Play_EnterStore {
 		// 入店時処理
 
+		// 前の店で見つけて買わなかったパーツを持ち越さない
+		s.Gamedata.ClearFoundParts()
+
 		// 最初の店(または売却予定パーツ無し)なら売却処理をスキップ
 		if s.Gamedata.Visited() <= 1 || !s.Gamedata.IsSellPartExists() {
 			s.Gamedata.State = game.Play_Explore
@@ -261,14 +274,27 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 
 		// 一覧の表示中は一覧の操作だけを受け付け、探索を止める
 		if s.canvas.IsPartsListOpen() {
+			s.canvas.SetPartsListGuide(exploreListGuide)
+			if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
+				if err := s.canvas.TogglePartsList(); err != nil {
+					return nil, transition.None(), fmt.Errorf("パーツ一覧の開閉に失敗しました。\n%w", err)
+				}
+				s.Gamedata.EnableWorldTimeProgressing()
+				return
+			}
 			if err := s.handlePartsListInput(); err != nil {
 				return nil, transition.None(), err
 			}
-			if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) &&
-				s.canvas.CurrentPartsTab() == PartsListTabExit {
-				s.Gamedata.State = game.Play_ExitStore
-				s.exitStoreFromExplore = true
-				s.canvas.ShowExitStoreConfirmation()
+			if s.Input.ActionIsJustPressed(inputconfig.ActionDecide) {
+				if s.canvas.IsExitStoreSelected() {
+					s.Gamedata.State = game.Play_ExitStore
+					s.exitStoreFromExplore = true
+					s.canvas.ShowExitStoreConfirmation()
+				} else if s.canvas.SelectedFoundPart() != nil {
+					// 購入できるのはレジのあとだけ。押されたことに気づけるよう案内を目立たせる
+					s.canvas.SetActionLogText("パーツはレジで購入できます")
+					s.canvas.FlashPartsListGuide()
+				}
 			}
 			return
 		}
@@ -306,7 +332,8 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 	}
 
 	if s.Gamedata.State == game.Play_Select {
-		s.canvas.SetMessageWindowText("Space で買うパーツを選択  Enter で決定")
+		s.canvas.SetMessageWindowText("買うパーツを選ぼう")
+		s.canvas.SetPartsListGuide(selectListGuide)
 		if s.canvas.IsPurchaseConfirmationOpen() {
 			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
 				s.canvas.MovePurchaseConfirmationLeft()
@@ -314,8 +341,11 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveRight) {
 				s.canvas.MovePurchaseConfirmationRight()
 			}
-			if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+			if s.Input.ActionIsJustPressed(inputconfig.ActionDecide) {
 				s.canvas.ConfirmPurchase()
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
+				s.canvas.CancelPurchaseConfirmation()
 			}
 			accepted, confirmed := s.canvas.PurchaseConfirmationResult()
 			if confirmed {
@@ -345,8 +375,17 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 			return nil, transition.None(), err
 		}
 
+		// 店を出る: 末尾の項目を決定するか、Esc
+		if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) ||
+			(s.Input.ActionIsJustPressed(inputconfig.ActionDecide) && s.canvas.IsExitStoreSelected()) {
+			s.Gamedata.State = game.Play_ExitStore
+			s.exitStoreFromExplore = false
+			s.canvas.ShowExitStoreConfirmation()
+			return
+		}
+
 		// 購入できるのは発見タブの表示中だけ
-		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) && s.canvas.CurrentPartsTab() == PartsListTabFound {
+		if s.Input.ActionIsJustPressed(inputconfig.ActionDecide) && s.canvas.CurrentPartsTab() == PartsListTabFound {
 			part := s.canvas.SelectedFoundPart()
 			switch s.Gamedata.Buyable(part) {
 			case game.Buyable:
@@ -362,14 +401,6 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 			}
 		}
 
-		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) &&
-			s.canvas.CurrentPartsTab() == PartsListTabExit {
-			s.Gamedata.State = game.Play_ExitStore
-			s.exitStoreFromExplore = false
-			s.canvas.ShowExitStoreConfirmation()
-			return
-		}
-
 	}
 
 	if s.Gamedata.State == game.Play_ExitStore {
@@ -380,8 +411,11 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveRight) {
 				s.canvas.MoveExitStoreConfirmationRight()
 			}
-			if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+			if s.Input.ActionIsJustPressed(inputconfig.ActionDecide) {
 				s.canvas.ConfirmExitStore()
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
+				s.canvas.CancelExitStoreConfirmation()
 			}
 			accepted, confirmed := s.canvas.ExitStoreConfirmationResult()
 			if confirmed {
@@ -421,6 +455,12 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 
 	return
 }
+
+// パーツ一覧パネル下端の操作ガイド。
+const (
+	exploreListGuide = "↑↓:選択  ←→:タブ  購入はレジで  P/Esc:閉じる"
+	selectListGuide  = "↑↓:選択  ←→:タブ  Space/Enter:決定  Esc:店を出る"
+)
 
 const exploreGuideMessage = "I：棚を調べる　P：パーツ一覧　Esc：メニュー"
 

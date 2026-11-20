@@ -46,6 +46,8 @@ type ResultCanvasAPI interface {
 	IsPartUseConfirmationOpen() bool
 	PartUseConfirmationResult() (bool, bool)
 	HidePartUseConfirmation()
+	// CancelPartUseConfirmation は使用確認を「いいえ」で確定する（Esc用）。
+	CancelPartUseConfirmation()
 	SetActionLogText(string)
 	SetMessageWindowText(string)
 	StartScoreDisplay(score int)
@@ -53,8 +55,10 @@ type ResultCanvasAPI interface {
 
 	// ---- 問い合わせ ----
 
-	// SelectedPart は選択中のパーツを返す。未選択なら nil。
+	// SelectedPart は選択中のパーツを返す。未選択・末尾の項目の選択中は nil。
 	SelectedPart() *game.Part
+	// IsFinishSelected は一覧の末尾の「組み立てを終える」を選択中かを返す。
+	IsFinishSelected() bool
 	// IsInstalledPartsFinished は組み立て済みパーツの表示アニメーションが完了したかを返す。
 	IsInstalledPartsFinished() bool
 }
@@ -275,9 +279,9 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 		s.resultBGM.Pause()
 
 		if s.isSelectingArbitraryParts() {
-			s.canvas.SetMessageWindowText("Space でパーツを追加  Enter で組み立て")
+			s.canvas.SetMessageWindowText("追加で使うパーツを選ぼう（終わったら「組み立てを終える」）")
 		} else {
-			s.canvas.SetMessageWindowText("Space で使うパーツを選択")
+			s.canvas.SetMessageWindowText("組み立てに使うパーツを選ぼう")
 		}
 
 		//組み立てに使うパーツを選択
@@ -288,8 +292,11 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveRight) {
 				s.canvas.MovePartUseConfirmationRight()
 			}
-			if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+			if s.Input.ActionIsJustPressed(inputconfig.ActionDecide) {
 				s.canvas.ConfirmPartUse()
+			}
+			if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
+				s.canvas.CancelPartUseConfirmation()
 			}
 			accepted, confirmed := s.canvas.PartUseConfirmationResult()
 			if confirmed {
@@ -316,12 +323,12 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 		if s.Input.ActionIsJustPressed(inputconfig.ActionMoveDown) {
 			s.canvas.MovePartSelectionDown()
 		}
-		if s.isSelectingArbitraryParts() && s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
-			// 一覧を閉じて組み立て済みパーツの表示を開始するのは、Canvasが状態変化を観測して行う
-			s.gamedata.State = game.Result_Assembled
-			return
-		}
-		if s.Input.ActionIsJustPressed(inputconfig.ActionSpace) {
+		if s.Input.ActionIsJustPressed(inputconfig.ActionDecide) {
+			if s.isSelectingArbitraryParts() && s.canvas.IsFinishSelected() {
+				// 一覧を閉じて組み立て済みパーツの表示を開始するのは、Canvasが状態変化を観測して行う
+				s.gamedata.State = game.Result_Assembled
+				return
+			}
 			part := s.canvas.SelectedPart()
 			if part == nil {
 				if s.isSelectingArbitraryParts() {
@@ -362,8 +369,8 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 		//完成PCを表示
 
 		if s.canvas.IsInstalledPartsFinished() {
-			s.canvas.SetMessageWindowText("Enter で次へ")
-			if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+			s.canvas.SetMessageWindowText("Space/Enter で次へ")
+			if s.Input.ActionIsJustPressed(inputconfig.ActionDecide) {
 				if err := s.gamedata.NextState(); err != nil {
 					return nil, transition.None(), fmt.Errorf("InstalledPartsUI完了後の状態遷移に失敗しました: %w", err)
 				}
@@ -380,7 +387,7 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 			s.gamedata.State = game.Result_QuitGame
 			return
 		}
-		if !s.benchmarkScoreStarted && s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+		if !s.benchmarkScoreStarted && s.Input.ActionIsJustPressed(inputconfig.ActionDecide) {
 			var score float32
 			for _, v := range s.gamedata.Assemble {
 				score += v.Score()
@@ -402,9 +409,9 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 	}
 
 	if s.gamedata.State == game.Result_QuitGame {
-		s.canvas.SetMessageWindowText("Enter でランキングへ")
+		s.canvas.SetMessageWindowText("Space/Enter でランキングへ")
 
-		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
+		if s.Input.ActionIsJustPressed(inputconfig.ActionDecide) {
 			// BGMはランキング画面でも流し続けるため止めない
 			rankedIndex := s.rankedIndex
 			return func() (game.Scene, error) {
@@ -517,6 +524,11 @@ func (s *ResultScene) selectedArbitraryParts() map[*game.Part]int {
 		}
 	}
 	return selected
+}
+
+// IsSelectingArbitraryParts は必須パーツを選び終え、任意のパーツを選んでいる段階かを返す。
+func (s *ResultScene) IsSelectingArbitraryParts() bool {
+	return s.isSelectingArbitraryParts()
 }
 
 func (s *ResultScene) isSelectingArbitraryParts() bool {
