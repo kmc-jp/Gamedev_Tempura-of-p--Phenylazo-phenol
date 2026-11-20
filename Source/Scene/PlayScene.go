@@ -484,6 +484,20 @@ func (s *PlayScene) ShowPartPopup(part *game.Part, position Utils.Position) {
 	s.AddEntity(NewPartPopup(part.Img, position))
 }
 
+// AddRegisterBalloon は、レジ台の上端 top の真上に浮遊する「お会計」吹き出しを追加する。
+func (s *PlayScene) AddRegisterBalloon(top Utils.Position) error {
+	const margin = 6
+	balloon, err := NewRegisterBalloon(s.Gamedata.Font, Utils.Position{
+		X: top.X,
+		Y: top.Y - RegisterBalloonHeight(s.Gamedata.Font)/2 - margin,
+	})
+	if err != nil {
+		return fmt.Errorf("NewRegisterBalloon() でエラーが発生しました。\n%w", err)
+	}
+	s.AddEntity(balloon)
+	return nil
+}
+
 func (s *PlayScene) ShowFoundPartLog(part *game.Part) {
 	if part == nil {
 		return
