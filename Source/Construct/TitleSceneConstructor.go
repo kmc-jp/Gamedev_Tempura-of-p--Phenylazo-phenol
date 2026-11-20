@@ -18,7 +18,7 @@ func TitleSceneConstruct(assetsManager *assets.AssetsManager, inputHandler *inpu
 			return nil, fmt.Errorf("MakeDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}
 
-		BGDrawerFactory, err := MakeBGDrawerFactory(assetsManager, "Backgrounds/みんげー_タイトル画面.png", "Backgrounds/みんげー_タイトル画面.json")
+		BGDrawerFactory, err := MakeBGDrawerFactory(assetsManager, "Backgrounds/みんげー_タイトル画面.png", "Backgrounds/みんげー_タイトル画面.json", scenecanvas.TitleBackgroundScale)
 		if err != nil {
 			return nil, fmt.Errorf("MakeBGDrawerFactory(assetsManager) でエラーが発生しました。\n%w", err)
 		}

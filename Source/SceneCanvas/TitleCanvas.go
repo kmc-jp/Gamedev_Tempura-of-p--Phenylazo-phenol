@@ -12,8 +12,8 @@ import (
 
 // 以下はタイトル画面の見た目の調整値。人の手で編集する。
 
-// titleBackgroundScale は背景画像の描画倍率。BackGroundCamera.Draw の倍率と合わせる。
-const titleBackgroundScale = 5
+// TitleBackgroundScale は背景画像の描画倍率。背景の描画とカーソルで共有する。
+const TitleBackgroundScale = 6
 
 // titleMenuAnchors は、タイトル背景画像上のメニュー文字の位置（画像ピクセル座標）。
 // カーソルの先端（三角形の右端・縦中央）がこの点を指す。
@@ -55,7 +55,7 @@ func NewTitleCanvas(s *scene.TitleScene) (*TitleCanvas, error) {
 		anchors = append(anchors, pos)
 	}
 
-	cursor, err := titleui.NewMenuCursor(anchors, titleBackgroundScale, titleCursorStyle())
+	cursor, err := titleui.NewMenuCursor(anchors, TitleBackgroundScale, titleCursorStyle())
 	if err != nil {
 		return nil, fmt.Errorf("titleui.NewMenuCursor() でエラーが発生しました。\n%w", err)
 	}
