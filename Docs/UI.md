@@ -130,7 +130,7 @@ Canvas APIは`Update`、`Draw`と識別用メソッド（`IsTitleCanvas()`など
 - シーン固有の情報: CanvasはSceneのポインタを持ち、Sceneの公開メソッドで参照する（例: `ResultScene.CandidateParts`）。ゲームルール（候補の絞り込みなど）はSceneに残す。公開メソッドは副作用を持たない。生成を伴う計算（Trashパーツの生成など）は、Sceneが値の変わる時点で1回だけ行ってキャッシュする。
 - 入力以外の状態変化: Canvasが`Update`でScene・Gamedataのリビジョン番号を毎フレーム観測し、反映済みの番号と違えば反映する（例: `PlayScene.SelectListRevision`の変化で一覧を開く）。SceneからCanvasへの通知APIは作らない。
   - リビジョン番号は、変化するたびに書き換える側が増やす整数である。シーン固有の変化はSceneが持ち（`SelectListRevision`、`PartsListRevision`、`CandidatesRevision`）、シーンをまたぐModelの変化はGamedataが持つ（`PartsRevision`。Found・Partsを書き換えるGamedataのメソッドの中で増やす）。
-  - 状態に入ったときに1回だけ行う開始処理（Resultの組み立て表示・ベンチマーク案内の開始）は、`Gamedata.State`と開始済みフラグで行う。
+  - 状態に入ったときに1回だけ行う開始処理（Resultの組み立て表示の開始）は、`Gamedata.State`と開始済みフラグで行う。
 - 問い合わせ: UIの状態を戻り値で返すAPIは、個別に合意したものだけにする（現在は`IsPartsListOpen`、`CurrentPartsTab`、`SelectedFoundPart`、`SelectedPart`、`IsInstalledPartsFinished`）。
 
 ```go

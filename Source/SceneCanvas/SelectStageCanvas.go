@@ -22,7 +22,6 @@ type SelectStageCanvas struct {
 	scene         *scene.SelectStageScene
 	canvas        *canvas.Canvas
 	routeMap      *ui.RouteMapUI[stageinfo.Location]
-	guide         *ui.Text
 	messageWindow *commonui.MessageWindow
 	actionLog     *commonui.LogWindow
 
@@ -86,11 +85,6 @@ func NewSelectStageCanvas(s *scene.SelectStageScene, gdata *game.Gamedata) (*Sel
 	}
 	routeMap.SetBackground(background)
 
-	guide, err := ui.NewText(utils.Position{}, color.Orange(), "", ui.FontFace(gdata.Font, 12))
-	if err != nil {
-		return nil, fmt.Errorf("ui.NewText() でエラーが発生しました。\n%w", err)
-	}
-
 	worldTimeText, err := commonui.NewClock(
 		utils.Position{},
 		color.Black(),
@@ -104,7 +98,6 @@ func NewSelectStageCanvas(s *scene.SelectStageScene, gdata *game.Gamedata) (*Sel
 	if err != nil {
 		return nil, err
 	}
-	guide.SetPosition(utils.Position{Y: 25})
 
 	messageWindow, err := newMessageWindow(gdata)
 	if err != nil {
@@ -116,23 +109,21 @@ func NewSelectStageCanvas(s *scene.SelectStageScene, gdata *game.Gamedata) (*Sel
 	}
 
 	c := canvas.NewCanvas()
-	for _, item := range []canvas.CanvasItem{routeMap, worldTimeText, gameDataUI, guide, messageWindow, actionLog} {
+	for _, item := range []canvas.CanvasItem{routeMap, worldTimeText, gameDataUI, messageWindow, actionLog} {
 		if err := c.Add(item); err != nil {
 			return nil, fmt.Errorf("ステージ選択画面のCanvas構築に失敗しました。\n%w", err)
 		}
 	}
 
-	sc := &SelectStageCanvas{scene: s, canvas: c, routeMap: routeMap, guide: guide, messageWindow: messageWindow, actionLog: actionLog}
+	sc := &SelectStageCanvas{scene: s, canvas: c, routeMap: routeMap, messageWindow: messageWindow, actionLog: actionLog}
 	sc.syncWithScene()
 	return sc, nil
 }
 
 // syncWithScene は Scene の選択中の駅・現在地を路線図と案内テキストへ反映する。
 func (c *SelectStageCanvas) syncWithScene() {
-	selected := c.scene.SelectedLocation()
-	c.routeMap.SetSelected(selected)
+	c.routeMap.SetSelected(c.scene.SelectedLocation())
 	c.routeMap.SetMarker(c.scene.CurrentLocation())
-	c.guide.SetText("行き先を選択\nWASD / 矢印キー: 移動　Enter: 決定\n行き先: " + c.scene.StageMap().Stations[selected].Label)
 }
 
 // Update implements [scene.SelectStageCanvasAPI].

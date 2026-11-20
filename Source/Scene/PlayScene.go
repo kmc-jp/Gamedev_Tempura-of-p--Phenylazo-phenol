@@ -101,8 +101,9 @@ type PlayScene struct {
 	// selectListRevision は Play_Select に入るたびに増える。Canvasが観測してパーツ一覧を開く。
 	selectListRevision int
 
-	timer                     *tick.Timer
 	MessageWindowDisplayTimer *tick.Timer
+	// timeWarnLevel は表示済みの残り時間警告の段階（0 = 未表示）。
+	timeWarnLevel int
 
 	// text       *ui.Text
 	Input      *input.Handler
@@ -144,7 +145,6 @@ func NewPlayScene(worldDrawer Utils.Factory[WorldDrawer], newCanvas func(*PlaySc
 			worldDrawer: camera,
 			// text:       text,
 			Input:                     Input,
-			timer:                     tick.NewTimer(),
 			MessageWindowDisplayTimer: tick.NewTimer(),
 			Gamedata:                  gdata,
 			initScenes:                initScenes,
@@ -230,15 +230,12 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 	}
 
 	if s.Gamedata.State == game.Play_Sell {
-		// TrainSceneで保存したパーツを売却し、探索へ進む。
-		s.timer.Set(50)
+		// TrainSceneで保存したパーツを売却し、すぐに探索へ進む。
 		if s.Gamedata.IsSellPartExists() {
 			v, w, n := s.Gamedata.SellPart()
-			s.canvas.SetMessageWindowText(fmt.Sprintf("%s を %d 円で売って %d 持ち運べる量が増えた", n, v, w))
+			s.canvas.SetActionLogText(fmt.Sprintf("%s を %d 円で売った（空き重量 +%d）", n, v, w))
 		}
-		if s.timer.Expired() {
-			s.Gamedata.State = game.Play_Explore
-		}
+		s.Gamedata.State = game.Play_Explore
 
 		return nil, transition.None(), nil
 	}
@@ -251,6 +248,8 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 			s.canvas.SetActionLogText("時間切れ！")
 			return nil, transition.None(), nil
 		}
+		s.canvas.SetMessageWindowText(exploreGuideMessage)
+		s.showTimeWarning()
 		if s.Input.ActionIsJustPressed(inputconfig.ActionPartsList) {
 			if err := s.canvas.TogglePartsList(); err != nil {
 				return nil, transition.None(), fmt.Errorf("パーツ一覧の開閉に失敗しました。\n%w", err)
@@ -423,6 +422,33 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 	}
 
 	return
+}
+
+const exploreGuideMessage = "I：棚を調べる　P：パーツ一覧　Esc：メニュー"
+
+// timeWarnings は残り時間（ゲーム内分）が閾値を下回ったときの警告。閾値は大きい順に並べる。
+var timeWarnings = []struct {
+	left    uint64
+	message string
+}{
+	{120, "閉店まであと2時間！"},
+	{60, "閉店まであと1時間！急げ！"},
+	{30, "閉店まであと30分！！"},
+}
+
+// showTimeWarning は残り時間が新しい閾値を下回ったとき、警告を1回だけ表示する。
+func (s *PlayScene) showTimeWarning() {
+	left := s.Gamedata.WorldTimer.TimeLeft()
+	level := 0
+	for _, w := range timeWarnings {
+		if left <= w.left {
+			level++
+		}
+	}
+	if level > s.timeWarnLevel {
+		s.timeWarnLevel = level
+		s.canvas.SetActionLogText(timeWarnings[level-1].message)
+	}
 }
 
 // handlePartsListInput はパーツ一覧のタブ切り替えと選択移動の入力を処理する。

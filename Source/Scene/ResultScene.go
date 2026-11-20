@@ -20,7 +20,6 @@ import (
 // Canvasは次をScene・Gamedataの観測で行う。
 //   - Result_SelectParts 中に CandidatesRevision が変わったら、CandidateParts で一覧を作り直して表示する
 //   - Result_Assembled に変わったら一覧を閉じ、組み立て済みパーツの表示を開始する
-//   - Result_Benchmark に変わったら、ベンチマーク案内のアニメーションを開始する
 type ResultCanvasAPI interface {
 	Update(active bool) error
 	Draw(screen *ebiten.Image)
@@ -230,6 +229,12 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 		s.selectpartsBGM.Play()
 		s.resultBGM.Pause()
 
+		if s.isSelectingArbitraryParts() {
+			s.canvas.SetMessageWindowText("Space でパーツを追加  Enter で組み立て")
+		} else {
+			s.canvas.SetMessageWindowText("Space で使うパーツを選択")
+		}
+
 		//組み立てに使うパーツを選択
 		if s.canvas.IsPartUseConfirmationOpen() {
 			if s.Input.ActionIsJustPressed(inputconfig.ActionMoveLeft) {
@@ -290,6 +295,7 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 		// bgm設定
 		s.selectpartsBGM.Pause()
 		s.resultBGM.Play()
+		s.canvas.SetMessageWindowText("")
 
 		//所持パーツをもとに利用する絵を決定
 		if err := parts.CheckAssemblePartsInfo(s.gamedata.Assemble); err != nil {
@@ -310,6 +316,7 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 		//完成PCを表示
 
 		if s.canvas.IsInstalledPartsFinished() {
+			s.canvas.SetMessageWindowText("Enter で次へ")
 			if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 				if err := s.gamedata.NextState(); err != nil {
 					return nil, transition.None(), fmt.Errorf("InstalledPartsUI完了後の状態遷移に失敗しました: %w", err)
@@ -322,6 +329,7 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 
 	// ベンチマークフェーズ
 	if s.gamedata.State == game.Result_Benchmark {
+		s.canvas.SetMessageWindowText("")
 		if s.benchmarkScoreStarted && s.canvas.IsScoreDisplayFinished() {
 			s.gamedata.State = game.Result_QuitGame
 			return
@@ -332,7 +340,6 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 				score += v.Score()
 			}
 			finalScore := int(score)
-			fmt.Print("ベンチマーク計測結果", finalScore, "\n")
 			s.canvas.StartScoreDisplay(finalScore)
 			s.benchmarkScoreStarted = true
 
@@ -348,6 +355,7 @@ func (s *ResultScene) updateScene(active bool) (nextScene Utils.Factory[game.Sce
 	}
 
 	if s.gamedata.State == game.Result_QuitGame {
+		s.canvas.SetMessageWindowText("Enter でタイトルに戻る")
 
 		if s.Input.ActionIsJustPressed(inputconfig.ActionEnter) {
 			// bgm設定

@@ -20,7 +20,13 @@ type ScoreDisplayConfig struct {
 	Font            *text.GoTextFace
 	TextColor       *gamecolor.Color
 	BackgroundColor *gamecolor.Color
-	Padding         int
+	// 以下は省略可能。Label を指定すると数字の上に見出しを、Unit を指定すると数字の後ろに単位を表示する。
+	BorderColor *gamecolor.Color
+	Label       string
+	LabelFont   *text.GoTextFace
+	LabelColor  *gamecolor.Color
+	Unit        string
+	Padding     int
 	ShuffleFrames   int
 	DigitFrames     int
 }
@@ -31,6 +37,11 @@ type ScoreDisplay struct {
 	font            *text.GoTextFace
 	center          utils.Position
 	backgroundColor *gamecolor.Color
+	borderColor     *gamecolor.Color
+	label           string
+	labelFont       *text.GoTextFace
+	labelColor      *gamecolor.Color
+	unit            string
 	padding         int
 	target          []byte
 	display         []byte
@@ -67,6 +78,11 @@ func NewScoreDisplay(config ScoreDisplayConfig) (*ScoreDisplay, error) {
 		text:            textUI,
 		font:            config.Font,
 		backgroundColor: config.BackgroundColor,
+		borderColor:     config.BorderColor,
+		label:           config.Label,
+		labelFont:       config.LabelFont,
+		labelColor:      config.LabelColor,
+		unit:            config.Unit,
 		padding:         config.Padding,
 		shuffleFrames:   config.ShuffleFrames,
 		digitFrames:     config.DigitFrames,
@@ -93,7 +109,7 @@ func (s *ScoreDisplay) Start(score int) {
 	s.frame = 0
 	s.started = true
 	s.finished = false
-	s.text.SetText(string(s.display))
+	s.text.SetText(s.textText())
 	s.syncTextPosition()
 }
 
@@ -129,50 +145,84 @@ func (s *ScoreDisplay) Update(active bool) error {
 		copy(s.display, s.target)
 		s.finished = true
 	}
-	s.text.SetText(string(s.display))
+	s.text.SetText(s.textText())
 	s.syncTextPosition()
 	return nil
 }
 
 func (s *ScoreDisplay) Draw(screen *ebiten.Image) {
-	if s.started {
-		if s.backgroundColor != nil {
-			width, height := s.textSize()
-			bounds := image.Rect(
-				int(s.center.X-width/2)-s.padding,
-				int(s.center.Y-height/2)-s.padding,
-				int(s.center.X+width/2)+s.padding,
-				int(s.center.Y+height/2)+s.padding,
-			)
-			uiutils.FillRect(screen, bounds, s.backgroundColor.ToRGBA())
-		}
-		s.text.Draw(screen)
+	if !s.started {
+		return
 	}
+	panel := s.panelBounds()
+	if s.backgroundColor != nil {
+		uiutils.FillRect(screen, panel, s.backgroundColor.ToRGBA())
+	}
+	if s.borderColor != nil {
+		const t = 3
+		c := s.borderColor.ToRGBA()
+		uiutils.FillRect(screen, image.Rect(panel.Min.X, panel.Min.Y, panel.Max.X, panel.Min.Y+t), c)
+		uiutils.FillRect(screen, image.Rect(panel.Min.X, panel.Max.Y-t, panel.Max.X, panel.Max.Y), c)
+		uiutils.FillRect(screen, image.Rect(panel.Min.X, panel.Min.Y, panel.Min.X+t, panel.Max.Y), c)
+		uiutils.FillRect(screen, image.Rect(panel.Max.X-t, panel.Min.Y, panel.Max.X, panel.Max.Y), c)
+	}
+	if s.hasLabel() {
+		lw, _ := text.Measure(s.label, s.labelFont, s.labelFont.Size*1.5)
+		_, _, labelTop, _ := s.layout()
+		ui.DrawText(utils.Position{X: s.center.X - lw/2, Y: labelTop}, s.labelColor, s.label, s.labelFont, screen)
+	}
+	s.text.Draw(screen)
 }
 
-func (s *ScoreDisplay) textSize() (float64, float64) {
-	value := s.textText()
-	width, height := text.Measure(value, s.font, s.font.Size*1.5)
-	return width, height
+func (s *ScoreDisplay) hasLabel() bool {
+	return s.label != "" && s.labelFont != nil && s.labelColor != nil
+}
+
+// layout は見出し込みの全体サイズと、見出し・数字それぞれの上端Yを返す。
+func (s *ScoreDisplay) layout() (width, height, labelTop, numberTop float64) {
+	numW, numH := text.Measure(s.textText(), s.font, s.font.Size*1.5)
+	width, height = numW, numH
+	numberOffset := 0.0
+	if s.hasLabel() {
+		lw, lh := text.Measure(s.label, s.labelFont, s.labelFont.Size*1.5)
+		if lw > width {
+			width = lw
+		}
+		height += lh
+		numberOffset = lh
+	}
+	top := s.center.Y - height/2
+	return width, height, top, top + numberOffset
+}
+
+func (s *ScoreDisplay) panelBounds() image.Rectangle {
+	width, height, _, _ := s.layout()
+	return image.Rect(
+		int(s.center.X-width/2)-s.padding,
+		int(s.center.Y-height/2)-s.padding,
+		int(s.center.X+width/2)+s.padding,
+		int(s.center.Y+height/2)+s.padding,
+	)
 }
 
 func (s *ScoreDisplay) syncTextPosition() {
 	if s.font == nil || s.text == nil {
 		return
 	}
-	value := s.textText()
-	width, height := text.Measure(value, s.font, s.font.Size*1.5)
+	numW, _ := text.Measure(s.textText(), s.font, s.font.Size*1.5)
+	_, _, _, numberTop := s.layout()
 	s.text.SetPosition(utils.Position{
-		X: s.center.X - width/2,
-		Y: s.center.Y - height/2,
+		X: s.center.X - numW/2,
+		Y: numberTop,
 	})
 }
 
+// textText は数字と単位を連結した表示文字列を返す。
 func (s *ScoreDisplay) textText() string {
 	if len(s.display) == 0 {
-		return "0"
+		return "0" + s.unit
 	}
-	return string(s.display)
+	return string(s.display) + s.unit
 }
 
 func randomDigit() byte {

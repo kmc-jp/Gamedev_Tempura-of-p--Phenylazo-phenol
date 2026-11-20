@@ -22,6 +22,7 @@ type Clock struct {
 	color    *gamecolor.Color
 	gdata    *game.Gamedata
 	font     *text.GoTextFace
+	frame    int
 }
 
 // NewClock は世界時刻を表示するClockを生成する。
@@ -51,22 +52,48 @@ func NewClock(
 	}, nil
 }
 
-// Update は時計表示に必要な内部状態を持たないため何もしない。
+// 残り時間（ゲーム内分）による時計の警告段階
+const (
+	clockWarnMinutes   = 120 // 文字をオレンジにする
+	clockDangerMinutes = 60  // 文字を赤にする
+	clockBlinkMinutes  = 30  // 赤背景＋白文字を点滅させる
+	clockBlinkFrames   = 15  // 点滅の半周期
+)
+
+// Update は点滅用のフレームを進める。
 func (c *Clock) Update(active bool) error {
+	c.frame++
 	return nil
 }
 
 // Draw はGamedataのWorldTimerから取得した時刻を描画する。
+// 閉店が近づくと文字色が変わり、残りわずかで点滅する。
 func (c *Clock) Draw(screen *ebiten.Image) {
 	value := c.gdata.WorldTimer.GetTimeText()
+	textColor := c.color
+	background := stdcolor.Color(stdcolor.White)
+	timeLeft := c.gdata.WorldTimer.TimeLeft()
+	switch {
+	case timeLeft <= clockBlinkMinutes:
+		if (c.frame/clockBlinkFrames)%2 == 0 {
+			textColor = gamecolor.White()
+			background = gamecolor.Red().ToRGBA()
+		} else {
+			textColor = gamecolor.Red()
+		}
+	case timeLeft <= clockDangerMinutes:
+		textColor = gamecolor.Red()
+	case timeLeft <= clockWarnMinutes:
+		textColor = gamecolor.Orange()
+	}
 	textWidth, textHeight := text.Measure(value, c.font, c.font.Size*1.5)
 	padding := 5.0
 	left := int(math.Floor(c.position.X - padding))
 	top := int(math.Floor(c.position.Y - padding))
 	right := int(math.Ceil(c.position.X + textWidth + padding))
 	bottom := int(math.Ceil(c.position.Y + math.Max(textHeight, c.font.Size) + padding))
-	uiutils.FillRect(screen, image.Rect(left, top, right, bottom), stdcolor.White)
-	ui.DrawText(c.position, c.color, value, c.font, screen)
+	uiutils.FillRect(screen, image.Rect(left, top, right, bottom), background)
+	ui.DrawText(c.position, textColor, value, c.font, screen)
 }
 
 // Position は時計の左上位置を返す。
