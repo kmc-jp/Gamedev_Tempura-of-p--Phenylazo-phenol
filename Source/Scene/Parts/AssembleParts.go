@@ -53,6 +53,25 @@ const numberOfAssemblePartsAssets = A_noAdditionalParts
 
 type AssemblePartsImage uint
 
+// AssembledPC は完成PCを描画順のレイヤーに分けたもの。
+// 描画順は Body → Gaming → Sticker。
+type AssembledPC struct {
+	Body    *ebiten.Image // ケース本体〜グラボ（ゲーミングでない蓋を含む）
+	Gaming  *ebiten.Image // ゲーミング用の蓋＋ゲーミング追加パーツ。なければ nil
+	Sticker *ebiten.Image // ステッカー。なければ nil
+}
+
+// Flatten は全レイヤーを描画順に重ねた1枚の静止画を返す。
+func (pc *AssembledPC) Flatten() *ebiten.Image {
+	img := ebiten.NewImage(72, 64)
+	for _, layer := range []*ebiten.Image{pc.Body, pc.Gaming, pc.Sticker} {
+		if layer != nil {
+			img.DrawImage(layer, nil)
+		}
+	}
+	return img
+}
+
 func LoadAssemblePartsImages(imageManager *imageassets.ImageManager) error {
 	AssembleImages = [numberOfAssemblePartsAssets]*ebiten.Image{}
 
@@ -137,21 +156,34 @@ func AssembledImage(
 	caseLid AssemblePartsImage,
 	gaming AssemblePartsImage,
 	sticker AssemblePartsImage,
-) (*ebiten.Image, error) {
-	pc := ebiten.NewImage(72, 64)
+) (*AssembledPC, error) {
+	pc := &AssembledPC{Body: ebiten.NewImage(72, 64)}
+	hasGaming := gaming != A_noAdditionalParts
+	if hasGaming {
+		pc.Gaming = ebiten.NewImage(72, 64)
+	}
+	if sticker == A_sticker {
+		pc.Sticker = ebiten.NewImage(72, 64)
+	}
+
+	lidTarget := pc.Body
+	if hasGaming {
+		lidTarget = pc.Gaming
+	}
 
 	required := []struct {
-		name string
-		part AssemblePartsImage
-		draw bool
+		name   string
+		part   AssemblePartsImage
+		draw   bool
+		target *ebiten.Image
 	}{
-		{"ケース本体", caseBack, true},
-		{"マザボ", mb, true},
-		{"CPUクーラー", cooler, true},
-		{"グラフィックボード", gpu, gpu != AssemblePartsImage(A_noAdditionalParts)},
-		{"ケースの蓋", caseLid, caseLid != A_noAdditionalParts},
-		{"ゲーミング追加パーツ", gaming, gaming != A_noAdditionalParts},
-		{"ステッカー", sticker, sticker == A_sticker},
+		{"ケース本体", caseBack, true, pc.Body},
+		{"マザボ", mb, true, pc.Body},
+		{"CPUクーラー", cooler, true, pc.Body},
+		{"グラフィックボード", gpu, gpu != AssemblePartsImage(A_noAdditionalParts), pc.Body},
+		{"ケースの蓋", caseLid, caseLid != A_noAdditionalParts, lidTarget},
+		{"ゲーミング追加パーツ", gaming, hasGaming, pc.Gaming},
+		{"ステッカー", sticker, sticker == A_sticker, pc.Sticker},
 	}
 	for _, image := range required {
 		if !image.draw {
@@ -166,12 +198,9 @@ func AssembledImage(
 		if image.part == A_case_cardboard_lid {
 			continue
 		}
-		pc.DrawImage(AssembleImages[image.part], nil)
+		image.target.DrawImage(AssembleImages[image.part], nil)
 	}
 
-	if gaming == A_noAdditionalParts {
-		return pc, nil
-	}
 	return pc, nil
 }
 
@@ -192,9 +221,18 @@ func DetermineAppearance(pts game.Parts) (Appearance, error) {
 	return Appearance{caseBack, mb, cooler, gpu, caseLid, gaming, sticker}, nil
 }
 
-// AssembledImageFromAppearance は見た目から完成PCの画像を作る。範囲外の値はエラーになる。
-func AssembledImageFromAppearance(a Appearance) (*ebiten.Image, error) {
+// AssembledLayersFromAppearance は見た目から完成PCをレイヤー別に作る。範囲外の値はエラーになる。
+func AssembledLayersFromAppearance(a Appearance) (*AssembledPC, error) {
 	return AssembledImage(a[0], a[1], a[2], a[3], a[4], a[5], a[6])
+}
+
+// AssembledImageFromAppearance は見た目から完成PCを1枚に合成した静止画を作る。範囲外の値はエラーになる。
+func AssembledImageFromAppearance(a Appearance) (*ebiten.Image, error) {
+	pc, err := AssembledLayersFromAppearance(a)
+	if err != nil {
+		return nil, err
+	}
+	return pc.Flatten(), nil
 }
 
 func findAssemblePart(pts game.Parts, kind uint) *game.Part {
