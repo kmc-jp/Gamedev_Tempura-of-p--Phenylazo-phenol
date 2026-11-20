@@ -14,6 +14,7 @@ var AssembleImages [numberOfAssemblePartsAssets]*ebiten.Image
 
 // 組み立て用画像一覧 (意図的に_を使用)
 // A: Assemble であることを識別するための識別子 ,B: Black, W: White, S: Side glass, SF: Side and Front glass,
+// 注意: 値はランキング(ranking.json)に保存される。既存の並びは変えず、追加は A_noAdditionalParts の手前の末尾に足す。
 const (
 	A_case_B_SF      = iota //みんげー_PCケース_黒_蓋開いてる
 	A_case_B_S              //みんげー_PCケース_黒_蓋閉じてる
@@ -172,6 +173,28 @@ func AssembledImage(
 		return pc, nil
 	}
 	return pc, nil
+}
+
+// AppearanceSize は Appearance の要素数。ranking.AppearanceSize と一致させる。
+const AppearanceSize = 7
+
+// Appearance は完成PCの見た目を決めるenumの組。ランキングに保存される。
+// 順序は caseBack, mb, cooler, gpu, caseLid, gaming, sticker。
+// 上の定数の値もそのまま保存されるため、並びを変える場合は既存の ranking.json が壊れる点に注意する。
+type Appearance [AppearanceSize]AssemblePartsImage
+
+// DetermineAppearance は組み立てパーツから見た目を決める。
+func DetermineAppearance(pts game.Parts) (Appearance, error) {
+	caseBack, mb, cooler, gpu, caseLid, gaming, sticker, err := DeterminePartsConfiguration(pts)
+	if err != nil {
+		return Appearance{}, err
+	}
+	return Appearance{caseBack, mb, cooler, gpu, caseLid, gaming, sticker}, nil
+}
+
+// AssembledImageFromAppearance は見た目から完成PCの画像を作る。範囲外の値はエラーになる。
+func AssembledImageFromAppearance(a Appearance) (*ebiten.Image, error) {
+	return AssembledImage(a[0], a[1], a[2], a[3], a[4], a[5], a[6])
 }
 
 func findAssemblePart(pts game.Parts, kind uint) *game.Part {
