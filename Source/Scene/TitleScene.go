@@ -174,14 +174,26 @@ func (s *TitleScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 		case TitleMenuStart:
 			return s.startGame(), transition.NewScene(), nil
 		case TitleMenuHowToPlay:
-			// TODO: あそびかた画面ができたら遷移する
-			fmt.Println("あそびかた が押されました")
+			return s.openHowToPlay(), transition.Push(), nil
 		case TitleMenuSettings:
 			return s.openSettings(), transition.Push(), nil
 		}
 	}
 
 	return
+}
+
+// openHowToPlay は遊び方画面を重ねて開く。
+func (s *TitleScene) openHowToPlay() Utils.Factory[game.Scene] {
+	return func() (game.Scene, error) {
+		howToPlayScene, err := s.initScenes.InitHowToPlayScene()
+		if err != nil {
+			return nil, fmt.Errorf("s.initScenes.InitHowToPlayScene() でエラーが発生しました。\n%w", err)
+		}
+		howToPlayScene.gamedata = s.gamedata
+		howToPlayScene.initScenes = s.initScenes
+		return howToPlayScene, nil
+	}
 }
 
 // openSettings は設定画面を重ねて開く。タイトルBGMは鳴らしたままにする。
