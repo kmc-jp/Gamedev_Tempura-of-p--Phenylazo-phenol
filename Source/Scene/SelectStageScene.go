@@ -201,6 +201,11 @@ func (s *SelectStageScene) updateScene(active bool) (nextScene Utils.Factory[gam
 		s.gamedata.InitialProcess = false
 		// 遷移元が現在地を更新している場合に備え、カーソルを現在地に合わせる
 		s.selector.SetCurrent(s.gamedata.CurrentLocation())
+
+		// 時間切れ、または行ける場所がないときは、行先選択を出さずに帰宅する
+		if !s.hasDestination() {
+			return s.mkResultScene(), transition.NewScene(), nil
+		}
 	}
 
 	for _, entity := range s.entities {
@@ -252,6 +257,28 @@ func (s *SelectStageScene) destination() (loc stageinfo.Location, minutes uint64
 		return loc, 0, fmt.Errorf("最短所要時間の計算に失敗しました。\n%w", err)
 	}
 	return loc, minutes, nil
+}
+
+// hasDestination は、自宅と現在地を除いて、残り時間で行ける駅があるかを返す。
+// 時間切れ（残り0分）のときは常に false になる。
+func (s *SelectStageScene) hasDestination() bool {
+	if s.gamedata.WorldTimer.TimeLeft() == 0 {
+		return false
+	}
+	current := s.gamedata.CurrentLocation()
+	for loc := range s.stageMap.Stations {
+		if loc == stageinfo.Departure || loc == current || !s.CanConfirm(loc) {
+			continue
+		}
+		minutes, err := s.stageMap.ShortestMinutes(current, loc)
+		if err != nil {
+			continue
+		}
+		if s.gamedata.WorldTimer.EnoughTimeLeft(minutes) {
+			return true
+		}
+	}
+	return false
 }
 
 // confirm はカーソルが指している駅を行き先として確定する。
