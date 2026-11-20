@@ -244,6 +244,13 @@ func (s *PlayScene) updateScene(active bool) (nextScene Utils.Factory[game.Scene
 	}
 
 	if s.Gamedata.State == game.Play_Explore {
+		if s.Gamedata.WorldTimer.TimeLeft() == 0 {
+			// 時間切れ: レジに行ったときと同じ流れ（Play_Register → Play_Select）で一覧を開く
+			s.Gamedata.State = game.Play_Register
+			s.Gamedata.DisableWorldTimeProgressing()
+			s.canvas.SetActionLogText("時間切れ！")
+			return nil, transition.None(), nil
+		}
 		if s.Input.ActionIsJustPressed(inputconfig.ActionPartsList) {
 			if err := s.canvas.TogglePartsList(); err != nil {
 				return nil, transition.None(), fmt.Errorf("パーツ一覧の開閉に失敗しました。\n%w", err)

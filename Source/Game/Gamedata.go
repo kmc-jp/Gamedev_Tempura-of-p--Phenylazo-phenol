@@ -142,6 +142,7 @@ func (g *Gamedata) ResetGame() {
 	g.Money = InitialMoney
 	g.visited = 0
 	g.currentLocation = stageinfo.Departure
+	g.WorldTimer.Reset()
 	g.DisableWorldTimeProgressing()
 }
 
