@@ -18,20 +18,27 @@ import (
 //go:embed Assets/*
 var assetsFS embed.FS
 
+const release = false
+
 func main() {
 	var fullScreenMode bool
-	fmt.Println("To run in FULL SCREEN mode, input y.\nOthers will be ignored.")
-	scanner := bufio.NewScanner(os.Stdin)
-	if scanner.Scan() {
-		text := scanner.Text()
-		if text == "y" {
-			fullScreenMode = true
-		} else {
-			fullScreenMode = false
+
+	if release {
+		fullScreenMode = true
+	} else {
+		fmt.Println("To run in FULL SCREEN mode, input y.\nOthers will be ignored.")
+		scanner := bufio.NewScanner(os.Stdin)
+		if scanner.Scan() {
+			text := scanner.Text()
+			if text == "y" {
+				fullScreenMode = true
+			} else {
+				fullScreenMode = false
+			}
 		}
-	}
-	if err := scanner.Err(); err != nil {
-		fmt.Println("読み込みエラー:", err)
+		if err := scanner.Err(); err != nil {
+			fmt.Println("読み込みエラー:", err)
+		}
 	}
 
 	AssetsManager, err := assets.NewAssetsManager(&assetsFS)
