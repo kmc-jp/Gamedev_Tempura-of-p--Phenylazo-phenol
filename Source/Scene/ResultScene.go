@@ -104,6 +104,9 @@ type ResultScene struct {
 	resultBGM      *audio.Player
 }
 
+// resultDrawScale はリザルト画面の背景・完成PCの描画倍率。他シーンの背景倍率(6)に合わせる。
+const resultDrawScale = 6
+
 // NewResultScene は ResultScene を生成する。
 // CanvasはSceneを参照するため、生成関数 newCanvas を受け取り、Sceneの生成直後に呼んで注入する。
 func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*ResultScene) (ResultCanvasAPI, error), Input *input.Handler, gdata *game.Gamedata, initScenes *InitializedScenes, rankingStore RankingStore) Utils.Factory[*ResultScene] {
@@ -120,9 +123,9 @@ func NewResultScene(NewWorldDrawer Utils.Factory[WorldDrawer], newCanvas func(*R
 			return &ResultScene{}, fmt.Errorf("NewDrawer() でエラーが発生しました。 \n%w", err)
 		}
 		pcImageConfig := &ebiten.DrawImageOptions{}
-		// 白背景128x80を5倍した640x400に、72x64の完成PCを5倍で中央配置する。
-		pcImageConfig.GeoM.Scale(5, 5)
-		pcImageConfig.GeoM.Translate(266, 40)
+		// 白背景128x80を6倍した768x480に、72x64の完成PCを6倍で中央配置する。
+		pcImageConfig.GeoM.Scale(resultDrawScale, resultDrawScale)
+		pcImageConfig.GeoM.Translate(319, 48)
 
 		gamingBackgroundData, err := gdata.AssetsManager.Image.NewImageData(
 			"みんげー_リザルト_黒背景",
@@ -203,7 +206,7 @@ func (s *ResultScene) Draw(screen *ebiten.Image) {
 		}
 		if background != nil {
 			backgroundOption := &ebiten.DrawImageOptions{}
-			backgroundOption.GeoM.Scale(5, 5)
+			backgroundOption.GeoM.Scale(resultDrawScale, resultDrawScale)
 			screen.DrawImage(background, backgroundOption)
 		}
 	}
