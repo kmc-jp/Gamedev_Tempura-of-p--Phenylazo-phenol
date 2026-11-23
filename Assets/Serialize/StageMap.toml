@@ -17,28 +17,28 @@ Y = 205
 
 [Stations.Blue]
 Label = "Blue"
-X = 109
-Y = 120
+X = 108
+Y = 119
 
 [Stations.Red]
 Label = "Red"
 X = 226
-Y = 147
+Y = 192
 
 [Stations.Orange]
 Label = "Orange"
 X = 51
-Y = 57
+Y = 47
 
 [Stations.Purple]
 Label = "Purple"
 X = 274
-Y = 99
+Y = 98
 
 [Stations.Green]
 Label = "Green"
 X = 166
-Y = 66
+Y = 47
 
 [[Lines]]
 From = "Departure"
@@ -51,30 +51,47 @@ Minutes = 10
 From = "Departure"
 To = "Red"
 FromKey = "Right"
-ToKey = "Down"
+ToKey = "Left"
 Minutes = 20
 
 [[Lines]]
 From = "Blue"
 To = "Red"
+FromKey = "Right"
+ToKey = "Up"
+Minutes = 15
+
+[[Lines]]
+From = "Blue"
+To = "Green"
+FromKey = "Up"
+ToKey = "Down"
 Minutes = 15
 
 [[Lines]]
 From = "Blue"
 To = "Orange"
+FromKey = "Left"
+ToKey = "Down"
 Minutes = 10
 
 [[Lines]]
 From = "Red"
 To = "Purple"
+FromKey = "Right"
+ToKey = "Down"
 Minutes = 10
 
 [[Lines]]
 From = "Orange"
 To = "Green"
+FromKey = "Right"
+ToKey = "Left"
 Minutes = 15
 
 [[Lines]]
 From = "Purple"
 To = "Green"
+FromKey = "Up"
+ToKey = "Right"
 Minutes = 15
