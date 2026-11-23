@@ -18,8 +18,9 @@ const TitleBackgroundScale = 6
 // titleMenuAnchors は、タイトル背景画像上のメニュー文字の位置（画像ピクセル座標）。
 // カーソルの先端（三角形の右端・縦中央）がこの点を指す。
 var titleMenuAnchors = map[scene.TitleMenuItem]utils.Position{
-	scene.TitleMenuStart:     {X: 62, Y: 55}, // 仮値。実機で調整する
-	scene.TitleMenuHowToPlay: {X: 62, Y: 65},
+	scene.TitleMenuStart:     {X: 62, Y: 52}, // 仮値。実機で調整する
+	scene.TitleMenuHowToPlay: {X: 62, Y: 62},
+	scene.TitleMenuRanking:   {X: 62, Y: 67},
 	scene.TitleMenuSettings:  {X: 62, Y: 72},
 }
 
