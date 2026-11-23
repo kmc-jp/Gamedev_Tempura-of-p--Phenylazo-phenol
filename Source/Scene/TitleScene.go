@@ -30,12 +30,13 @@ type TitleMenuItem int
 const (
 	TitleMenuStart TitleMenuItem = iota
 	TitleMenuHowToPlay
+	TitleMenuRanking
 	TitleMenuSettings
 )
 
 // TitleMenuItems はメニュー項目を表示順に返す。
 func TitleMenuItems() []TitleMenuItem {
-	return []TitleMenuItem{TitleMenuStart, TitleMenuHowToPlay, TitleMenuSettings}
+	return []TitleMenuItem{TitleMenuStart, TitleMenuHowToPlay, TitleMenuRanking, TitleMenuSettings}
 }
 
 type TitleScene struct {
@@ -175,6 +176,8 @@ func (s *TitleScene) updateScene(active bool) (nextScene Utils.Factory[game.Scen
 			return s.startGame(), transition.NewScene(), nil
 		case TitleMenuHowToPlay:
 			return s.openHowToPlay(), transition.Push(), nil
+		case TitleMenuRanking:
+			return s.openRanking(), transition.NewScene(), nil
 		case TitleMenuSettings:
 			return s.openSettings(), transition.Push(), nil
 		}
@@ -193,6 +196,22 @@ func (s *TitleScene) openHowToPlay() Utils.Factory[game.Scene] {
 		howToPlayScene.gamedata = s.gamedata
 		howToPlayScene.initScenes = s.initScenes
 		return howToPlayScene, nil
+	}
+}
+
+// openRanking はランキング画面へ移る。タイトルBGMはランキング画面から戻るときに作り直される。
+func (s *TitleScene) openRanking() Utils.Factory[game.Scene] {
+	s.bgmPlayer.Pause()
+
+	return func() (game.Scene, error) {
+		nextScene, err := s.initScenes.InitRankingScene()
+		if err != nil {
+			return nil, fmt.Errorf("s.initScenes.InitRankingScene() でエラーが発生しました。\n%w", err)
+		}
+		nextScene.gamedata = s.gamedata
+		nextScene.gamedata.ForNewScene(game.Ranking_View)
+		nextScene.initScenes = s.initScenes
+		return nextScene, nil
 	}
 }
 
