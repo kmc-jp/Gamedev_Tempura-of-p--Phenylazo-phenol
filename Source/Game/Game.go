@@ -10,6 +10,16 @@ import (
 	input "github.com/quasilyte/ebitengine-input"
 )
 
+// 固定の論理解像度。PCのモニター解像度や表示スケールに関係なく、この大きさで描画する。
+// ウィンドウへの拡大・縮小は Ebitengine に任せる。
+// 値は、背景画像（128x80）を6倍して原点から描いたときの大きさ 768x480 に合わせている。
+// 背景の描画（BackGroundCamera・TitleCanvas・TrainCanvas・ResultScene）がこの大きさを前提にしているため、
+// 変えると右・下に黒い帯が出たり背景が切れたりして、screen.Bounds() 基準の UI と背景がずれる。
+const (
+	ScreenWidth  = 768
+	ScreenHeight = 480
+)
+
 type Game struct {
 	ActiveScene Scene
 	BackScenes  Utils.Stack[Scene]
@@ -54,7 +64,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 // Layout implements [ebiten.Game].
 func (g *Game) Layout(outsideWidth int, outsideHeight int) (screenWidth int, screenHeight int) {
-	return outsideWidth / 2, outsideHeight / 2
+	return ScreenWidth, ScreenHeight
 }
 
 // Update implements [ebiten.Game].
