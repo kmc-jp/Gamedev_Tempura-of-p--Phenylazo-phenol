@@ -250,6 +250,20 @@ func (s *SelectStageScene) updateScene(active bool) (nextScene Utils.Factory[gam
 		return s.confirm()
 	}
 
+	if s.Input.ActionIsJustPressed(inputconfig.ActionEscape) {
+		return func() (game.Scene, error) {
+			pauseScene, err := s.initScenes.InitPauseScene()
+			if err != nil {
+				return nil, err
+			}
+			pauseScene.gamedata = s.gamedata
+			pauseScene.gamedata.DisableWorldTimeProgressing()
+			//pauseScene.gamedata.ForNewScene(0)
+			pauseScene.initScenes = s.initScenes
+			return pauseScene, nil
+		}, transition.Push(), nil
+	}
+
 	return
 }
 
