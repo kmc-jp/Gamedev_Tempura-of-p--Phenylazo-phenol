@@ -17,6 +17,13 @@
 - ジャンクPC
 - 綺麗～小汚いハード屋
 
+## For Reviewer
+### 実行方法
+
+`Gamedev_Tempura-of-p--Phenylazo-phenol.exe` を実行してください
+
+注: `main.go: 22` の release = true としてコンパイルしています
+
 ## For Engineer
 ### 言語・パッケージ
 
